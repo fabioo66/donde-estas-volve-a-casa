@@ -1,8 +1,13 @@
 package ttps.models;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+
 import java.util.LinkedList;
 import java.util.List;
 
+@Entity
+@DiscriminatorValue("Administrador")
 public class Administrador extends Usuario {
 
     public Administrador() {

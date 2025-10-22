@@ -1,10 +1,19 @@
 package ttps.models;
 
+import jakarta.persistence.*;
+
 import java.util.LinkedList;
 import java.util.List;
 
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo_usuario", discriminatorType = DiscriminatorType.STRING)
+@Table(name = "usuario")
 public class Usuario {
-    private int id;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="usuario_id")
+    private long id;
     private String nombre;
     private String apellido;
     private String email;
@@ -12,7 +21,12 @@ public class Usuario {
     private String telefono;
     private String barrio;
     private String ciudad;
+
+
+    @OneToMany(mappedBy = "usuario")
     private List<Mascota> mascotas;
+
+    @OneToMany(mappedBy = "usuario")
     private List<Avistamiento> avistamientos;
 
     // Constructor vacío

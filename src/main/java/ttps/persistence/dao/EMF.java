@@ -1,22 +1,26 @@
+// java
 package ttps.persistence.dao;
 
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import jakarta.persistence.PersistenceException;
 
 public class EMF {
-    private static EntityManagerFactory em = null;
+    private static EntityManagerFactory em;
+
     static {
         try {
             em = Persistence.createEntityManagerFactory("my-persistence-unit");
-        } catch (PersistenceException e) {
-            System.err.println("Error al crear EntityManagerFactory: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Throwable t) {
+            System.err.println("Error al crear EntityManagerFactory: " + t.getMessage());
+            t.printStackTrace(); // muestra la causa real
+            throw new ExceptionInInitializerError(t); // evita seguir con la app en estado inconsistente
         }
     }
 
     public static EntityManagerFactory getEMF() {
+        if (em == null) {
+            throw new IllegalStateException("EntityManagerFactory no inicializado. Revisa errores previos.");
+        }
         return em;
     }
 

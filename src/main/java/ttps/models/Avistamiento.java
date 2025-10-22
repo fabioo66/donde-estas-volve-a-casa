@@ -1,10 +1,24 @@
 package ttps.models;
 
+import jakarta.persistence.*;
+
 import java.time.LocalDate;
 
+@Entity
+@Table(name = "avistamiento")
 public class Avistamiento {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name="avistamiento_id")
     private int id;
+
+    @ManyToOne
+    @JoinColumn(name="usuario_id")
     private Usuario usuario;
+
+    @ManyToOne
+    @JoinColumn(name="mascota_id")
     private Mascota mascota;
     private byte[] fotos;
     private String coordenada;
