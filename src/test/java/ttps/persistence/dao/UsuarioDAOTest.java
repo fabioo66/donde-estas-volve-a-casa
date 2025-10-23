@@ -154,4 +154,89 @@ public class UsuarioDAOTest {
 
         System.out.println("✓ Usuario marcado como inactivo mediante delete(id) correctamente");
     }
+
+    @Test
+    @Order(7)
+    @DisplayName("Test VERIFICAR CONTRASEÑA - Verificar contraseña correcta e incorrecta")
+    public void testVerificarContrasenia() {
+        // Arrange
+        String contraseniaOriginal = "miClaveSegura123";
+        Usuario usuario = new Usuario(
+                "Pedro",
+                "Martínez",
+                "pedro.martinez@example.com",
+                contraseniaOriginal,
+                "3517777777",
+                "Nueva Córdoba",
+                "Córdoba"
+        );
+        usuario = usuarioDAO.persist(usuario);
+
+        // Act & Assert - Verificar contraseña correcta
+        assertTrue(usuario.verificarContrasenia(contraseniaOriginal),
+                "La contraseña original debe ser verificada correctamente");
+
+        // Act & Assert - Verificar contraseña incorrecta
+        assertFalse(usuario.verificarContrasenia("contraseñaIncorrecta"),
+                "Una contraseña incorrecta no debe ser verificada");
+
+        // Assert - La contraseña almacenada debe estar hasheada (no debe ser igual al texto plano)
+        assertNotEquals(contraseniaOriginal, usuario.getContrasenia(),
+                "La contraseña almacenada debe estar hasheada, no en texto plano");
+
+        // Assert - El hash debe tener el formato correcto de BCrypt (60 caracteres, empieza con $2a$)
+        assertTrue(usuario.getContrasenia().startsWith("$2a$"),
+                "El hash debe tener el formato BCrypt ($2a$)");
+        assertEquals(60, usuario.getContrasenia().length(),
+                "El hash BCrypt debe tener 60 caracteres");
+
+        System.out.println("✓ Verificación de contraseña funciona correctamente");
+        System.out.println("  - Contraseña original: " + contraseniaOriginal);
+        System.out.println("  - Hash almacenado: " + usuario.getContrasenia());
+    }
+
+    @Test
+    @Order(8)
+    @DisplayName("Test CAMBIAR CONTRASEÑA - Actualizar contraseña usando setContrasenia")
+    public void testCambiarContrasenia() {
+        // Arrange
+        String contraseniaInicial = "claveInicial456";
+        String nuevaContrasenia = "claveNueva789";
+        Usuario usuario = new Usuario(
+                "María",
+                "García",
+                "maria.garcia@example.com",
+                contraseniaInicial,
+                "3518888888",
+                "Güemes",
+                "Córdoba"
+        );
+        usuario = usuarioDAO.persist(usuario);
+        String hashInicial = usuario.getContrasenia();
+
+        // Act - Cambiar la contraseña usando setContrasenia
+        usuario.setContrasenia(nuevaContrasenia);
+        Usuario usuarioActualizado = usuarioDAO.update(usuario);
+
+        // Assert - La contraseña inicial ya no debe ser válida
+        assertFalse(usuarioActualizado.verificarContrasenia(contraseniaInicial),
+                "La contraseña inicial ya no debe ser válida");
+
+        // Assert - La nueva contraseña debe ser válida
+        assertTrue(usuarioActualizado.verificarContrasenia(nuevaContrasenia),
+                "La nueva contraseña debe ser válida");
+
+        // Assert - El hash debe haber cambiado
+        assertNotEquals(hashInicial, usuarioActualizado.getContrasenia(),
+                "El hash de la contraseña debe haber cambiado");
+
+        // Verificar que los cambios persisten en la base de datos
+        Usuario usuarioVerificado = usuarioDAO.get(usuarioActualizado.getId());
+        assertTrue(usuarioVerificado.verificarContrasenia(nuevaContrasenia),
+                "La nueva contraseña debe persistir en la base de datos");
+
+        System.out.println("✓ Cambio de contraseña funciona correctamente");
+        System.out.println("  - Hash inicial: " + hashInicial);
+        System.out.println("  - Hash nuevo:   " + usuarioActualizado.getContrasenia());
+    }
 }

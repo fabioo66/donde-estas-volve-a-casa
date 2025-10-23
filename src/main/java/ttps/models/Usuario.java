@@ -1,6 +1,7 @@
 package ttps.models;
 
 import jakarta.persistence.*;
+import ttps.utils.PasswordUtils;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -16,7 +17,11 @@ public class Usuario {
     private long id;
     private String nombre;
     private String apellido;
+
+    @Column(length = 60)
     private String email;
+
+    @Column(length = 60)
     private String contrasenia;
     private String telefono;
     private String barrio;
@@ -40,7 +45,7 @@ public class Usuario {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
-        this.contrasenia = contrasenia;
+        this.contrasenia = PasswordUtils.hashPassword(contrasenia);
         this.telefono = telefono;
         this.barrio = barrio;
         this.ciudad = ciudad;
@@ -84,8 +89,21 @@ public class Usuario {
         return contrasenia;
     }
 
+    /**
+     * Establece la contraseña del usuario, hasheándola automáticamente
+     * @param contrasenia la contraseña en texto plano
+     */
     public void setContrasenia(String contrasenia) {
-        this.contrasenia = contrasenia;
+        this.contrasenia = PasswordUtils.hashPassword(contrasenia);
+    }
+
+    /**
+     * Verifica si una contraseña en texto plano coincide con la contraseña hasheada del usuario
+     * @param plainPassword la contraseña en texto plano a verificar
+     * @return true si la contraseña es correcta, false en caso contrario
+     */
+    public boolean verificarContrasenia(String plainPassword) {
+        return PasswordUtils.verifyPassword(plainPassword, this.contrasenia);
     }
 
     public String getTelefono() {
