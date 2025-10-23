@@ -22,18 +22,25 @@ public class GenericDAOHibernateJPA<T> implements GenericDAO<T> {
         try(EntityManager em = EMF.getEMF().createEntityManager()){
             tx = em.getTransaction();
             tx.begin();
-            em.remove(em.merge(entity));
+            T managedEntity = em.merge(entity);
+            try {
+                managedEntity.getClass().getMethod("setActivo", boolean.class).invoke(managedEntity, false);
+            } catch (Exception e) {
+                throw new RuntimeException("La entidad no tiene el método setActivo para borrado lógico", e);
+            }
             tx.commit();
         } catch (RuntimeException e) {
             if (tx != null && tx.isActive()) tx.rollback();
-            throw e; // escribir en un log o mostrar un mensaje
+            throw e;
         }
-
     }
 
     @Override
     public void delete(Long id) {
-
+        T entity = get(id);
+        if (entity != null) {
+            delete(entity);
+        }
     }
 
     @Override
