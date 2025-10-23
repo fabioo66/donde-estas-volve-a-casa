@@ -35,4 +35,52 @@ public class Avistamiento {
         this.coordenada = coordenada;
         this.fecha = fecha;
     }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public Usuario getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(Usuario usuario) {
+        this.usuario = usuario;
+    }
+
+    public Mascota getMascota() {
+        return mascota;
+    }
+
+    public void setMascota(Mascota mascota) {
+        this.mascota = mascota;
+    }
+
+    public byte[] getFotos() {
+        return fotos;
+    }
+
+    public void setFotos(byte[] fotos) {
+        this.fotos = fotos;
+    }
+
+    public String getCoordenada() {
+        return coordenada;
+    }
+
+    public void setCoordenada(String coordenada) {
+        this.coordenada = coordenada;
+    }
+
+    public LocalDate getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(LocalDate fecha) {
+        this.fecha = fecha;
+    }
 }
