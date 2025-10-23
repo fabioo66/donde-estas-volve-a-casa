@@ -22,6 +22,7 @@ public class Usuario {
     private String barrio;
     private String ciudad;
 
+    private boolean activo = true;
 
     @OneToMany(mappedBy = "usuario")
     private List<Mascota> mascotas;
@@ -123,6 +124,14 @@ public class Usuario {
         return avistamientos;
     }
 
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
+    }
     public void setAvistamientos(List<Avistamiento> avistamientos) {
         this.avistamientos = avistamientos;
     }

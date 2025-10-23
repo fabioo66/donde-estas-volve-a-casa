@@ -24,6 +24,8 @@ public class Avistamiento {
     private String coordenada;
     private LocalDate fecha;
 
+    private boolean activo = true;
+
 
     public Avistamiento() {}
 
@@ -78,6 +80,14 @@ public class Avistamiento {
 
     public LocalDate getFecha() {
         return fecha;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public void setFecha(LocalDate fecha) {

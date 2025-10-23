@@ -16,10 +16,16 @@ public class Mascota {
     private int id;
 
     private String nombre;
+
+    @Enumerated(EnumType.STRING)
     private Tamanio tamaño;
+
     private String color;
     private LocalDate fecha;
+
+    @Enumerated(EnumType.STRING)
     private Estado estado;
+
     private List<byte[]> fotos;
     private String coordenadas;
     private String descripcion;
@@ -30,6 +36,8 @@ public class Mascota {
 
     private String tipo;
     private String raza;
+
+    private boolean activo = true;
 
     @OneToMany(mappedBy = "mascota")
     private List<Avistamiento>  avistamientos;
@@ -150,6 +158,14 @@ public class Mascota {
 
     public List<Avistamiento> getAvistamientos() {
         return avistamientos;
+    }
+
+    public boolean isActivo() {
+        return activo;
+    }
+
+    public void setActivo(boolean activo) {
+        this.activo = activo;
     }
 
     public void setAvistamientos(List<Avistamiento> avistamientos) {
