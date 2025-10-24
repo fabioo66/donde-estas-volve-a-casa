@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.awt.image.BufferedImage;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,7 +44,9 @@ public class Mascota {
     private List<Avistamiento>  avistamientos;
 
     // Constructor vacío
-    public Mascota() {}
+    public Mascota() {
+        this.avistamientos = new ArrayList<>();
+    }
 
     public Mascota(int id, String nombre, Tamanio tamaño, String color, LocalDate fecha, Estado estado, List<byte[]> fotos, String coordenadas, String descripcion, Usuario usuario, String tipo, String raza) {
         this.id = id;
@@ -56,6 +59,7 @@ public class Mascota {
         this.coordenadas = coordenadas;
         this.descripcion = descripcion;
         this.usuario = usuario;
+        this.avistamientos = new ArrayList<>();
         this.tipo = tipo;
         this.raza = raza;
     }
@@ -170,5 +174,9 @@ public class Mascota {
 
     public void setAvistamientos(List<Avistamiento> avistamientos) {
         this.avistamientos = avistamientos;
+    }
+
+    public void agregarAvistamiento(Avistamiento avistamiento) {
+        this.avistamientos.add(avistamiento);
     }
 }

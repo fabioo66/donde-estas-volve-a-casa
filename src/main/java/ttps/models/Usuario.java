@@ -106,6 +106,18 @@ public class Usuario {
         return PasswordUtils.verifyPassword(plainPassword, this.contrasenia);
     }
 
+    public void agregarAvistamiento(Avistamiento avistamiento, Mascota mascota) {
+        this.avistamientos.add(avistamiento);
+        avistamiento.setUsuario(this);
+        avistamiento.setMascota(mascota);
+        mascota.agregarAvistamiento(avistamiento);
+    }
+
+    public void agregarMascota(Mascota mascota) {
+        this.mascotas.add(mascota);
+        mascota.setUsuario(this);
+    }
+
     public String getTelefono() {
         return telefono;
     }

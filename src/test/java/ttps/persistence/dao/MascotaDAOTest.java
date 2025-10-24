@@ -52,9 +52,9 @@ public class MascotaDAOTest {
         mascotaTest.setEstado(Estado.PERDIDO_PROPIO);
         mascotaTest.setCoordenadas("-31.4201,-64.1888");
         mascotaTest.setDescripcion("Perro grande, muy amigable, color dorado");
-        mascotaTest.setUsuario(usuarioDuenio);
         mascotaTest.setFotos(new ArrayList<>());
-        mascotaTest.setAvistamientos(new ArrayList<>());
+
+        usuarioDuenio.agregarMascota(mascotaTest);
 
         // Act
         Mascota mascotaCreada = mascotaDAO.persist(mascotaTest);
@@ -67,8 +67,14 @@ public class MascotaDAOTest {
         assertEquals(Tamanio.GRANDE, mascotaCreada.getTamaño());
         assertEquals(Estado.PERDIDO_PROPIO, mascotaCreada.getEstado());
         assertNotNull(mascotaCreada.getUsuario());
+        assertEquals(usuarioDuenio.getId(), mascotaCreada.getUsuario().getId());
+
+        // Verificar bidireccionalidad
+        assertTrue(usuarioDuenio.getMascotas().contains(mascotaCreada),
+                "El usuario debe tener la mascota en su lista");
 
         System.out.println("✓ Mascota creada con ID: " + mascotaCreada.getId());
+        System.out.println("✓ Bidireccionalidad Usuario-Mascota verificada");
     }
 
     @Test
@@ -160,9 +166,10 @@ public class MascotaDAOTest {
         Mascota mascotaParaBorradoLogico = new Mascota();
         mascotaParaBorradoLogico.setNombre("Max");
         mascotaParaBorradoLogico.setTipo("Perro");
-        mascotaParaBorradoLogico.setRaza("Pastor Alemán");
         mascotaParaBorradoLogico.setTamaño(Tamanio.GRANDE);
-        mascotaParaBorradoLogico.setColor("Negro");
+
+        usuarioDuenio.agregarMascota(mascotaParaBorradoLogico);
+
         mascotaParaBorradoLogico.setFecha(LocalDate.now());
         mascotaParaBorradoLogico.setEstado(Estado.ADOPTADO);
         mascotaParaBorradoLogico.setCoordenadas("-31.4201,-64.1888");
