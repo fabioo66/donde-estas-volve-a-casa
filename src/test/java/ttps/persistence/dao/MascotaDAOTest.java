@@ -1,9 +1,12 @@
 package ttps.persistence.dao;
 
 import org.junit.jupiter.api.*;
-import ttps.models.*;
-import ttps.persistence.dao.impl.MascotaDAOHibernateJPA;
-import ttps.persistence.dao.impl.UsuarioDAOHibernateJPA;
+import ttps.spring.models.Estado;
+import ttps.spring.models.Mascota;
+import ttps.spring.models.Tamanio;
+import ttps.spring.models.Usuario;
+import ttps.spring.persistence.dao.impl.MascotaDAOHibernateJPA;
+import ttps.spring.persistence.dao.impl.UsuarioDAOHibernateJPA;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

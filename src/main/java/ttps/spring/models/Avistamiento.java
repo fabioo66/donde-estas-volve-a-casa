@@ -1,4 +1,4 @@
-package ttps.models;
+package ttps.spring.models;
 
 import jakarta.persistence.*;
 

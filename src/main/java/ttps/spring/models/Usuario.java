@@ -1,10 +1,11 @@
-package ttps.models;
+package ttps.spring.models;
 
 import jakarta.persistence.*;
 import ttps.utils.PasswordUtils;
 
 import java.util.LinkedList;
 import java.util.List;
+
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

@@ -1,10 +1,4 @@
-package ttps.models;
-
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-
-import java.util.LinkedList;
-import java.util.List;
+package ttps.spring.models;
 
 
 public class Administrador extends Usuario {

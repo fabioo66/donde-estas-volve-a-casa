@@ -1,4 +1,4 @@
-package ttps.persistence.dao.interfaces.generic;
+package ttps.spring.persistence.dao.interfaces.generic;
 
 import java.util.List;
 

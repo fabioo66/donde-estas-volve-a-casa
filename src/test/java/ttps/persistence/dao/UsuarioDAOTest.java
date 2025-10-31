@@ -1,8 +1,8 @@
 package ttps.persistence.dao;
 
 import org.junit.jupiter.api.*;
-import ttps.models.Usuario;
-import ttps.persistence.dao.impl.UsuarioDAOHibernateJPA;
+import ttps.spring.models.Usuario;
+import ttps.spring.persistence.dao.impl.UsuarioDAOHibernateJPA;
 
 import java.util.List;
 

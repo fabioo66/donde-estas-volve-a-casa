@@ -1,8 +1,7 @@
-package ttps.models;
+package ttps.spring.models;
 
 import jakarta.persistence.*;
 
-import java.awt.image.BufferedImage;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;

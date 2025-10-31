@@ -1,7 +1,4 @@
-package ttps.models;
-
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+package ttps.spring.models;
 
 
 public class UsuarioRegistrado extends Usuario{
