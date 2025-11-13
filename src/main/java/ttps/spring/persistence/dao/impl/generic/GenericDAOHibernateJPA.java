@@ -1,8 +1,7 @@
 package ttps.spring.persistence.dao.impl.generic;
 
 import jakarta.persistence.*;
-import jakarta.transaction.Transactional;
-import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.persistence.dao.interfaces.generic.GenericDAO;
 
 import java.util.List;

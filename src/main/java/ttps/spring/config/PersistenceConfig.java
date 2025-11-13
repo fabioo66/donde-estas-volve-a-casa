@@ -17,7 +17,6 @@ import java.util.Properties;
 
 @Configuration   // Marks the class as a configuration class for Spring.
 @EnableTransactionManagement   //Enables declarative transaction management via Spring's @Transactional annotation.
-@ComponentScan(basePackages = "ttps.spring")
 public class PersistenceConfig {
  	
 	@Bean
@@ -25,7 +24,7 @@ public class PersistenceConfig {
 		DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
 		driverManagerDataSource.setUsername("valen");
 		driverManagerDataSource.setPassword("valen");
-		driverManagerDataSource.setUrl("jdbc:mysql://localhost:3307/proyectoTTPS?useSSL=false&amp;serverTimezone=UTC");
+		driverManagerDataSource.setUrl("jdbc:mysql://localhost:3307/proyectoTTPS?useSSL=false&serverTimezone=UTC");
 		driverManagerDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 		return driverManagerDataSource;
 	}
@@ -42,12 +41,14 @@ public class PersistenceConfig {
 	public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 		emf.setDataSource(dataSource());
-		emf.setPackagesToScan("ttps.spring");
-		emf.setEntityManagerFactoryInterface(EntityManagerFactory.class);
+		emf.setPackagesToScan("ttps.spring.models");
 		JpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
 		emf.setJpaVendorAdapter(jpaVendorAdapter);
         Properties jpaProperties = new Properties();
-        jpaProperties.put("hibernate.hbm2ddl.auto", "create");
+        jpaProperties.put("hibernate.dialect", "org.hibernate.dialect.MySQLDialect");
+        jpaProperties.put("hibernate.hbm2ddl.auto", "update");
+        jpaProperties.put("hibernate.show_sql", "true");
+        jpaProperties.put("hibernate.format_sql", "true");
         emf.setJpaProperties(jpaProperties);
 		return emf;		
 	}
