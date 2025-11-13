@@ -24,7 +24,7 @@ public class PersistenceConfig {
 		DriverManagerDataSource driverManagerDataSource = new DriverManagerDataSource();
 		driverManagerDataSource.setUsername("valen");
 		driverManagerDataSource.setPassword("valen");
-		driverManagerDataSource.setUrl("jdbc:mysql://localhost:3307/proyectoTTPS?useSSL=false&serverTimezone=UTC");
+		driverManagerDataSource.setUrl("jdbc:mysql://localhost:3307/proyectoTTPS?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true");
 		driverManagerDataSource.setDriverClassName("com.mysql.cj.jdbc.Driver");
 		return driverManagerDataSource;
 	}
@@ -42,6 +42,10 @@ public class PersistenceConfig {
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 		emf.setDataSource(dataSource());
 		emf.setPackagesToScan("ttps.spring.models");
+
+		// Set the EntityManagerFactory interface to avoid conflicts with Hibernate's SessionFactory
+		emf.setEntityManagerFactoryInterface(jakarta.persistence.EntityManagerFactory.class);
+
 		JpaVendorAdapter jpaVendorAdapter = new HibernateJpaVendorAdapter();
 		emf.setJpaVendorAdapter(jpaVendorAdapter);
         Properties jpaProperties = new Properties();
