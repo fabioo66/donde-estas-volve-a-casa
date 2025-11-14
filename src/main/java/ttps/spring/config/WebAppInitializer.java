@@ -16,6 +16,7 @@ public class WebAppInitializer extends AbstractAnnotationConfigDispatcherServlet
 
     @Override
     protected String[] getServletMappings() {
-        return new String[] { "/api/*" };
+        // Cambiado de "/api/*" a "/" para que Spring maneje también las rutas de swagger-ui y /v3/api-docs
+        return new String[] { "/" };
     }
 }

@@ -1,5 +1,12 @@
 package ttps.spring.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +26,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/mascotas")
+@Tag(name = "Mascotas", description = "API para la gestión de mascotas perdidas y encontradas")
 public class MascotaController {
 
     private final MascotaService mascotaService;
@@ -31,8 +39,18 @@ public class MascotaController {
     }
 
     @PostMapping("/usuario/{usuarioId}")
-    public ResponseEntity<?> crearMascota(@PathVariable int usuarioId,
-                                          @RequestBody MascotaRequest request) {
+    @Operation(summary = "Crear una nueva mascota",
+               description = "Registra una nueva mascota asociada a un usuario específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "Mascota creada exitosamente",
+                     content = @Content(schema = @Schema(implementation = Mascota.class))),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "404", description = "Usuario no encontrado"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> crearMascota(
+            @Parameter(description = "ID del usuario propietario") @PathVariable int usuarioId,
+            @Parameter(description = "Datos de la mascota a crear") @RequestBody MascotaRequest request) {
         try {
             Usuario usuario = usuarioService.obtenerUsuario((long) usuarioId);
             if (usuario == null) {
@@ -76,7 +94,15 @@ public class MascotaController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerMascota(@PathVariable int id) {
+    @Operation(summary = "Obtener mascota por ID",
+               description = "Retorna los detalles de una mascota específica")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mascota encontrada",
+                     content = @Content(schema = @Schema(implementation = Mascota.class))),
+        @ApiResponse(responseCode = "404", description = "Mascota no encontrada")
+    })
+    public ResponseEntity<?> obtenerMascota(
+            @Parameter(description = "ID de la mascota") @PathVariable int id) {
         Mascota mascota = mascotaService.obtenerMascota((long) id);
         if (mascota == null || !mascota.isActivo()) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -86,20 +112,41 @@ public class MascotaController {
     }
 
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<List<Mascota>> obtenerMascotasUsuario(@PathVariable int usuarioId) {
+    @Operation(summary = "Obtener mascotas de un usuario",
+               description = "Retorna todas las mascotas registradas por un usuario específico")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de mascotas obtenida exitosamente")
+    })
+    public ResponseEntity<List<Mascota>> obtenerMascotasUsuario(
+            @Parameter(description = "ID del usuario") @PathVariable int usuarioId) {
         List<Mascota> mascotas = mascotaService.obtenerMascotasPorUsuario((long) usuarioId);
         return ResponseEntity.ok(mascotas);
     }
 
     @GetMapping("/perdidas")
+    @Operation(summary = "Obtener mascotas perdidas",
+               description = "Retorna todas las mascotas con estado PERDIDO")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Lista de mascotas perdidas obtenida exitosamente")
+    })
     public ResponseEntity<List<Mascota>> obtenerMascotasPerdidas() {
         List<Mascota> perdidas = mascotaService.obtenerMascotasPerdidas();
         return ResponseEntity.ok(perdidas);
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> editarMascota(@PathVariable int id,
-                                           @RequestBody MascotaRequest request) {
+    @Operation(summary = "Actualizar mascota",
+               description = "Actualiza la información de una mascota existente")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mascota actualizada exitosamente",
+                     content = @Content(schema = @Schema(implementation = Mascota.class))),
+        @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+        @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> editarMascota(
+            @Parameter(description = "ID de la mascota") @PathVariable int id,
+            @Parameter(description = "Datos actualizados de la mascota") @RequestBody MascotaRequest request) {
         try {
             Mascota mascota = mascotaService.obtenerMascota((long) id);
             if (mascota == null || !mascota.isActivo()) {
@@ -142,7 +189,15 @@ public class MascotaController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarMascota(@PathVariable int id) {
+    @Operation(summary = "Eliminar mascota",
+               description = "Realiza un borrado lógico de la mascota (marca como inactiva)")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "Mascota eliminada exitosamente"),
+        @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+        @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> eliminarMascota(
+            @Parameter(description = "ID de la mascota") @PathVariable int id) {
         try {
             Mascota mascota = mascotaService.obtenerMascota((long) id);
             if (mascota == null) {

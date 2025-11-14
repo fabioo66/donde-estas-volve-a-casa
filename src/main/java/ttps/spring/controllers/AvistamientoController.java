@@ -1,5 +1,12 @@
 package ttps.spring.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +22,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/avistamientos")
+@Tag(name = "Avistamientos", description = "API para la gestión de avistamientos de mascotas")
 public class AvistamientoController {
 
     private final AvistamientoService avistamientoService;
@@ -28,7 +36,16 @@ public class AvistamientoController {
     }
 
     @PostMapping
-    public ResponseEntity<?> crearAvistamiento(@RequestBody AvistamientoRequest request) {
+    @Operation(summary = "Crear nuevo avistamiento",
+            description = "Registra un nuevo avistamiento de una mascota perdida")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Avistamiento creado exitosamente",
+                    content = @Content(schema = @Schema(implementation = Avistamiento.class))),
+            @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> crearAvistamiento(
+            @Parameter(description = "Datos del avistamiento") @RequestBody AvistamientoRequest request) {
         try {
             Mascota mascota = mascotaService.obtenerMascota(request.getMascotaId());
             if (mascota == null) {
@@ -62,13 +79,26 @@ public class AvistamientoController {
     }
 
     @GetMapping
+    @Operation(summary = "Obtener todos los avistamientos",
+            description = "Retorna la lista completa de avistamientos registrados")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de avistamientos obtenida exitosamente")
+    })
     public ResponseEntity<List<Avistamiento>> obtenerTodosLosAvistamientos() {
         List<Avistamiento> avistamientos = avistamientoService.obtenerTodosLosAvistamientos();
         return ResponseEntity.ok(avistamientos);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<?> obtenerAvistamiento(@PathVariable Long id) {
+    @Operation(summary = "Obtener avistamiento por ID",
+            description = "Retorna los detalles de un avistamiento específico")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Avistamiento encontrado",
+                    content = @Content(schema = @Schema(implementation = Avistamiento.class))),
+            @ApiResponse(responseCode = "404", description = "Avistamiento no encontrado")
+    })
+    public ResponseEntity<?> obtenerAvistamiento(
+            @Parameter(description = "ID del avistamiento") @PathVariable Long id) {
         Avistamiento avistamiento = avistamientoService.obtenerAvistamiento(id);
         if (avistamiento == null) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
@@ -78,8 +108,17 @@ public class AvistamientoController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<?> actualizarAvistamiento(@PathVariable Long id,
-                                                     @RequestBody AvistamientoRequest request) {
+    @Operation(summary = "Actualizar avistamiento",
+            description = "Actualiza la información de un avistamiento existente")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Avistamiento actualizado exitosamente",
+                    content = @Content(schema = @Schema(implementation = Avistamiento.class))),
+            @ApiResponse(responseCode = "404", description = "Avistamiento o mascota no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> actualizarAvistamiento(
+            @Parameter(description = "ID del avistamiento") @PathVariable Long id,
+            @Parameter(description = "Datos actualizados del avistamiento") @RequestBody AvistamientoRequest request) {
         try {
             Avistamiento avistamiento = avistamientoService.obtenerAvistamiento(id);
             if (avistamiento == null) {
@@ -115,7 +154,15 @@ public class AvistamientoController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<?> eliminarAvistamiento(@PathVariable Long id) {
+    @Operation(summary = "Eliminar avistamiento",
+            description = "Elimina permanentemente un avistamiento del sistema")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Avistamiento eliminado exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Avistamiento no encontrado"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> eliminarAvistamiento(
+            @Parameter(description = "ID del avistamiento") @PathVariable Long id) {
         try {
             Avistamiento avistamiento = avistamientoService.obtenerAvistamiento(id);
             if (avistamiento == null) {
@@ -132,7 +179,15 @@ public class AvistamientoController {
     }
 
     @GetMapping("/mascota/{mascotaId}")
-    public ResponseEntity<?> obtenerAvistamientosPorMascota(@PathVariable Long mascotaId) {
+    @Operation(summary = "Obtener avistamientos por mascota",
+            description = "Retorna todos los avistamientos reportados para una mascota específica")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Lista de avistamientos obtenida exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<?> obtenerAvistamientosPorMascota(
+            @Parameter(description = "ID de la mascota") @PathVariable Long mascotaId) {
         try {
             Mascota mascota = mascotaService.obtenerMascota(mascotaId);
             if (mascota == null) {

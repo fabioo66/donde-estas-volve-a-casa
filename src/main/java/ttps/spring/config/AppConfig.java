@@ -13,9 +13,7 @@ import org.springframework.context.annotation.Import;
     "ttps.spring.services",
     "ttps.spring.persistence.dao"
 })
-@Import(PersistenceConfig.class)
+@Import({PersistenceConfig.class, OpenApiConfig.class})
 public class AppConfig {
     // Esta clase puede extenderse con más configuraciones según sea necesario
 }
-
-
