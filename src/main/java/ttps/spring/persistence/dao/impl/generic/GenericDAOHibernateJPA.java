@@ -64,7 +64,33 @@ public class GenericDAOHibernateJPA<T> implements GenericDAO<T> {
     @Override
     public List<T> getAll(String columnOrder) {
         String order = (columnOrder == null || columnOrder.isBlank()) ? "id" : columnOrder;
-        String jpql = "SELECT e FROM " + getPersistentClass().getSimpleName() + " e ORDER BY e." + order;
+        String jpql;
+        // Si la clase tiene un atributo o método 'activo', filtrar por activos
+        boolean hasActivo = false;
+        try {
+            // comprobar campo
+            persistentClass.getDeclaredField("activo");
+            hasActivo = true;
+        } catch (NoSuchFieldException | SecurityException ex) {
+            // comprobar métodos isActivo/getActivo
+            try {
+                persistentClass.getMethod("isActivo");
+                hasActivo = true;
+            } catch (NoSuchMethodException e1) {
+                try {
+                    persistentClass.getMethod("getActivo");
+                    hasActivo = true;
+                } catch (NoSuchMethodException e2) {
+                    hasActivo = false;
+                }
+            }
+        }
+
+        if (hasActivo) {
+            jpql = "SELECT e FROM " + getPersistentClass().getSimpleName() + " e WHERE e.activo = true ORDER BY e." + order;
+        } else {
+            jpql = "SELECT e FROM " + getPersistentClass().getSimpleName() + " e ORDER BY e." + order;
+        }
         TypedQuery<T> query = getEntityManager().createQuery(jpql, getPersistentClass());
         return query.getResultList();
     }

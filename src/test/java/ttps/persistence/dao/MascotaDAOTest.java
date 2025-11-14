@@ -1,15 +1,10 @@
 package ttps.persistence.dao;
 
 import org.junit.jupiter.api.*;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit.jupiter.SpringExtension;
-import ttps.config.TestConfig;
-import ttps.spring.models.Estado;
-import ttps.spring.models.Mascota;
-import ttps.spring.models.Tamanio;
-import ttps.spring.models.Usuario;
+import org.springframework.boot.test.context.SpringBootTest;
+import ttps.spring.Application;
+import ttps.spring.models.*;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
 
@@ -19,8 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@ExtendWith(SpringExtension.class)
-@ContextConfiguration(classes = TestConfig.class)
+@SpringBootTest(classes = Application.class)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class MascotaDAOTest {
@@ -212,4 +206,3 @@ public class MascotaDAOTest {
         }
     }
 }
-

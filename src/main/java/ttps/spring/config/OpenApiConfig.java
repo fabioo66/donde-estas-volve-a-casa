@@ -7,7 +7,7 @@ import io.swagger.v3.oas.models.servers.Server;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class OpenApiConfig {
@@ -22,9 +22,9 @@ public class OpenApiConfig {
                         .contact(new Contact()
                                 .name("Equipo TTPS")
                                 .email("contacto@example.com")))
-                .servers(Arrays.asList(
+                .servers(List.of(
                         new Server()
-                                .url("http://localhost:8080/proyectoTTPS-1.0-SNAPSHOT")
+                                .url("http://localhost:8080")
                                 .description("Servidor de desarrollo")
                 ));
     }
