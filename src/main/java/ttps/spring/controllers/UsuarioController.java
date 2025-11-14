@@ -55,10 +55,8 @@ public class UsuarioController {
             usuario.setEmail(request.getEmail());
             usuario.setContrasenia(request.getPassword()); // setContrasenia ya hashea automáticamente
             usuario.setTelefono(request.getTelefono());
-            // Usar barrio y ciudad en lugar de direccion
-            if (request.getDireccion() != null) {
-                usuario.setBarrio(request.getDireccion());
-            }
+            usuario.setBarrio(request.getBarrio());
+            usuario.setCiudad(request.getCiudad());
 
             Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(usuarioCreado);
@@ -153,9 +151,8 @@ public class UsuarioController {
             }
 
             usuario.setTelefono(request.getTelefono());
-            if (request.getDireccion() != null) {
-                usuario.setBarrio(request.getDireccion());
-            }
+            usuario.setBarrio(request.getBarrio());
+            usuario.setCiudad(request.getCiudad());
 
             Usuario actualizado = usuarioService.actualizarUsuario(usuario);
             return ResponseEntity.ok(actualizado);

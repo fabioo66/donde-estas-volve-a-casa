@@ -1,5 +1,6 @@
 package ttps.spring.models;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import ttps.utils.PasswordUtils;
 
@@ -30,10 +31,12 @@ public class Usuario {
 
     private boolean activo = true;
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
+    @JsonManagedReference("usuario-mascotas")
     private List<Mascota> mascotas;
 
-    @OneToMany(mappedBy = "usuario")
+    @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
+    @JsonManagedReference("usuario-avistamientos")
     private List<Avistamiento> avistamientos;
 
     // Constructor vacío

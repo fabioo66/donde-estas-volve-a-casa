@@ -6,7 +6,8 @@ public class RegistroUsuarioRequest {
     private String email;
     private String password;
     private String telefono;
-    private String direccion;
+    private String barrio;
+    private String ciudad;
 
     // Getters y Setters
     public String getNombre() { return nombre; }
@@ -19,6 +20,12 @@ public class RegistroUsuarioRequest {
     public void setPassword(String password) { this.password = password; }
     public String getTelefono() { return telefono; }
     public void setTelefono(String telefono) { this.telefono = telefono; }
-    public String getDireccion() { return direccion; }
-    public void setDireccion(String direccion) { this.direccion = direccion; }
+    public String getBarrio() { return barrio; }
+    public void setBarrio(String barrio) { this.barrio = barrio; }
+    public String getCiudad() {
+        return ciudad;
+    }
+    public void setCiudad(String ciudad) {
+        this.ciudad = ciudad;
+    }
 }

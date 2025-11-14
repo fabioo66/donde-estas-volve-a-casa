@@ -14,8 +14,10 @@ import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.AvistamientoRequest;
 import ttps.spring.models.Avistamiento;
 import ttps.spring.models.Mascota;
+import ttps.spring.models.Usuario;
 import ttps.spring.services.AvistamientoService;
 import ttps.spring.services.MascotaService;
+import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -27,12 +29,15 @@ public class AvistamientoController {
 
     private final AvistamientoService avistamientoService;
     private final MascotaService mascotaService;
+    private final UsuarioService usuarioService;
 
     @Autowired
     public AvistamientoController(AvistamientoService avistamientoService,
-                                  MascotaService mascotaService) {
+                                  MascotaService mascotaService,
+                                  UsuarioService usuarioService) {
         this.avistamientoService = avistamientoService;
         this.mascotaService = mascotaService;
+        this.usuarioService = usuarioService;
     }
 
     @PostMapping
@@ -41,34 +46,59 @@ public class AvistamientoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "Avistamiento creado exitosamente",
                     content = @Content(schema = @Schema(implementation = Avistamiento.class))),
-            @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+            @ApiResponse(responseCode = "404", description = "Mascota o usuario no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<?> crearAvistamiento(
             @Parameter(description = "Datos del avistamiento") @RequestBody AvistamientoRequest request) {
         try {
+            // Validar que venga el usuario
+            if (request.getUsuarioId() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("El ID del usuario es requerido");
+            }
+
+            // Validar que venga la mascota
+            if (request.getMascotaId() == null) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body("El ID de la mascota es requerido");
+            }
+
+            // Buscar el usuario
+            Usuario usuario = usuarioService.obtenerUsuario(request.getUsuarioId());
+            if (usuario == null) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Usuario no encontrado");
+            }
+
+            // Buscar la mascota
             Mascota mascota = mascotaService.obtenerMascota(request.getMascotaId());
             if (mascota == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Mascota no encontrada");
             }
 
+            // Crear el avistamiento
             Avistamiento avistamiento = new Avistamiento();
-            // El modelo usa 'coordenada', mapeamos desde 'ubicacion' del request
+
+            // Asignar coordenada (ubicacion del request)
             if (request.getUbicacion() != null) {
                 avistamiento.setCoordenada(request.getUbicacion());
-            } else if (request.getDescripcion() != null) {
-                avistamiento.setCoordenada(request.getDescripcion());
             }
 
-            // El modelo usa byte[] fotos, pero el request tiene String
-            // Deberías convertir la foto de String (base64) a byte[]
+            // Asignar descripción
+            if (request.getDescripcion() != null) {
+                avistamiento.setDescripcion(request.getDescripcion());
+            }
+
+            // Asignar foto si viene
             if (request.getFoto() != null && !request.getFoto().isEmpty()) {
                 avistamiento.setFotos(request.getFoto().getBytes());
             }
 
             avistamiento.setFecha(LocalDate.now());
             avistamiento.setMascota(mascota);
+            avistamiento.setUsuario(usuario);
 
             Avistamiento creado = avistamientoService.crearAvistamiento(avistamiento);
             return ResponseEntity.status(HttpStatus.CREATED).body(creado);
@@ -113,7 +143,7 @@ public class AvistamientoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Avistamiento actualizado exitosamente",
                     content = @Content(schema = @Schema(implementation = Avistamiento.class))),
-            @ApiResponse(responseCode = "404", description = "Avistamiento o mascota no encontrada"),
+            @ApiResponse(responseCode = "404", description = "Avistamiento, mascota o usuario no encontrado"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<?> actualizarAvistamiento(
@@ -126,6 +156,17 @@ public class AvistamientoController {
                         .body("Avistamiento no encontrado");
             }
 
+            // Actualizar usuario si viene en el request
+            if (request.getUsuarioId() != null) {
+                Usuario usuario = usuarioService.obtenerUsuario(request.getUsuarioId());
+                if (usuario == null) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                            .body("Usuario no encontrado");
+                }
+                avistamiento.setUsuario(usuario);
+            }
+
+            // Actualizar mascota si viene en el request
             if (request.getMascotaId() != null) {
                 Mascota mascota = mascotaService.obtenerMascota(request.getMascotaId());
                 if (mascota == null) {
@@ -135,12 +176,17 @@ public class AvistamientoController {
                 avistamiento.setMascota(mascota);
             }
 
+            // Actualizar ubicación/coordenada
             if (request.getUbicacion() != null) {
                 avistamiento.setCoordenada(request.getUbicacion());
-            } else if (request.getDescripcion() != null) {
-                avistamiento.setCoordenada(request.getDescripcion());
             }
 
+            // Actualizar descripción
+            if (request.getDescripcion() != null) {
+                avistamiento.setDescripcion(request.getDescripcion());
+            }
+
+            // Actualizar foto
             if (request.getFoto() != null && !request.getFoto().isEmpty()) {
                 avistamiento.setFotos(request.getFoto().getBytes());
             }

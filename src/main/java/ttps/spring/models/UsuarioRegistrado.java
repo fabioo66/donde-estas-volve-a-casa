@@ -1,6 +1,10 @@
 package ttps.spring.models;
 
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
 
+@Entity
+@DiscriminatorValue("REGISTRADO")
 public class UsuarioRegistrado extends Usuario{
 
     // Constructor vacío
@@ -12,7 +16,4 @@ public class UsuarioRegistrado extends Usuario{
                              String telefono, String barrio, String ciudad) {
         super(nombre, apellido, email, contrasenia, telefono, barrio, ciudad);
     }
-
-
-
 }

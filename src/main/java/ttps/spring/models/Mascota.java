@@ -1,5 +1,7 @@
 package ttps.spring.models;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -32,6 +34,7 @@ public class Mascota {
 
     @ManyToOne
     @JoinColumn(name="usuario_id")
+    @JsonBackReference("usuario-mascotas")
     private Usuario usuario;
 
     private String tipo;
@@ -39,7 +42,8 @@ public class Mascota {
 
     private boolean activo = true;
 
-    @OneToMany(mappedBy = "mascota")
+    @OneToMany(mappedBy = "mascota", fetch = FetchType.EAGER)
+    @JsonManagedReference("mascota-avistamientos")
     private List<Avistamiento>  avistamientos;
 
     // Constructor vacío
