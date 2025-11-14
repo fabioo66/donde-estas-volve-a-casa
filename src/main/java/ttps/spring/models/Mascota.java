@@ -83,7 +83,7 @@ public class Mascota {
         return tamaño;
     }
 
-    public void setTamaño(Tamanio tamaño) {
+    public void setTamanio(Tamanio tamaño) {
         this.tamaño = tamaño;
     }
 
