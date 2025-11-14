@@ -1,10 +1,15 @@
 package ttps.persistence.dao;
 
 import org.junit.jupiter.api.*;
-import ttps.models.*;
-import ttps.persistence.dao.impl.AvistamientoDAOHibernateJPA;
-import ttps.persistence.dao.impl.MascotaDAOHibernateJPA;
-import ttps.persistence.dao.impl.UsuarioDAOHibernateJPA;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
+import ttps.config.TestConfig;
+import ttps.spring.models.*;
+import ttps.spring.services.AvistamientoService;
+import ttps.spring.services.MascotaService;
+import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -12,22 +17,27 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@ExtendWith(SpringExtension.class)
+@ContextConfiguration(classes = TestConfig.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class AvistamientoDAOTest {
 
-    private static AvistamientoDAOHibernateJPA avistamientoDAO;
-    private static UsuarioDAOHibernateJPA usuarioDAO;
-    private static MascotaDAOHibernateJPA mascotaDAO;
-    private static Avistamiento avistamientoTest;
-    private static Usuario usuarioReportador;
-    private static Mascota mascotaAvistada;
+    @Autowired
+    private AvistamientoService avistamientoService;
+
+    @Autowired
+    private UsuarioService usuarioService;
+
+    @Autowired
+    private MascotaService mascotaService;
+
+    private Avistamiento avistamientoTest;
+    private Usuario usuarioReportador;
+    private Mascota mascotaAvistada;
 
     @BeforeAll
-    public static void setUp() {
-        avistamientoDAO = new AvistamientoDAOHibernateJPA();
-        usuarioDAO = new UsuarioDAOHibernateJPA();
-        mascotaDAO = new MascotaDAOHibernateJPA();
-
+    public void setUp() {
         // Crear un usuario reportador
         usuarioReportador = new Usuario(
                 "Pedro",
@@ -38,14 +48,14 @@ public class AvistamientoDAOTest {
                 "Nueva Córdoba",
                 "Córdoba"
         );
-        usuarioReportador = usuarioDAO.persist(usuarioReportador);
+        usuarioReportador = usuarioService.crearUsuario(usuarioReportador);
 
         // Crear una mascota para avistar
         mascotaAvistada = new Mascota();
         mascotaAvistada.setNombre("Luna");
         mascotaAvistada.setTipo("Gato");
         mascotaAvistada.setRaza("Siamés");
-        mascotaAvistada.setTamaño(Tamanio.PEQUENIO);
+        mascotaAvistada.setTamanio(Tamanio.PEQUENIO);
         mascotaAvistada.setColor("Blanco y marrón");
         mascotaAvistada.setFecha(LocalDate.now().minusDays(5));
         mascotaAvistada.setEstado(Estado.PERDIDO_AJENO);
@@ -53,8 +63,7 @@ public class AvistamientoDAOTest {
         mascotaAvistada.setDescripcion("Gata siamesa perdida");
         mascotaAvistada.setFotos(new ArrayList<>());
 
-
-        mascotaAvistada = mascotaDAO.persist(mascotaAvistada);
+        mascotaAvistada = mascotaService.crearMascota(mascotaAvistada);
     }
 
     @Test
@@ -70,7 +79,7 @@ public class AvistamientoDAOTest {
         usuarioReportador.agregarAvistamiento(avistamientoTest, mascotaAvistada);
 
         // Act
-        Avistamiento avistamientoCreado = avistamientoDAO.persist(avistamientoTest);
+        Avistamiento avistamientoCreado = avistamientoService.crearAvistamiento(avistamientoTest);
 
         // Assert
         assertNotNull(avistamientoCreado, "El avistamiento creado no debe ser null");
@@ -103,7 +112,7 @@ public class AvistamientoDAOTest {
         int avistamientoId = avistamientoTest.getId();
 
         // Act
-        Avistamiento avistamientoObtenido = avistamientoDAO.get((long) avistamientoId);
+        Avistamiento avistamientoObtenido = avistamientoService.obtenerAvistamiento((long) avistamientoId);
 
         // Assert
         assertNotNull(avistamientoObtenido, "El avistamiento obtenido no debe ser null");
@@ -132,7 +141,7 @@ public class AvistamientoDAOTest {
     @DisplayName("Test READ ALL - Obtener todos los avistamientos activos")
     public void testGetAllAvistamientos() {
         // Act
-        List<Avistamiento> avistamientos = avistamientoDAO.getAll("fecha");
+        List<Avistamiento> avistamientos = avistamientoService.obtenerTodosLosAvistamientos();
 
         // Assert
         assertNotNull(avistamientos, "La lista de avistamientos no debe ser null");
@@ -156,14 +165,14 @@ public class AvistamientoDAOTest {
     @DisplayName("Test UPDATE - Actualizar un avistamiento")
     public void testUpdateAvistamiento() {
         // Arrange
-        Avistamiento avistamientoParaActualizar = avistamientoDAO.get((long) avistamientoTest.getId());
+        Avistamiento avistamientoParaActualizar = avistamientoService.obtenerAvistamiento((long) avistamientoTest.getId());
         String nuevaCoordenada = "-31.4250,-64.1900";
         LocalDate nuevaFecha = LocalDate.now().minusDays(1);
 
         // Act
         avistamientoParaActualizar.setCoordenada(nuevaCoordenada);
         avistamientoParaActualizar.setFecha(nuevaFecha);
-        Avistamiento avistamientoActualizado = avistamientoDAO.update(avistamientoParaActualizar);
+        Avistamiento avistamientoActualizado = avistamientoService.actualizarAvistamiento(avistamientoParaActualizar);
 
         // Assert
         assertNotNull(avistamientoActualizado, "El avistamiento actualizado no debe ser null");
@@ -177,7 +186,7 @@ public class AvistamientoDAOTest {
         assertEquals(mascotaAvistada.getId(), avistamientoActualizado.getMascota().getId());
 
         // Verificar que los cambios persisten en la base de datos
-        Avistamiento avistamientoVerificado = avistamientoDAO.get((long) avistamientoTest.getId());
+        Avistamiento avistamientoVerificado = avistamientoService.obtenerAvistamiento((long) avistamientoTest.getId());
         assertEquals(nuevaCoordenada, avistamientoVerificado.getCoordenada());
         assertEquals(nuevaFecha, avistamientoVerificado.getFecha());
 
@@ -191,13 +200,13 @@ public class AvistamientoDAOTest {
     @DisplayName("Test DELETE - Borrado lógico de avistamiento")
     public void testDeleteAvistamiento() {
         // Arrange
-        Avistamiento avistamientoAEliminar = avistamientoDAO.get((long) avistamientoTest.getId());
+        Avistamiento avistamientoAEliminar = avistamientoService.obtenerAvistamiento((long) avistamientoTest.getId());
 
         // Act
-        avistamientoDAO.delete(avistamientoAEliminar);
+        avistamientoService.eliminarAvistamiento(avistamientoAEliminar);
 
         // Assert - El registro sigue existiendo pero está marcado como inactivo
-        Avistamiento avistamientoBorrado = avistamientoDAO.get((long) avistamientoTest.getId());
+        Avistamiento avistamientoBorrado = avistamientoService.obtenerAvistamiento((long) avistamientoTest.getId());
         assertNotNull(avistamientoBorrado, "El avistamiento con borrado lógico no debe ser null");
         assertFalse(avistamientoBorrado.isActivo(), "El avistamiento debe estar marcado como inactivo");
 
@@ -216,7 +225,7 @@ public class AvistamientoDAOTest {
 
         usuarioReportador.agregarAvistamiento(avistamientoParaBorradoLogico, mascotaAvistada);
 
-        avistamientoParaBorradoLogico = avistamientoDAO.persist(avistamientoParaBorradoLogico);
+        avistamientoParaBorradoLogico = avistamientoService.crearAvistamiento(avistamientoParaBorradoLogico);
         long idAvistamiento = avistamientoParaBorradoLogico.getId();
 
         // Verificar que se creó correctamente con bidireccionalidad
@@ -225,10 +234,10 @@ public class AvistamientoDAOTest {
         assertNotNull(avistamientoParaBorradoLogico.getMascota(), "Debe tener mascota asignada");
 
         // Act - Borrado lógico por ID
-        avistamientoDAO.delete(idAvistamiento);
+        avistamientoService.eliminarAvistamiento(idAvistamiento);
 
         // Assert
-        Avistamiento avistamientoBorradoLogico = avistamientoDAO.get(idAvistamiento);
+        Avistamiento avistamientoBorradoLogico = avistamientoService.obtenerAvistamiento(idAvistamiento);
         assertNotNull(avistamientoBorradoLogico, "El avistamiento con borrado lógico no debe ser null");
         assertFalse(avistamientoBorradoLogico.isActivo(), "El avistamiento debe estar marcado como inactivo");
 
@@ -241,14 +250,14 @@ public class AvistamientoDAOTest {
     }
 
     @AfterAll
-    public static void tearDown() {
+    public void tearDown() {
         // Limpiar datos de prueba (borrado lógico)
         if (mascotaAvistada != null) {
-            mascotaDAO.delete(mascotaAvistada);
+            mascotaService.eliminarMascota(mascotaAvistada);
             System.out.println("✓ Mascota de prueba marcada como inactiva");
         }
         if (usuarioReportador != null) {
-            usuarioDAO.delete(usuarioReportador);
+            usuarioService.eliminarUsuario(usuarioReportador);
             System.out.println("✓ Usuario de prueba marcado como inactivo");
         }
     }
