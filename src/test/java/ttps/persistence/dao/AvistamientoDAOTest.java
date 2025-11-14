@@ -55,7 +55,7 @@ public class AvistamientoDAOTest {
         mascotaAvistada.setNombre("Luna");
         mascotaAvistada.setTipo("Gato");
         mascotaAvistada.setRaza("Siamés");
-        mascotaAvistada.setTamaño(Tamanio.PEQUENIO);
+        mascotaAvistada.setTamanio(Tamanio.PEQUENIO);
         mascotaAvistada.setColor("Blanco y marrón");
         mascotaAvistada.setFecha(LocalDate.now().minusDays(5));
         mascotaAvistada.setEstado(Estado.PERDIDO_AJENO);

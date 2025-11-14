@@ -58,7 +58,7 @@ public class MascotaDAOTest {
         mascotaTest.setNombre("Bobby");
         mascotaTest.setTipo("Perro");
         mascotaTest.setRaza("Golden Retriever");
-        mascotaTest.setTamaño(Tamanio.GRANDE);
+        mascotaTest.setTamanio(Tamanio.GRANDE);
         mascotaTest.setColor("Dorado");
         mascotaTest.setFecha(LocalDate.now());
         mascotaTest.setEstado(Estado.PERDIDO_PROPIO);
@@ -178,7 +178,7 @@ public class MascotaDAOTest {
         Mascota mascotaParaBorradoLogico = new Mascota();
         mascotaParaBorradoLogico.setNombre("Max");
         mascotaParaBorradoLogico.setTipo("Perro");
-        mascotaParaBorradoLogico.setTamaño(Tamanio.GRANDE);
+        mascotaParaBorradoLogico.setTamanio(Tamanio.GRANDE);
 
         usuarioDuenio.agregarMascota(mascotaParaBorradoLogico);
 
