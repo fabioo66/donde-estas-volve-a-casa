@@ -42,4 +42,8 @@ public class UsuarioService {
     public void eliminarUsuario(Usuario usuario) {
         usuarioDAO.delete(usuario);
     }
+
+    public Usuario obtenerUsuarioPorEmail(String email) {
+        return usuarioDAO.findByEmail(email);
+    }
 }

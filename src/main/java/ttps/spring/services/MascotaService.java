@@ -3,8 +3,8 @@ package ttps.spring.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ttps.spring.models.Mascota;
 import ttps.spring.persistence.dao.interfaces.MascotaDAO;
+import ttps.spring.models.Mascota;
 
 import java.util.List;
 
@@ -27,10 +27,6 @@ public class MascotaService {
         return mascotaDAO.get(id);
     }
 
-    public List<Mascota> obtenerTodasLasMascotas() {
-        return mascotaDAO.getAll("id");
-    }
-
     public Mascota actualizarMascota(Mascota mascota) {
         return mascotaDAO.update(mascota);
     }
@@ -42,5 +38,17 @@ public class MascotaService {
     public void eliminarMascota(Mascota mascota) {
         mascotaDAO.delete(mascota);
     }
-}
 
+    public List<Mascota> obtenerMascotasPorUsuario(Long usuarioId) {
+        return mascotaDAO.findByUsuarioActivas(usuarioId);
+    }
+
+    public List<Mascota> obtenerMascotasPerdidas() {
+        // Retorna mascotas con estado PERDIDO_PROPIO o PERDIDO_AJENO
+        return mascotaDAO.findMascotasPerdidas();
+    }
+
+    public List<Mascota> obtenerTodasLasMascotas() {
+        return mascotaDAO.getAll("nombre");
+    }
+}
