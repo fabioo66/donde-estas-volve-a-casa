@@ -58,7 +58,7 @@ public class MascotaDAOTest {
         mascotaTest.setEstado(Estado.PERDIDO_PROPIO);
         mascotaTest.setCoordenadas("-31.4201,-64.1888");
         mascotaTest.setDescripcion("Perro grande, muy amigable, color dorado");
-        mascotaTest.setFotos(new ArrayList<>());
+        mascotaTest.setFotos("[]"); // JSON array vacío
 
         usuarioDuenio.agregarMascota(mascotaTest);
 
@@ -181,7 +181,7 @@ public class MascotaDAOTest {
         mascotaParaBorradoLogico.setCoordenadas("-31.4201,-64.1888");
         mascotaParaBorradoLogico.setDescripcion("Perro adoptado");
         mascotaParaBorradoLogico.setUsuario(usuarioDuenio);
-        mascotaParaBorradoLogico.setFotos(new ArrayList<>());
+        mascotaParaBorradoLogico.setFotos("[]"); // JSON array vacío
         mascotaParaBorradoLogico.setAvistamientos(new ArrayList<>());
         mascotaParaBorradoLogico = mascotaService.crearMascota(mascotaParaBorradoLogico);
         long idMascota = mascotaParaBorradoLogico.getId();

@@ -10,7 +10,6 @@ import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -58,7 +57,7 @@ public class AvistamientoDAOTest {
         mascotaAvistada.setEstado(Estado.PERDIDO_AJENO);
         mascotaAvistada.setCoordenadas("-31.4167,-64.1833");
         mascotaAvistada.setDescripcion("Gata siamesa perdida");
-        mascotaAvistada.setFotos(new ArrayList<>());
+        mascotaAvistada.setFotos("[]"); // JSON array vacío
 
         mascotaAvistada = mascotaService.crearMascota(mascotaAvistada);
     }
