@@ -1,0 +1,32 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f7f8] dark:bg-[#101c22]">
+  <div class="layout-container flex h-full grow flex-col">
+    <!-- Header -->
+    <header class="flex items-center justify-between whitespace-nowrap border-b border-stone-200/80 dark:border-stone-700/60 px-4 sm:px-6 lg:px-10 py-3 sm:py-4 bg-[#f6f7f8] dark:bg-[#101c22]">
+      <!-- Logo y Título -->
+      <div class="flex items-center gap-2 sm:gap-3 text-[#13a4ec]">
+        <svg class="h-6 w-6 sm:h-8 sm:w-8 flex-shrink-0" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 4C25.7818 14.2173 33.7827 22.2182 44 24C33.7827 25.7818 25.7818 33.7827 24 44C22.2182 33.7827 14.2173 25.7818 4 24C14.2173 22.2182 22.2182 14.2173 24 4Z" fill="currentColor"></path>
+        </svg>
+        <a href="/" class="text-base sm:text-lg lg:text-xl font-bold text-stone-800 dark:text-stone-200 truncate">¿Dónde estás? Volvé a casa</a>
+      </div>
+
+      <!-- Navegación -->
+      <nav class="flex items-center gap-3 sm:gap-6 lg:gap-8">
+        <!-- Links de navegación - ocultos en móvil -->
+        <div class="hidden md:flex items-center gap-4 lg:gap-8">
+          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" href="#">Buscar</a>
+        </div>
+
+        <!-- Botón de inicio de sesión -->
+        <button class="flex items-center justify-center rounded-full h-9 sm:h-10 px-4 sm:px-6 bg-[#13a4ec] text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-[#13a4ec]/90 transition-colors whitespace-nowrap">
+          <span class="hidden sm:inline">Iniciar sesión / Registrarse</span>
+          <span class="sm:hidden">Ingresar</span>
+        </button>
+      </nav>
+    </header>
+
+    <!-- Router Outlet -->
+    <router-outlet></router-outlet>
+  </div>
+</div>
+

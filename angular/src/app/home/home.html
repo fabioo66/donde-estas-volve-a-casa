@@ -1,0 +1,163 @@
+<main class="flex-1 px-4 sm:px-6 lg:px-8 py-10">
+  <div class="mx-auto max-w-7xl">
+    <!-- Mascotas Perdidas Recientes -->
+    <section class="mb-12">
+      <div class="mb-6">
+        <h2 class="text-xl sm:text-2xl font-bold text-stone-800 dark:text-stone-200">Mascotas Perdidas Recientes</h2>
+      </div>
+
+      <!-- Loading state -->
+      @if (isLoading) {
+        <div class="flex justify-center items-center py-12">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-[#13a4ec]"></div>
+        </div>
+      }
+
+      <!-- Error state -->
+      @if (error) {
+        <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-center">
+          <p class="text-red-600 dark:text-red-400">{{ error }}</p>
+        </div>
+      }
+
+      <!-- Cards de mascotas -->
+      @if (!isLoading && !error) {
+        @if (mascotas.length === 0) {
+          <div class="text-center py-12">
+            <p class="text-stone-500 dark:text-stone-400">No hay mascotas perdidas en este momento</p>
+          </div>
+        } @else {
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
+            @for (mascota of mascotas; track mascota.id) {
+              <div class="bg-white dark:bg-[#1a2632] rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group">
+                <!-- Imagen de la mascota con carrusel -->
+                <div class="relative aspect-square overflow-hidden bg-stone-200 dark:bg-stone-700">
+                  <!-- Carousel de fotos -->
+                  @if (tieneMasDe1Foto(mascota)) {
+                    <!-- Múltiples fotos - mostrar carousel -->
+                    <div class="relative w-full h-full">
+                      @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
+                        <img
+                          [src]="fotoUrl"
+                          [alt]="mascota.nombre + ' - Foto ' + (i + 1)"
+                          [class.opacity-100]="i === getFotoActual(mascota.id)"
+                          [class.opacity-0]="i !== getFotoActual(mascota.id)"
+                          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+                          (error)="$any($event.target).src='https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'">
+                      }
+
+                      <!-- Botones de navegación -->
+                      <button
+                        (click)="cambiarFoto(mascota, 'prev', $event)"
+                        class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                        aria-label="Foto anterior">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                        </svg>
+                      </button>
+
+                      <button
+                        (click)="cambiarFoto(mascota, 'next', $event)"
+                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
+                        aria-label="Foto siguiente">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                        </svg>
+                      </button>
+
+                      <!-- Indicador de múltiples fotos -->
+                      <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                        </svg>
+                        <span>{{ getFotoActual(mascota.id) + 1 }}/{{ getCantidadFotos(mascota) }}</span>
+                      </div>
+
+                      <!-- Indicadores de puntos -->
+                      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+                        @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
+                          <div
+                            [class.bg-white]="i === getFotoActual(mascota.id)"
+                            [class.bg-white/50]="i !== getFotoActual(mascota.id)"
+                            [class.w-4]="i === getFotoActual(mascota.id)"
+                            [class.w-1.5]="i !== getFotoActual(mascota.id)"
+                            class="h-1.5 rounded-full transition-all duration-300"></div>
+                        }
+                      </div>
+                    </div>
+                  } @else {
+                    <!-- Una sola foto -->
+                    <img
+                      [src]="obtenerImagenMascota(mascota)"
+                      [alt]="mascota.nombre"
+                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                      (error)="$any($event.target).src='https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'">
+                  }
+
+                  <!-- Badge de estado -->
+                  <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                    PERDIDO
+                  </div>
+                </div>
+
+                <!-- Información de la mascota -->
+                <div class="p-4">
+                  <h3 class="text-lg font-bold text-stone-800 dark:text-stone-200 truncate mb-1">
+                    {{ mascota.nombre }}
+                  </h3>
+                  <p class="text-sm text-stone-600 dark:text-stone-400 truncate mb-2">
+                    {{ mascota.raza || mascota.tipo || 'Sin raza' }}
+                  </p>
+
+                  <!-- Información adicional -->
+                  <div class="space-y-2">
+                    <!-- Tamaño y Color en una fila -->
+                    <div class="flex items-center gap-3 text-xs">
+                      @if (mascota.tamanio) {
+                        <div class="flex items-center gap-1 text-stone-600 dark:text-stone-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
+                            <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
+                            <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
+                          </svg>
+                          <span>{{ formatearTamanio(mascota.tamanio) }}</span>
+                        </div>
+                      }
+                      @if (mascota.color) {
+                        <div class="flex items-center gap-1 text-stone-600 dark:text-stone-400">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
+                          </svg>
+                          <span>{{ mascota.color }}</span>
+                        </div>
+                      }
+                    </div>
+
+                    <!-- Descripción -->
+                    @if (mascota.descripcion) {
+                      <p class="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed">
+                        {{ mascota.descripcion }}
+                      </p>
+                    }
+
+                    <!-- Fecha de pérdida -->
+                    @if (mascota.fecha) {
+                      <div class="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-500 pt-1 border-t border-stone-200 dark:border-stone-700">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Perdido:</span>
+                        <span>{{ obtenerFechaFormateada(mascota.fecha) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+          </div>
+        }
+      }
+    </section>
+  </div>
+</main>
+

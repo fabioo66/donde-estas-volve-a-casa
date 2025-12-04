@@ -1,20 +1,14 @@
 package ttps.config;
 
-import org.springframework.context.annotation.ComponentScan;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
-import org.springframework.transaction.annotation.EnableTransactionManagement;
-import ttps.spring.config.PersistenceConfig;
 
+/**
+ * Configuración para tests con Spring Boot.
+ * @SpringBootTest carga automáticamente toda la configuración de la aplicación.
+ */
 @Configuration
-@EnableTransactionManagement
-@Import(PersistenceConfig.class)
-@ComponentScan(basePackages = {
-    "ttps.spring.persistence.dao.impl",
-    "ttps.spring.services",
-    "ttps.spring.models"
-})
+@SpringBootTest(classes = ttps.spring.Application.class)
 public class TestConfig {
-    // Esta clase permite que Spring cargue todos los beans necesarios para los tests
+    // Spring Boot Test autoconfigura todo lo necesario para los tests
 }
-
