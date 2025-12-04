@@ -28,7 +28,8 @@ public class Mascota {
     @Enumerated(EnumType.STRING)
     private Estado estado;
 
-    private List<byte[]> fotos;
+    @Column(columnDefinition = "TEXT")
+    private String fotos; // JSON array de URLs
     private String coordenadas;
     private String descripcion;
 
@@ -51,7 +52,7 @@ public class Mascota {
         this.avistamientos = new ArrayList<>();
     }
 
-    public Mascota(int id, String nombre, Tamanio tamaño, String color, LocalDate fecha, Estado estado, List<byte[]> fotos, String coordenadas, String descripcion, Usuario usuario, String tipo, String raza) {
+    public Mascota(int id, String nombre, Tamanio tamaño, String color, LocalDate fecha, Estado estado, String fotos, String coordenadas, String descripcion, Usuario usuario, String tipo, String raza) {
         this.id = id;
         this.nombre = nombre;
         this.tamaño = tamaño;
@@ -115,11 +116,11 @@ public class Mascota {
         this.estado = estado;
     }
 
-    public List<byte[]> getFotos() {
+    public String getFotos() {
         return fotos;
     }
 
-    public void setFotos(List<byte[]> fotos) {
+    public void setFotos(String fotos) {
         this.fotos = fotos;
     }
 

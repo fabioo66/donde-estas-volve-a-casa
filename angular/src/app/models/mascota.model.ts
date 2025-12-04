@@ -10,7 +10,7 @@ export interface Mascota {
   tipo: string;
   raza: string;
   activo: boolean;
-  fotos?: string[]; // Array de URLs base64 o URLs de imágenes
+  fotos?: string; // JSON string con array de URLs: "['/uploads/foto1.jpg', '/uploads/foto2.jpg']"
 }
 
 export enum Estado {

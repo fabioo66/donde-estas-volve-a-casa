@@ -1,5 +1,5 @@
-import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { MascotaService } from '../services/mascota.service';
 import { Mascota } from '../models/mascota.model';
 
@@ -9,28 +9,30 @@ import { Mascota } from '../models/mascota.model';
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit {
+export class Home implements OnInit, AfterViewInit, OnDestroy {
   private mascotaService = inject(MascotaService);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser: boolean;
 
   public mascotas: Mascota[] = [];
   public isLoading = true;
   public error: string | null = null;
+  public fotoActualPorMascota: Map<number, number> = new Map();
 
-  // Datos estáticos de accesos destacados
-  public accesoDestacado1 = {
-    titulo: 'Ver mascotas en tu zona',
-    descripcion: 'Encontrá mascotas perdidas cerca de tu ubicación.',
-    imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuCpU5t3U4O7aon0QVl27VBFE0C6Nvni84n86ZUyNnTPz-SP87Rrful_gwaXd1xXIZU0hahGV_cv8pTpJFP-809qlWtIINQPDFTE0z9nseJgLEBNX3OPr002zQrTDD4EvQkWXTWtazwDYNzNHr_CN1PmmSmetBg71bPQ0c3Oft_wqhGEMsLlr5n89RJWiNwi9K7p2e2GxUiCom5kWwiA0trlWcMWAfIb7j7C9xjqKeKnGPhSgy-wCkFPKiz0Ums8Glyu48gHp6dG3ylW'
-  };
-
-  public accesoDestacado2 = {
-    titulo: 'Ranking de Buscadores',
-    descripcion: 'Mirá el ranking de personas que más ayudan.',
-    imagen: 'https://lh3.googleusercontent.com/aida-public/AB6AXuBRy-avtoky6XhB8AwHG6IbwtFpt9rT7EuBx5dp7q0iLan7LmTuTHUH7xWzfNXDFLweknyJlC1wstmUb2Uzv1BmmiR4bTItChdlKf4ggneG0L_04J8PSejFeFL90KL68-a1ypogzMkPzeoHG3FClymLms-a73zYM-Ev_agFAtV5p5abO0ISsIU9OPZG5O4F2eXrOWcsOfw9iAKlW_Pcj6Ufp2OXZ2a4O0cbAu4usL78C7hxyf5UAkr74cP71uOx6HIVyBprk_Qbup7U'
-  };
+  constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.cargarMascotasPerdidas();
+  }
+
+  ngAfterViewInit(): void {
+    // No hacer nada aquí, el carrusel se maneja con CSS y eventos de click
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar recursos si es necesario
   }
 
   cargarMascotasPerdidas(): void {
@@ -38,6 +40,10 @@ export class Home implements OnInit {
     this.mascotaService.obtenerMascotasPerdidas().subscribe({
       next: (mascotas) => {
         this.mascotas = mascotas;
+        // Inicializar el índice de foto actual para cada mascota
+        mascotas.forEach(mascota => {
+          this.fotoActualPorMascota.set(mascota.id, 0);
+        });
         this.isLoading = false;
       },
       error: (err) => {
@@ -49,11 +55,95 @@ export class Home implements OnInit {
   }
 
   obtenerImagenMascota(mascota: Mascota): string {
-    // Si la mascota tiene fotos en base64, usar la primera
-    if (mascota.fotos && mascota.fotos.length > 0) {
-      return `data:image/jpeg;base64,${mascota.fotos[0]}`;
+    if (mascota.fotos) {
+      try {
+        const fotosArray = JSON.parse(mascota.fotos);
+        if (fotosArray && fotosArray.length > 0) {
+          const fotoUrl = fotosArray[0];
+          return `http://localhost:8080${fotoUrl}`;
+        }
+      } catch (e) {
+        console.error('Error parseando fotos:', e);
+      }
     }
-    // Imagen por defecto si no hay foto
     return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
   }
+
+  obtenerTodasLasFotos(mascota: Mascota): string[] {
+    if (mascota.fotos) {
+      try {
+        const fotosArray = JSON.parse(mascota.fotos);
+        if (fotosArray && fotosArray.length > 0) {
+          return fotosArray.map((url: string) => `http://localhost:8080${url}`);
+        }
+      } catch (e) {
+        console.error('Error parseando fotos:', e);
+      }
+    }
+    return [];
+  }
+
+  tieneMasDe1Foto(mascota: Mascota): boolean {
+    return this.obtenerTodasLasFotos(mascota).length > 1;
+  }
+
+  getCantidadFotos(mascota: Mascota): number {
+    return this.obtenerTodasLasFotos(mascota).length;
+  }
+
+  getFotoActual(mascotaId: number): number {
+    return this.fotoActualPorMascota.get(mascotaId) || 0;
+  }
+
+  cambiarFoto(mascota: Mascota, direccion: 'next' | 'prev', event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const fotos = this.obtenerTodasLasFotos(mascota);
+    if (fotos.length <= 1) return;
+
+    const fotoActual = this.fotoActualPorMascota.get(mascota.id) || 0;
+    let nuevaFoto: number;
+
+    if (direccion === 'next') {
+      nuevaFoto = (fotoActual + 1) % fotos.length;
+    } else {
+      nuevaFoto = fotoActual === 0 ? fotos.length - 1 : fotoActual - 1;
+    }
+
+    this.fotoActualPorMascota.set(mascota.id, nuevaFoto);
+  }
+
+  obtenerNombreZona(coordenadas: string): string {
+    if (!coordenadas) return 'Ubicación desconocida';
+    return coordenadas;
+  }
+
+  obtenerFechaFormateada(fecha: string | Date): string {
+    if (!fecha) return '';
+    const fechaObj = new Date(fecha);
+    const hoy = new Date();
+    const diffTime = Math.abs(hoy.getTime() - fechaObj.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
+    return fechaObj.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+  }
+
+  formatearTamanio(tamanio: string): string {
+    if (!tamanio) return '';
+
+    const tamanioMap: { [key: string]: string } = {
+      'PEQUENIO': 'Pequeño',
+      'PEQUEÑO': 'Pequeño',
+      'MEDIANO': 'Mediano',
+      'GRANDE': 'Grande'
+    };
+
+    return tamanioMap[tamanio.toUpperCase()] || tamanio;
+  }
 }
+

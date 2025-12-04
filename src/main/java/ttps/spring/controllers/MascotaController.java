@@ -1,5 +1,7 @@
 package ttps.spring.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,12 +18,11 @@ import ttps.spring.models.Estado;
 import ttps.spring.models.Mascota;
 import ttps.spring.models.Tamanio;
 import ttps.spring.models.Usuario;
+import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Base64;
 import java.util.List;
 
 @RestController
@@ -31,11 +32,16 @@ public class MascotaController {
 
     private final MascotaService mascotaService;
     private final UsuarioService usuarioService;
+    private final FileStorageService fileStorageService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
-    public MascotaController(MascotaService mascotaService, UsuarioService usuarioService) {
+    public MascotaController(MascotaService mascotaService, UsuarioService usuarioService,
+                            FileStorageService fileStorageService, ObjectMapper objectMapper) {
         this.mascotaService = mascotaService;
         this.usuarioService = usuarioService;
+        this.fileStorageService = fileStorageService;
+        this.objectMapper = objectMapper;
     }
 
     @PostMapping("/usuario/{usuarioId}")
@@ -73,13 +79,14 @@ public class MascotaController {
             mascota.setUsuario(usuario);
             mascota.setActivo(true);
 
-            // Convertir fotos de base64 a byte[]
+            // Guardar fotos como archivos y almacenar las URLs
             if (request.getFotosBase64() != null && !request.getFotosBase64().isEmpty()) {
-                List<byte[]> fotos = new ArrayList<>();
-                for (String fotoBase64 : request.getFotosBase64()) {
-                    fotos.add(Base64.getDecoder().decode(fotoBase64));
-                }
-                mascota.setFotos(fotos);
+                List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
+                    request.getFotosBase64(),
+                    "mascota_" + System.currentTimeMillis()
+                );
+                String fotosJson = objectMapper.writeValueAsString(fotosUrls);
+                mascota.setFotos(fotosJson);
             }
 
             Mascota creada = mascotaService.crearMascota(mascota);
@@ -170,11 +177,24 @@ public class MascotaController {
 
             // Actualizar fotos si vienen
             if (request.getFotosBase64() != null && !request.getFotosBase64().isEmpty()) {
-                List<byte[]> fotos = new ArrayList<>();
-                for (String fotoBase64 : request.getFotosBase64()) {
-                    fotos.add(Base64.getDecoder().decode(fotoBase64));
+                // Eliminar fotos antiguas
+                if (mascota.getFotos() != null && !mascota.getFotos().isEmpty()) {
+                    try {
+                        List<String> oldUrls = objectMapper.readValue(mascota.getFotos(), new TypeReference<List<String>>() {});
+                        fileStorageService.deleteFiles(oldUrls);
+                    } catch (Exception e) {
+                        // Log error pero continuar
+                        System.err.println("Error eliminando fotos antiguas: " + e.getMessage());
+                    }
                 }
-                mascota.setFotos(fotos);
+
+                // Guardar nuevas fotos
+                List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
+                    request.getFotosBase64(),
+                    "mascota_" + mascota.getId() + "_" + System.currentTimeMillis()
+                );
+                String fotosJson = objectMapper.writeValueAsString(fotosUrls);
+                mascota.setFotos(fotosJson);
             }
 
             Mascota actualizada = mascotaService.actualizarMascota(mascota);
@@ -204,6 +224,17 @@ public class MascotaController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Mascota no encontrada");
             }
+
+            // Eliminar archivos de fotos
+            if (mascota.getFotos() != null && !mascota.getFotos().isEmpty()) {
+                try {
+                    List<String> fotosUrls = objectMapper.readValue(mascota.getFotos(), new TypeReference<List<String>>() {});
+                    fileStorageService.deleteFiles(fotosUrls);
+                } catch (Exception e) {
+                    System.err.println("Error eliminando fotos: " + e.getMessage());
+                }
+            }
+
             // Borrado logico
             mascota.setActivo(false);
             mascotaService.actualizarMascota(mascota);
