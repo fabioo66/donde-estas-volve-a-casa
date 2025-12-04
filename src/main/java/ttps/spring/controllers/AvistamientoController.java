@@ -1,5 +1,7 @@
 package ttps.spring.controllers;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -16,6 +18,7 @@ import ttps.spring.models.Avistamiento;
 import ttps.spring.models.Mascota;
 import ttps.spring.models.Usuario;
 import ttps.spring.services.AvistamientoService;
+import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
 
@@ -30,14 +33,20 @@ public class AvistamientoController {
     private final AvistamientoService avistamientoService;
     private final MascotaService mascotaService;
     private final UsuarioService usuarioService;
+    private final FileStorageService fileStorageService;
+    private final ObjectMapper objectMapper;
 
     @Autowired
     public AvistamientoController(AvistamientoService avistamientoService,
                                   MascotaService mascotaService,
-                                  UsuarioService usuarioService) {
+                                  UsuarioService usuarioService,
+                                  FileStorageService fileStorageService,
+                                  ObjectMapper objectMapper) {
         this.avistamientoService = avistamientoService;
         this.mascotaService = mascotaService;
         this.usuarioService = usuarioService;
+        this.fileStorageService = fileStorageService;
+        this.objectMapper = objectMapper;
     }
 
     @PostMapping
@@ -91,9 +100,14 @@ public class AvistamientoController {
                 avistamiento.setDescripcion(request.getDescripcion());
             }
 
-            // Asignar foto si viene
-            if (request.getFoto() != null && !request.getFoto().isEmpty()) {
-                avistamiento.setFotos(request.getFoto().getBytes());
+            // Guardar fotos como archivos y almacenar las URLs
+            if (request.getFotosBase64() != null && !request.getFotosBase64().isEmpty()) {
+                List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
+                    request.getFotosBase64(),
+                    "avistamiento_" + System.currentTimeMillis()
+                );
+                String fotosJson = objectMapper.writeValueAsString(fotosUrls);
+                avistamiento.setFotos(fotosJson);
             }
 
             avistamiento.setFecha(LocalDate.now());
@@ -186,9 +200,26 @@ public class AvistamientoController {
                 avistamiento.setDescripcion(request.getDescripcion());
             }
 
-            // Actualizar foto
-            if (request.getFoto() != null && !request.getFoto().isEmpty()) {
-                avistamiento.setFotos(request.getFoto().getBytes());
+            // Actualizar fotos si vienen
+            if (request.getFotosBase64() != null && !request.getFotosBase64().isEmpty()) {
+                // Eliminar fotos antiguas
+                if (avistamiento.getFotos() != null && !avistamiento.getFotos().isEmpty()) {
+                    try {
+                        List<String> oldUrls = objectMapper.readValue(avistamiento.getFotos(), new TypeReference<List<String>>() {});
+                        fileStorageService.deleteFiles(oldUrls);
+                    } catch (Exception e) {
+                        // Log error pero continuar
+                        System.err.println("Error eliminando fotos antiguas: " + e.getMessage());
+                    }
+                }
+
+                // Guardar nuevas fotos
+                List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
+                    request.getFotosBase64(),
+                    "avistamiento_" + id + "_" + System.currentTimeMillis()
+                );
+                String fotosJson = objectMapper.writeValueAsString(fotosUrls);
+                avistamiento.setFotos(fotosJson);
             }
 
             Avistamiento actualizado = avistamientoService.actualizarAvistamiento(avistamiento);
@@ -201,7 +232,7 @@ public class AvistamientoController {
 
     @DeleteMapping("/{id}")
     @Operation(summary = "Eliminar avistamiento",
-            description = "Elimina permanentemente un avistamiento del sistema")
+            description = "Realiza un borrado lógico del avistamiento (marca como inactivo)")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Avistamiento eliminado exitosamente"),
             @ApiResponse(responseCode = "404", description = "Avistamiento no encontrado"),
@@ -214,6 +245,16 @@ public class AvistamientoController {
             if (avistamiento == null) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND)
                         .body("Avistamiento no encontrado");
+            }
+
+            // Eliminar archivos de fotos
+            if (avistamiento.getFotos() != null && !avistamiento.getFotos().isEmpty()) {
+                try {
+                    List<String> fotosUrls = objectMapper.readValue(avistamiento.getFotos(), new TypeReference<List<String>>() {});
+                    fileStorageService.deleteFiles(fotosUrls);
+                } catch (Exception e) {
+                    System.err.println("Error eliminando fotos: " + e.getMessage());
+                }
             }
 
             avistamientoService.eliminarAvistamiento(id);

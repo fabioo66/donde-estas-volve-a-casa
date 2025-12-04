@@ -70,7 +70,7 @@ public class AvistamientoDAOTest {
         avistamientoTest = new Avistamiento();
         avistamientoTest.setFecha(LocalDate.now());
         avistamientoTest.setCoordenada("-31.4200,-64.1885");
-        avistamientoTest.setFotos("foto_avistamiento.jpg".getBytes());
+        avistamientoTest.setFotos("[\"/uploads/avistamiento_1.jpg\"]"); // JSON array de URLs
 
         usuarioReportador.agregarAvistamiento(avistamientoTest, mascotaAvistada);
 
@@ -217,7 +217,7 @@ public class AvistamientoDAOTest {
         Avistamiento avistamientoParaBorradoLogico = new Avistamiento();
         avistamientoParaBorradoLogico.setFecha(LocalDate.now());
         avistamientoParaBorradoLogico.setCoordenada("-31.4300,-64.1900");
-        avistamientoParaBorradoLogico.setFotos("foto2.jpg".getBytes());
+        avistamientoParaBorradoLogico.setFotos("[\"/uploads/avistamiento_2.jpg\"]"); // JSON array de URLs
 
         usuarioReportador.agregarAvistamiento(avistamientoParaBorradoLogico, mascotaAvistada);
 

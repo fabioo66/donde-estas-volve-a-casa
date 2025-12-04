@@ -1,6 +1,7 @@
 package ttps.spring.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import java.util.List;
 
 @Schema(description = "Datos necesarios para crear o actualizar un avistamiento")
 public class AvistamientoRequest {
@@ -17,8 +18,8 @@ public class AvistamientoRequest {
     @Schema(description = "Ubicación o coordenadas del avistamiento", example = "-31.4201,-64.1888")
     private String ubicacion;
 
-    @Schema(description = "Foto del avistamiento en formato base64 o URL")
-    private String foto;
+    @Schema(description = "Lista de fotos del avistamiento en formato base64")
+    private List<String> fotosBase64;
 
     // Getters y Setters
     public Long getMascotaId() { return mascotaId; }
@@ -33,6 +34,6 @@ public class AvistamientoRequest {
     public String getUbicacion() { return ubicacion; }
     public void setUbicacion(String ubicacion) { this.ubicacion = ubicacion; }
 
-    public String getFoto() { return foto; }
-    public void setFoto(String foto) { this.foto = foto; }
+    public List<String> getFotosBase64() { return fotosBase64; }
+    public void setFotosBase64(List<String> fotosBase64) { this.fotosBase64 = fotosBase64; }
 }

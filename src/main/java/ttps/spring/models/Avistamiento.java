@@ -29,8 +29,9 @@ public class Avistamiento {
     @Schema(description = "Mascota que fue avistada")
     private Mascota mascota;
 
-    @Schema(description = "Foto del avistamiento en formato binario")
-    private byte[] fotos;
+    @Schema(description = "Fotos del avistamiento en formato JSON con URLs", example = "[\"/uploads/avistamiento_1.jpg\"]")
+    @Column(columnDefinition = "TEXT")
+    private String fotos; // JSON array de URLs
 
     @Schema(description = "Coordenadas geográficas del avistamiento", example = "-31.4201,-64.1888")
     private String coordenada;
@@ -47,7 +48,7 @@ public class Avistamiento {
 
     public Avistamiento() {}
 
-    public Avistamiento(int id, Usuario usuario, Mascota mascota, byte[] fotos, String coordenada, LocalDate fecha, String descripcion) {
+    public Avistamiento(int id, Usuario usuario, Mascota mascota, String fotos, String coordenada, LocalDate fecha, String descripcion) {
         this.id = id;
         this.usuario = usuario;
         this.mascota = mascota;
@@ -81,11 +82,11 @@ public class Avistamiento {
         this.mascota = mascota;
     }
 
-    public byte[] getFotos() {
+    public String getFotos() {
         return fotos;
     }
 
-    public void setFotos(byte[] fotos) {
+    public void setFotos(String fotos) {
         this.fotos = fotos;
     }
 
