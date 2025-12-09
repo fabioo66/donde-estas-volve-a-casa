@@ -1,7 +1,7 @@
 export interface Mascota {
   id: number;
   nombre: string;
-  tamanio: string;
+  tamanio: string; // Sin ñ para evitar errores de TypeScript
   color: string;
   fecha: string;
   descripcion: string;
@@ -14,8 +14,9 @@ export interface Mascota {
 }
 
 export enum Estado {
-  PERDIDO = 'PERDIDO',
-  ENCONTRADO = 'ENCONTRADO',
+  PERDIDO_PROPIO = 'PERDIDO_PROPIO',
+  PERDIDO_AJENO = 'PERDIDO_AJENO',
+  ADOPTADO = 'ADOPTADO',
   RECUPERADO = 'RECUPERADO'
 }
 
