@@ -175,6 +175,19 @@
                         <span>{{ obtenerFechaFormateada(avistamiento.fecha) }}</span>
                       </div>
                     }
+
+                    <!-- Botón ver ubicación del avistamiento -->
+                    @if (avistamiento.coordenada) {
+                      <button
+                        (click)="abrirMapaUbicacion(avistamiento)"
+                        class="w-full mt-2 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
+                        title="Ver ubicación del avistamiento">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        Ver Ubicación
+                      </button>
+                    }
                   </div>
                 </div>
               </div>
@@ -185,4 +198,52 @@
     </section>
   </div>
 </main>
+
+<!-- Modal del mapa -->
+@if (mostrarMapaModal && avistamientoSeleccionado) {
+  <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" (click)="cerrarMapaModal()">
+    <div class="bg-white dark:bg-[#1a2632] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden" (click)="$event.stopPropagation()">
+      <!-- Header del modal -->
+      <div class="bg-gradient-to-r from-[#13a4ec] to-[#0f8acc] px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+          </svg>
+          <div>
+            <h3 class="text-lg font-bold text-white">{{ avistamientoSeleccionado.mascota?.nombre || 'Mascota' }}</h3>
+            <p class="text-xs text-white/80">Ubicación del avistamiento</p>
+          </div>
+        </div>
+        <button
+          (click)="cerrarMapaModal()"
+          class="text-white hover:bg-white/20 rounded-full p-2 transition-colors"
+          aria-label="Cerrar mapa">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Contenedor del mapa -->
+      <div id="mapa-modal" class="w-full h-96 bg-stone-200 dark:bg-stone-700"></div>
+
+      <!-- Footer del modal -->
+      <div class="px-6 py-4 bg-stone-50 dark:bg-stone-800/50 border-t border-stone-200 dark:border-stone-700">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2 text-sm text-stone-600 dark:text-stone-400">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <span>Esta es la ubicación donde {{ avistamientoSeleccionado.mascota?.nombre || 'la mascota' }} fue avistado</span>
+          </div>
+          <button
+            (click)="cerrarMapaModal()"
+            class="bg-[#13a4ec] hover:bg-[#0f8acc] text-white px-4 py-2 rounded-lg font-semibold transition-colors text-sm">
+            Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}
 

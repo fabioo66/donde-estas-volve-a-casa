@@ -28,6 +28,12 @@ export class Home implements OnInit, OnDestroy {
   public fotoActualPorMascota: Map<number, number> = new Map();
   public currentUser: LoginResponse | null = null;
 
+  // Mapa modal
+  public mostrarMapaModal = false;
+  public mascotaSeleccionada: Mascota | null = null;
+  private map: any = null;
+  private L: any = null;
+
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
@@ -44,6 +50,10 @@ export class Home implements OnInit, OnDestroy {
     // Cancelar la suscripción si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    // Limpiar el mapa si existe
+    if (this.map) {
+      this.map.remove();
     }
   }
 
@@ -187,5 +197,82 @@ export class Home implements OnInit, OnDestroy {
 
   cerrarSesion(): void {
     this.authService.logout();
+  }
+
+  async abrirMapaUbicacion(mascota: Mascota): Promise<void> {
+    if (!mascota.coordenadas) {
+      return;
+    }
+
+    this.mascotaSeleccionada = mascota;
+    this.mostrarMapaModal = true;
+
+    // Importar Leaflet dinámicamente solo en el navegador
+    if (!this.L && this.isBrowser) {
+      this.L = await import('leaflet');
+    }
+
+    // Esperar a que el DOM se actualice
+    setTimeout(() => this.inicializarMapaModal(), 100);
+  }
+
+  cerrarMapaModal(): void {
+    this.mostrarMapaModal = false;
+    this.mascotaSeleccionada = null;
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+
+  inicializarMapaModal(): void {
+    if (!this.isBrowser || !this.L || !this.mascotaSeleccionada) return;
+
+    const coordenadas = this.mascotaSeleccionada.coordenadas;
+    if (!coordenadas) return;
+
+    // Parsear coordenadas (formato: "lat, lng")
+    const coords = coordenadas.split(',');
+    if (coords.length !== 2) return;
+
+    const lat = parseFloat(coords[0].trim());
+    const lng = parseFloat(coords[1].trim());
+
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    // Crear el mapa
+    this.map = this.L.map('mapa-modal').setView([lat, lng], 15);
+
+    // Agregar capa de OpenStreetMap
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Agregar marcador
+    const marker = this.L.marker([lat, lng], {
+      icon: this.L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-blue.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(this.map);
+
+    marker.bindPopup(`
+      <div style="text-align: center;">
+        <strong>${this.mascotaSeleccionada.nombre}</strong><br/>
+        <span style="font-size: 12px; color: #666;">Última ubicación conocida</span>
+      </div>
+    `).openPopup();
+
+    // Forzar recalculo del tamaño
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 100);
   }
 }
