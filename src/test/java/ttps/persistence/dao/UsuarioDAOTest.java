@@ -33,8 +33,9 @@ public class UsuarioDAOTest {
                 "juan.perez@example.com",
                 "password123",
                 "3515555555",
-                "Centro",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Centro"
         );
 
         // Act
@@ -92,22 +93,30 @@ public class UsuarioDAOTest {
         // Arrange
         Usuario usuarioParaActualizar = usuarioService.obtenerUsuario(usuarioTest.getId());
         String nuevoTelefono = "3516666666";
-        String nuevaCiudad = "Villa Carlos Paz";
+        String nuevaProvincia = "Córdoba";
+        String nuevoMunicipio = "Villa Carlos Paz";
+        String nuevoDepartamento = "Punilla";
 
         // Act
         usuarioParaActualizar.setTelefono(nuevoTelefono);
-        usuarioParaActualizar.setCiudad(nuevaCiudad);
+        usuarioParaActualizar.setProvincia(nuevaProvincia);
+        usuarioParaActualizar.setMunicipio(nuevoMunicipio);
+        usuarioParaActualizar.setDepartamento(nuevoDepartamento);
         Usuario usuarioActualizado = usuarioService.actualizarUsuario(usuarioParaActualizar);
 
         // Assert
         assertNotNull(usuarioActualizado, "El usuario actualizado no debe ser null");
         assertEquals(nuevoTelefono, usuarioActualizado.getTelefono());
-        assertEquals(nuevaCiudad, usuarioActualizado.getCiudad());
+        assertEquals(nuevaProvincia, usuarioActualizado.getProvincia());
+        assertEquals(nuevoMunicipio, usuarioActualizado.getMunicipio());
+        assertEquals(nuevoDepartamento, usuarioActualizado.getDepartamento());
 
         // Verificar que los cambios persisten en la base de datos
         Usuario usuarioVerificado = usuarioService.obtenerUsuario(usuarioTest.getId());
         assertEquals(nuevoTelefono, usuarioVerificado.getTelefono());
-        assertEquals(nuevaCiudad, usuarioVerificado.getCiudad());
+        assertEquals(nuevaProvincia, usuarioVerificado.getProvincia());
+        assertEquals(nuevoMunicipio, usuarioVerificado.getMunicipio());
+        assertEquals(nuevoDepartamento, usuarioVerificado.getDepartamento());
 
         System.out.println("✓ Usuario actualizado - Nuevo teléfono: " + usuarioActualizado.getTelefono());
     }
@@ -141,8 +150,9 @@ public class UsuarioDAOTest {
                 "ana.lopez@example.com",
                 "password999",
                 "3519999999",
-                "Alta Córdoba",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Alta Córdoba"
         );
         usuarioParaBorradoLogico = usuarioService.crearUsuario(usuarioParaBorradoLogico);
         long idUsuario = usuarioParaBorradoLogico.getId();
@@ -170,8 +180,9 @@ public class UsuarioDAOTest {
                 "pedro.martinez@example.com",
                 contraseniaOriginal,
                 "3517777777",
-                "Nueva Córdoba",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Nueva Córdoba"
         );
         usuario = usuarioService.crearUsuario(usuario);
 
@@ -211,8 +222,9 @@ public class UsuarioDAOTest {
                 "maria.garcia@example.com",
                 contraseniaInicial,
                 "3518888888",
-                "Güemes",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Güemes"
         );
         usuario = usuarioService.crearUsuario(usuario);
         String hashInicial = usuario.getContrasenia();
@@ -243,3 +255,4 @@ public class UsuarioDAOTest {
         System.out.println("  - Hash nuevo:   " + usuarioActualizado.getContrasenia());
     }
 }
+
