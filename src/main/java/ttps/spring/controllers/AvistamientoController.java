@@ -14,6 +14,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.AvistamientoRequest;
+import ttps.spring.dto.AvistamientoResponse;
 import ttps.spring.models.Avistamiento;
 import ttps.spring.models.Mascota;
 import ttps.spring.models.Usuario;
@@ -24,6 +25,7 @@ import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/avistamientos")
@@ -115,7 +117,7 @@ public class AvistamientoController {
             avistamiento.setUsuario(usuario);
 
             Avistamiento creado = avistamientoService.crearAvistamiento(avistamiento);
-            return ResponseEntity.status(HttpStatus.CREATED).body(creado);
+            return ResponseEntity.status(HttpStatus.CREATED).body(new AvistamientoResponse(creado));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al crear avistamiento: " + e.getMessage());
@@ -128,9 +130,12 @@ public class AvistamientoController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Lista de avistamientos obtenida exitosamente")
     })
-    public ResponseEntity<List<Avistamiento>> obtenerTodosLosAvistamientos() {
+    public ResponseEntity<List<AvistamientoResponse>> obtenerTodosLosAvistamientos() {
         List<Avistamiento> avistamientos = avistamientoService.obtenerTodosLosAvistamientos();
-        return ResponseEntity.ok(avistamientos);
+        List<AvistamientoResponse> response = avistamientos.stream()
+                .map(AvistamientoResponse::new)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -138,7 +143,7 @@ public class AvistamientoController {
             description = "Retorna los detalles de un avistamiento específico")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Avistamiento encontrado",
-                    content = @Content(schema = @Schema(implementation = Avistamiento.class))),
+                    content = @Content(schema = @Schema(implementation = AvistamientoResponse.class))),
             @ApiResponse(responseCode = "404", description = "Avistamiento no encontrado")
     })
     public ResponseEntity<?> obtenerAvistamiento(
@@ -148,7 +153,7 @@ public class AvistamientoController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
                     .body("Avistamiento no encontrado");
         }
-        return ResponseEntity.ok(avistamiento);
+        return ResponseEntity.ok(new AvistamientoResponse(avistamiento));
     }
 
     @PutMapping("/{id}")
@@ -223,7 +228,7 @@ public class AvistamientoController {
             }
 
             Avistamiento actualizado = avistamientoService.actualizarAvistamiento(avistamiento);
-            return ResponseEntity.ok(actualizado);
+            return ResponseEntity.ok(new AvistamientoResponse(actualizado));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al actualizar avistamiento: " + e.getMessage());
@@ -287,7 +292,11 @@ public class AvistamientoController {
                     .filter(a -> a.getMascota() != null && a.getMascota().getId() == mascotaId.intValue())
                     .toList();
 
-            return ResponseEntity.ok(avistamientos);
+            List<AvistamientoResponse> response = avistamientos.stream()
+                    .map(AvistamientoResponse::new)
+                    .collect(Collectors.toList());
+
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al obtener avistamientos: " + e.getMessage());

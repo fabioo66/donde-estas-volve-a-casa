@@ -1,23 +1,26 @@
-import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule, Router } from '@angular/router';
+import { RouterModule, Router, RouterLink } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
 import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
 import { LoginResponse } from '../models/usuario.model';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
-export class Home implements OnInit, AfterViewInit, OnDestroy {
+export class Home implements OnInit, OnDestroy {
   private mascotaService = inject(MascotaService);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
+  private subscription?: Subscription;
 
   public mascotas: Mascota[] = [];
   public isLoading = true;
@@ -30,35 +33,50 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    console.log('🔴 Home ngOnInit llamado');
     this.cargarMascotasPerdidas();
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
     });
   }
 
-  ngAfterViewInit(): void {
-    // No hacer nada aquí, el carrusel se maneja con CSS y eventos de click
-  }
-
   ngOnDestroy(): void {
-    // Limpiar recursos si es necesario
+    // Cancelar la suscripción si existe
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   cargarMascotasPerdidas(): void {
+    console.log('🟡 Iniciando carga de mascotas...');
     this.isLoading = true;
-    this.mascotaService.obtenerMascotasPerdidas().subscribe({
+    this.error = null;
+    this.mascotas = [];
+    
+    // Cancelar suscripción anterior si existe
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
+    
+    this.subscription = this.mascotaService.obtenerMascotasPerdidas().subscribe({
       next: (mascotas) => {
+        console.log('✅ Mascotas recibidas:', mascotas.length, mascotas);
         this.mascotas = mascotas;
         // Inicializar el índice de foto actual para cada mascota
         mascotas.forEach(mascota => {
           this.fotoActualPorMascota.set(mascota.id, 0);
         });
         this.isLoading = false;
+        console.log('✅ isLoading:', this.isLoading);
+        // Forzar detección de cambios
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error al cargar mascotas perdidas:', err);
+        console.error('❌ Error al cargar mascotas perdidas:', err);
         this.error = 'No se pudieron cargar las mascotas perdidas';
         this.isLoading = false;
+        // Forzar detección de cambios incluso en error
+        this.cdr.detectChanges();
       }
     });
   }
