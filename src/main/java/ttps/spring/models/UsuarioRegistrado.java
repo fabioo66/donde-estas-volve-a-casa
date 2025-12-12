@@ -12,8 +12,8 @@ public class UsuarioRegistrado extends Usuario{
         super();
     }
 
-    public UsuarioRegistrado(String nombre, String apellido, String email, String contrasenia,
-                             String telefono, String barrio, String ciudad) {
-        super(nombre, apellido, email, contrasenia, telefono, barrio, ciudad);
+    public UsuarioRegistrado(String nombreUsuario, String nombre, String apellido, String email, String contrasenia,
+                             String telefono, String genero, Integer edad, String provincia, String municipio, String departamento) {
+        super(nombreUsuario, nombre, apellido, email, contrasenia, telefono, genero, edad, provincia, municipio, departamento);
     }
 }

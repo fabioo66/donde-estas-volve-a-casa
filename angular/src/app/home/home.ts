@@ -1,31 +1,43 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule, Router, RouterLink } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
+import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
+import { LoginResponse } from '../models/usuario.model';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit, OnDestroy {
   private mascotaService = inject(MascotaService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
+  private isBrowser: boolean;
   private subscription?: Subscription;
 
   public mascotas: Mascota[] = [];
   public isLoading = true;
   public error: string | null = null;
   public fotoActualPorMascota: Map<number, number> = new Map();
+  public currentUser: LoginResponse | null = null;
 
-  constructor() {}
+  constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     console.log('🔴 Home ngOnInit llamado');
     this.cargarMascotasPerdidas();
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
   }
 
   ngOnDestroy(): void {
@@ -160,5 +172,20 @@ export class Home implements OnInit, OnDestroy {
 
     return tamanioMap[tamanio.toUpperCase()] || tamanio;
   }
-}
 
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  irALogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  irAPerfil(): void {
+    this.router.navigate(['/perfil']);
+  }
+
+  cerrarSesion(): void {
+    this.authService.logout();
+  }
+}
