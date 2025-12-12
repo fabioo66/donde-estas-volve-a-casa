@@ -1,29 +1,29 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MascotaService } from '../services/mascota.service';
-import { Mascota } from '../models/mascota.model';
+import { AvistamientoService } from '../services/avistamiento.service';
+import { Avistamiento } from '../models/avistamiento.model';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'app-home',
+  selector: 'app-avistamientos',
   imports: [CommonModule],
-  templateUrl: './home.html',
-  styleUrl: './home.css',
+  templateUrl: './avistamientos.html',
+  styleUrl: './avistamientos.css',
 })
-export class Home implements OnInit, OnDestroy {
-  private mascotaService = inject(MascotaService);
+export class AvistamientosComponent implements OnInit, OnDestroy {
+  private avistamientoService = inject(AvistamientoService);
   private cdr = inject(ChangeDetectorRef);
   private subscription?: Subscription;
 
-  public mascotas: Mascota[] = [];
+  public avistamientos: Avistamiento[] = [];
   public isLoading = true;
   public error: string | null = null;
-  public fotoActualPorMascota: Map<number, number> = new Map();
+  public fotoActualPorAvistamiento: Map<number, number> = new Map();
 
   constructor() {}
 
   ngOnInit(): void {
-    this.cargarMascotasPerdidas();
+    this.cargarAvistamientos();
   }
 
   ngOnDestroy(): void {
@@ -33,30 +33,30 @@ export class Home implements OnInit, OnDestroy {
     }
   }
 
-  cargarMascotasPerdidas(): void {
+  cargarAvistamientos(): void {
     this.isLoading = true;
     this.error = null;
-    this.mascotas = [];
+    this.avistamientos = [];
     
     // Cancelar suscripción anterior si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
     
-    this.subscription = this.mascotaService.obtenerMascotasPerdidas().subscribe({
-      next: (mascotas) => {
-        this.mascotas = mascotas;
-        // Inicializar el índice de foto actual para cada mascota
-        mascotas.forEach(mascota => {
-          this.fotoActualPorMascota.set(mascota.id, 0);
+    this.subscription = this.avistamientoService.obtenerTodosLosAvistamientos().subscribe({
+      next: (avistamientos) => {
+        this.avistamientos = avistamientos;
+        // Inicializar el índice de foto actual para cada avistamiento
+        avistamientos.forEach(avistamiento => {
+          this.fotoActualPorAvistamiento.set(avistamiento.id, 0);
         });
         this.isLoading = false;
         // Forzar detección de cambios
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error al cargar mascotas perdidas:', err);
-        this.error = 'No se pudieron cargar las mascotas perdidas';
+        console.error('Error al cargar avistamientos:', err);
+        this.error = 'No se pudieron cargar los avistamientos';
         this.isLoading = false;
         // Forzar detección de cambios incluso en error
         this.cdr.detectChanges();
@@ -64,25 +64,25 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  obtenerImagenMascota(mascota: Mascota): string {
-    if (mascota.fotos) {
+  obtenerImagenAvistamiento(avistamiento: Avistamiento): string {
+    if (avistamiento.fotos) {
       try {
-        const fotosArray = JSON.parse(mascota.fotos);
+        const fotosArray = JSON.parse(avistamiento.fotos);
         if (fotosArray && fotosArray.length > 0) {
           const fotoUrl = fotosArray[0];
           return `http://localhost:8080${fotoUrl}`;
         }
       } catch (e) {
-        console.error('Error parseando fotos:', e);
+        console.error('Error parseando fotos del avistamiento', avistamiento.id, ':', e);
       }
     }
     return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
   }
 
-  obtenerTodasLasFotos(mascota: Mascota): string[] {
-    if (mascota.fotos) {
+  obtenerTodasLasFotos(avistamiento: Avistamiento): string[] {
+    if (avistamiento.fotos) {
       try {
-        const fotosArray = JSON.parse(mascota.fotos);
+        const fotosArray = JSON.parse(avistamiento.fotos);
         if (fotosArray && fotosArray.length > 0) {
           return fotosArray.map((url: string) => `http://localhost:8080${url}`);
         }
@@ -93,26 +93,26 @@ export class Home implements OnInit, OnDestroy {
     return [];
   }
 
-  tieneMasDe1Foto(mascota: Mascota): boolean {
-    return this.obtenerTodasLasFotos(mascota).length > 1;
+  tieneMasDe1Foto(avistamiento: Avistamiento): boolean {
+    return this.obtenerTodasLasFotos(avistamiento).length > 1;
   }
 
-  getCantidadFotos(mascota: Mascota): number {
-    return this.obtenerTodasLasFotos(mascota).length;
+  getCantidadFotos(avistamiento: Avistamiento): number {
+    return this.obtenerTodasLasFotos(avistamiento).length;
   }
 
-  getFotoActual(mascotaId: number): number {
-    return this.fotoActualPorMascota.get(mascotaId) || 0;
+  getFotoActual(avistamientoId: number): number {
+    return this.fotoActualPorAvistamiento.get(avistamientoId) || 0;
   }
 
-  cambiarFoto(mascota: Mascota, direccion: 'next' | 'prev', event: Event): void {
+  cambiarFoto(avistamiento: Avistamiento, direccion: 'next' | 'prev', event: Event): void {
     event.stopPropagation();
     event.preventDefault();
 
-    const fotos = this.obtenerTodasLasFotos(mascota);
+    const fotos = this.obtenerTodasLasFotos(avistamiento);
     if (fotos.length <= 1) return;
 
-    const fotoActual = this.fotoActualPorMascota.get(mascota.id) || 0;
+    const fotoActual = this.fotoActualPorAvistamiento.get(avistamiento.id) || 0;
     let nuevaFoto: number;
 
     if (direccion === 'next') {
@@ -121,12 +121,7 @@ export class Home implements OnInit, OnDestroy {
       nuevaFoto = fotoActual === 0 ? fotos.length - 1 : fotoActual - 1;
     }
 
-    this.fotoActualPorMascota.set(mascota.id, nuevaFoto);
-  }
-
-  obtenerNombreZona(coordenadas: string): string {
-    if (!coordenadas) return 'Ubicación desconocida';
-    return coordenadas;
+    this.fotoActualPorAvistamiento.set(avistamiento.id, nuevaFoto);
   }
 
   obtenerFechaFormateada(fecha: string | Date): string {

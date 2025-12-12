@@ -12,10 +12,19 @@
 
       <!-- Navegación -->
       <nav class="flex items-center gap-3 sm:gap-6 lg:gap-8">
-        <!-- Links de navegación - ocultos en móvil -->
+        <!-- Links de navegación - visible en tablet y desktop -->
         <div class="hidden md:flex items-center gap-4 lg:gap-8">
-          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" href="#">Buscar</a>
+          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/" routerLinkActive="text-[#13a4ec]" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
+          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/avistamientos" routerLinkActive="text-[#13a4ec]">Avistamientos</a>
         </div>
+
+        <!-- Botón hamburguesa para móvil -->
+        <button (click)="toggleMobileMenu()" class="md:hidden p-2 text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] transition-colors" aria-label="Menú de navegación">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path *ngIf="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path *ngIf="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
 
         <!-- Botón de inicio de sesión -->
         <button class="flex items-center justify-center rounded-full h-9 sm:h-10 px-4 sm:px-6 bg-[#13a4ec] text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-[#13a4ec]/90 transition-colors whitespace-nowrap">
@@ -24,6 +33,27 @@
         </button>
       </nav>
     </header>
+
+    <!-- Menú móvil desplegable -->
+    <div *ngIf="mobileMenuOpen" class="md:hidden bg-white dark:bg-[#1a2632] border-b border-stone-200/80 dark:border-stone-700/60 shadow-lg">
+      <nav class="flex flex-col px-4 py-3 space-y-3">
+        <a 
+          (click)="closeMobileMenu()"
+          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800" 
+          routerLink="/" 
+          routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800" 
+          [routerLinkActiveOptions]="{exact: true}">
+          Inicio
+        </a>
+        <a 
+          (click)="closeMobileMenu()"
+          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800" 
+          routerLink="/avistamientos" 
+          routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+          Avistamientos
+        </a>
+      </nav>
+    </div>
 
     <!-- Router Outlet -->
     <router-outlet></router-outlet>
