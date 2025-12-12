@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
 import { AvistamientoService } from '../services/avistamiento.service';
+import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
 
 @Component({
@@ -18,6 +19,7 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
   private router = inject(Router);
   private mascotaService = inject(MascotaService);
   private avistamientoService = inject(AvistamientoService);
+  private authService = inject(AuthService);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
 
@@ -201,9 +203,17 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
     this.errorAvistamiento = null;
     this.successMessage = null;
 
+    // Obtener el ID del usuario autenticado
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      this.errorAvistamiento = 'No se pudo obtener la información del usuario';
+      this.enviandoAvistamiento = false;
+      return;
+    }
+
     const avistamientoData = {
       mascotaId: this.mascota.id,
-      usuarioId: 6, // ID hardcodeado temporalmente
+      usuarioId: currentUser.id,
       ubicacion: this.avistamientoForm.ubicacion,
       descripcion: this.avistamientoForm.descripcion,
       fotosBase64: this.avistamientoForm.fotosBase64

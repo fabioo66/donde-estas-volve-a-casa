@@ -5,6 +5,8 @@ import { ReportarAvistamientoComponent } from './reportar-avistamiento/reportar-
 import { LoginComponent } from './login/login';
 import { RegistroComponent } from './registro/registro';
 import { PerfilComponent } from './perfil/perfil';
+import { AccesoDenegadoComponent } from './acceso-denegado/acceso-denegado';
+import { authGuard } from './guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -22,7 +24,8 @@ export const routes: Routes = [
   },
   {
     path: 'reportar-avistamiento/:id',
-    component: ReportarAvistamientoComponent
+    component: ReportarAvistamientoComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'login',
@@ -34,7 +37,12 @@ export const routes: Routes = [
   },
   {
     path: 'perfil',
-    component: PerfilComponent
+    component: PerfilComponent,
+    canActivate: [authGuard]
+  },
+  {
+    path: 'acceso-denegado',
+    component: AccesoDenegadoComponent
   },
   {
     path: '**',

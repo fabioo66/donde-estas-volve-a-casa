@@ -152,17 +152,33 @@
                     }
 
                     <!-- Botón reportar avistamiento -->
-                    <a 
-                      [routerLink]="['/reportar-avistamiento', mascota.id]"
-                      class="block w-full mt-3 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 text-center">
-                      <span class="flex items-center justify-center gap-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                          <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                        </svg>
-                        Reportar Avistamiento
-                      </span>
-                    </a>
+                    @if (isLoggedIn()) {
+                      <!-- Usuario autenticado - botón activo -->
+                      <a 
+                        [routerLink]="['/reportar-avistamiento', mascota.id]"
+                        class="block w-full mt-3 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 text-center cursor-pointer">
+                        <span class="flex items-center justify-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
+                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
+                          </svg>
+                          Reportar Avistamiento
+                        </span>
+                      </a>
+                    } @else {
+                      <!-- Usuario no autenticado - botón deshabilitado con mensaje -->
+                      <button
+                        (click)="irALogin()"
+                        class="w-full mt-3 bg-stone-400 hover:bg-stone-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 cursor-pointer relative group"
+                        title="Inicia sesión para reportar avistamientos">
+                        <span class="flex items-center justify-center gap-2">
+                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
+                          </svg>
+                          Inicia sesión para reportar avistamiento
+                        </span>
+                      </button>
+                    }
                   </div>
                 </div>
               </div>

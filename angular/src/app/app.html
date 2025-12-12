@@ -15,7 +15,6 @@
       <nav class="flex items-center gap-3">
         <!-- Links de navegación - visible en tablet y desktop -->
         <div class="hidden md:flex items-center gap-4 lg:gap-8 mr-4">
-          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/" routerLinkActive="text-[#13a4ec]" [routerLinkActiveOptions]="{exact: true}">Inicio</a>
           <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/avistamientos" routerLinkActive="text-[#13a4ec]">Avistamientos</a>
         </div>
 
@@ -79,14 +78,6 @@
     <!-- Menú móvil desplegable -->
     <div *ngIf="mobileMenuOpen" class="md:hidden bg-white dark:bg-[#1a2632] border-b border-stone-200/80 dark:border-stone-700/60 shadow-lg">
       <nav class="flex flex-col px-4 py-3 space-y-3">
-        <a 
-          (click)="closeMobileMenu()"
-          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800" 
-          routerLink="/" 
-          routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800" 
-          [routerLinkActiveOptions]="{exact: true}">
-          Inicio
-        </a>
         <a 
           (click)="closeMobileMenu()"
           class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800" 
