@@ -1,12 +1,13 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
 import { Mascota } from '../models/mascota.model';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -23,6 +24,7 @@ export class Home implements OnInit, OnDestroy {
   constructor() {}
 
   ngOnInit(): void {
+    console.log('🔴 Home ngOnInit llamado');
     this.cargarMascotasPerdidas();
   }
 
@@ -34,6 +36,7 @@ export class Home implements OnInit, OnDestroy {
   }
 
   cargarMascotasPerdidas(): void {
+    console.log('🟡 Iniciando carga de mascotas...');
     this.isLoading = true;
     this.error = null;
     this.mascotas = [];
@@ -45,17 +48,19 @@ export class Home implements OnInit, OnDestroy {
     
     this.subscription = this.mascotaService.obtenerMascotasPerdidas().subscribe({
       next: (mascotas) => {
+        console.log('✅ Mascotas recibidas:', mascotas.length, mascotas);
         this.mascotas = mascotas;
         // Inicializar el índice de foto actual para cada mascota
         mascotas.forEach(mascota => {
           this.fotoActualPorMascota.set(mascota.id, 0);
         });
         this.isLoading = false;
+        console.log('✅ isLoading:', this.isLoading);
         // Forzar detección de cambios
         this.cdr.detectChanges();
       },
       error: (err) => {
-        console.error('Error al cargar mascotas perdidas:', err);
+        console.error('❌ Error al cargar mascotas perdidas:', err);
         this.error = 'No se pudieron cargar las mascotas perdidas';
         this.isLoading = false;
         // Forzar detección de cambios incluso en error

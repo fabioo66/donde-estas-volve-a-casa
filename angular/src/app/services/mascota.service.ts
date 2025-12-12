@@ -27,11 +27,27 @@ export class MascotaService {
   }
 
   obtenerMascota(id: number): Observable<Mascota> {
-    return this.http.get<Mascota>(`${this.apiUrl}/${id}`);
+    return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
+      timeout(10000),
+      map(mascota => ({
+        ...mascota,
+        tamanio: mascota.tamaño || mascota.tamanio
+      })),
+      catchError(error => {
+        console.error('Error en servicio de mascotas:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   obtenerMascotasUsuario(usuarioId: number): Observable<Mascota[]> {
-    return this.http.get<Mascota[]>(`${this.apiUrl}/usuario/${usuarioId}`);
+    return this.http.get<Mascota[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
+      timeout(10000),
+      catchError(error => {
+        console.error('Error en servicio de mascotas:', error);
+        return throwError(() => error);
+      })
+    );
   }
 }
 

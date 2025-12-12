@@ -27,5 +27,15 @@ export class AvistamientoService {
   obtenerAvistamientosPorMascota(mascotaId: number): Observable<Avistamiento[]> {
     return this.http.get<Avistamiento[]>(`${this.apiUrl}/mascota/${mascotaId}`);
   }
+
+  crearAvistamiento(avistamientoData: any): Observable<any> {
+    return this.http.post<any>(this.apiUrl, avistamientoData).pipe(
+      timeout(10000),
+      catchError(error => {
+        console.error('Error al crear avistamiento:', error);
+        return throwError(() => error);
+      })
+    );
+  }
 }
 
