@@ -1,5 +1,5 @@
-import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { AvistamientoService } from '../services/avistamiento.service';
 import { Avistamiento } from '../models/avistamiento.model';
 import { Subscription } from 'rxjs';
@@ -13,14 +13,24 @@ import { Subscription } from 'rxjs';
 export class AvistamientosComponent implements OnInit, OnDestroy {
   private avistamientoService = inject(AvistamientoService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
   private subscription?: Subscription;
+  private isBrowser: boolean;
 
   public avistamientos: Avistamiento[] = [];
   public isLoading = true;
   public error: string | null = null;
   public fotoActualPorAvistamiento: Map<number, number> = new Map();
 
-  constructor() {}
+  // Mapa modal
+  public mostrarMapaModal = false;
+  public avistamientoSeleccionado: Avistamiento | null = null;
+  private map: any = null;
+  private L: any = null;
+
+  constructor() {
+    this.isBrowser = isPlatformBrowser(this.platformId);
+  }
 
   ngOnInit(): void {
     this.cargarAvistamientos();
@@ -30,6 +40,10 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     // Cancelar la suscripción si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
+    }
+    // Limpiar el mapa si existe
+    if (this.map) {
+      this.map.remove();
     }
   }
 
@@ -149,6 +163,83 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     };
 
     return tamanioMap[tamanio.toUpperCase()] || tamanio;
+  }
+
+  async abrirMapaUbicacion(avistamiento: Avistamiento): Promise<void> {
+    if (!avistamiento.coordenada) {
+      return;
+    }
+
+    this.avistamientoSeleccionado = avistamiento;
+    this.mostrarMapaModal = true;
+
+    // Importar Leaflet dinámicamente solo en el navegador
+    if (!this.L && this.isBrowser) {
+      this.L = await import('leaflet');
+    }
+
+    // Esperar a que el DOM se actualice
+    setTimeout(() => this.inicializarMapaModal(), 100);
+  }
+
+  cerrarMapaModal(): void {
+    this.mostrarMapaModal = false;
+    this.avistamientoSeleccionado = null;
+    if (this.map) {
+      this.map.remove();
+      this.map = null;
+    }
+  }
+
+  inicializarMapaModal(): void {
+    if (!this.isBrowser || !this.L || !this.avistamientoSeleccionado) return;
+
+    const coordenada = this.avistamientoSeleccionado.coordenada;
+    if (!coordenada) return;
+
+    // Parsear coordenadas (formato: "lat, lng")
+    const coords = coordenada.split(',');
+    if (coords.length !== 2) return;
+
+    const lat = parseFloat(coords[0].trim());
+    const lng = parseFloat(coords[1].trim());
+
+    if (isNaN(lat) || isNaN(lng)) return;
+
+    // Crear el mapa
+    this.map = this.L.map('mapa-modal').setView([lat, lng], 15);
+
+    // Agregar capa de OpenStreetMap
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Agregar marcador rojo para avistamiento
+    const marker = this.L.marker([lat, lng], {
+      icon: this.L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(this.map);
+
+    marker.bindPopup(`
+      <div style="text-align: center;">
+        <strong>${this.avistamientoSeleccionado.mascota?.nombre || 'Mascota'}</strong><br/>
+        <span style="font-size: 12px; color: #666;">Avistamiento reportado aquí</span>
+      </div>
+    `).openPopup();
+
+    // Forzar recalculo del tamaño
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 100);
   }
 }
 
