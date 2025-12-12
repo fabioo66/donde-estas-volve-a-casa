@@ -46,4 +46,8 @@ public class UsuarioService {
     public Usuario obtenerUsuarioPorEmail(String email) {
         return usuarioDAO.findByEmail(email);
     }
+
+    public Usuario obtenerUsuarioPorNombreUsuario(String nombreUsuario) {
+        return usuarioDAO.findByNombreUsuario(nombreUsuario);
+    }
 }

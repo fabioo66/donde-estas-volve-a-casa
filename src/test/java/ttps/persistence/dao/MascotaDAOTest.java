@@ -37,8 +37,9 @@ public class MascotaDAOTest {
                 "maria.gonzalez@example.com",
                 "password456",
                 "3517777777",
+                "Córdoba",
                 "Alberdi",
-                "Córdoba"
+                "Capital"
         );
         usuarioDuenio = usuarioService.crearUsuario(usuarioDuenio);
     }

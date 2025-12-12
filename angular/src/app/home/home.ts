@@ -1,16 +1,21 @@
 import { Component, OnInit, OnDestroy, inject, PLATFORM_ID, AfterViewInit } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
+import { RouterModule, Router } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
+import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
+import { LoginResponse } from '../models/usuario.model';
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
 export class Home implements OnInit, AfterViewInit, OnDestroy {
   private mascotaService = inject(MascotaService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
 
@@ -18,6 +23,7 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
   public isLoading = true;
   public error: string | null = null;
   public fotoActualPorMascota: Map<number, number> = new Map();
+  public currentUser: LoginResponse | null = null;
 
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -25,6 +31,9 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
   ngOnInit(): void {
     this.cargarMascotasPerdidas();
+    this.authService.currentUser$.subscribe(user => {
+      this.currentUser = user;
+    });
   }
 
   ngAfterViewInit(): void {
@@ -145,5 +154,20 @@ export class Home implements OnInit, AfterViewInit, OnDestroy {
 
     return tamanioMap[tamanio.toUpperCase()] || tamanio;
   }
-}
 
+  isLoggedIn(): boolean {
+    return this.authService.isLoggedIn();
+  }
+
+  irALogin(): void {
+    this.router.navigate(['/login']);
+  }
+
+  irAPerfil(): void {
+    this.router.navigate(['/perfil']);
+  }
+
+  cerrarSesion(): void {
+    this.authService.logout();
+  }
+}

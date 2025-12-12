@@ -28,4 +28,16 @@ public class UsuarioDAOHibernateJPA extends GenericDAOHibernateJPA<Usuario> impl
             return null;
         }
     }
+
+    @Override
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        try {
+            return entityManager.createQuery(
+                    "SELECT u FROM Usuario u WHERE u.nombreUsuario = :nombreUsuario AND u.activo = true", Usuario.class)
+                    .setParameter("nombreUsuario", nombreUsuario)
+                    .getSingleResult();
+        } catch (NoResultException e) {
+            return null;
+        }
+    }
 }
