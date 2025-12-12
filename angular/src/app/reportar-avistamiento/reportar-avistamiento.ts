@@ -1,5 +1,5 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, AfterViewInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
@@ -13,12 +13,13 @@ import { Mascota } from '../models/mascota.model';
   templateUrl: './reportar-avistamiento.html',
   styleUrl: './reportar-avistamiento.css',
 })
-export class ReportarAvistamientoComponent implements OnInit {
+export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnDestroy {
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private mascotaService = inject(MascotaService);
   private avistamientoService = inject(AvistamientoService);
   private cdr = inject(ChangeDetectorRef);
+  private platformId = inject(PLATFORM_ID);
 
   public mascota: Mascota | null = null;
   public isLoading = true;
@@ -34,6 +35,12 @@ export class ReportarAvistamientoComponent implements OnInit {
   public errorAvistamiento: string | null = null;
   public successMessage: string | null = null;
 
+  // Mapa
+  private map: any = null;
+  private marker: any = null;
+  private L: any = null;
+  public mostrarMapa = false;
+
   ngOnInit(): void {
     console.log('🔴 ReportarAvistamiento ngOnInit');
     const mascotaId = this.route.snapshot.paramMap.get('id');
@@ -43,6 +50,20 @@ export class ReportarAvistamientoComponent implements OnInit {
     } else {
       this.error = 'No se especificó una mascota';
       this.isLoading = false;
+    }
+  }
+
+  ngAfterViewInit(): void {
+    // Inicializar el mapa cuando se muestre
+    if (this.mostrarMapa) {
+      setTimeout(() => this.inicializarMapa(), 100);
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar el mapa al destruir el componente
+    if (this.map) {
+      this.map.remove();
     }
   }
 
@@ -63,6 +84,85 @@ export class ReportarAvistamientoComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  async toggleMapa(): Promise<void> {
+    this.mostrarMapa = !this.mostrarMapa;
+    if (this.mostrarMapa && !this.map && isPlatformBrowser(this.platformId)) {
+      // Importar Leaflet dinámicamente solo en el navegador
+      if (!this.L) {
+        this.L = await import('leaflet');
+      }
+      setTimeout(() => this.inicializarMapa(), 100);
+    }
+  }
+
+  inicializarMapa(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.L) return;
+
+    // Coordenadas de La Plata por defecto
+    const latDefault = -34.9215;
+    const lngDefault = -57.9545;
+
+    // Crear el mapa centrado en La Plata
+    this.map = this.L.map('map').setView([latDefault, lngDefault], 13);
+
+    // Agregar capa de OpenStreetMap
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Forzar el recalculo del tamaño del mapa después de un pequeño delay
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 200);
+
+    // Si ya hay coordenadas en el form, colocar el marcador ahí
+    if (this.avistamientoForm.ubicacion) {
+      const coords = this.avistamientoForm.ubicacion.split(',');
+      if (coords.length === 2) {
+        const lat = parseFloat(coords[0].trim());
+        const lng = parseFloat(coords[1].trim());
+        if (!isNaN(lat) && !isNaN(lng)) {
+          this.agregarMarcador(lat, lng);
+          this.map.setView([lat, lng], 13);
+        }
+      }
+    }
+
+    // Agregar evento de click en el mapa
+    this.map.on('click', (e: any) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      this.agregarMarcador(lat, lng);
+      this.avistamientoForm.ubicacion = `${lat}, ${lng}`;
+    });
+  }
+
+  agregarMarcador(lat: number, lng: number): void {
+    if (!this.L) return;
+
+    // Remover marcador anterior si existe
+    if (this.marker) {
+      this.marker.remove();
+    }
+
+    // Crear nuevo marcador
+    this.marker = this.L.marker([lat, lng], {
+      icon: this.L.icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.7.1/images/marker-shadow.png',
+        iconSize: [25, 41],
+        iconAnchor: [12, 41],
+        popupAnchor: [1, -34],
+        shadowSize: [41, 41]
+      })
+    }).addTo(this.map);
+
+    this.marker.bindPopup('Ubicación del avistamiento').openPopup();
   }
 
   onFileSelected(event: any): void {

@@ -1,1 +1,6 @@
 /* Estilos específicos para el componente de reportar avistamiento */
+
+#map {
+  height: 400px;
+  width: 100%;
+}
