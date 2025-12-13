@@ -23,11 +23,19 @@ public class Usuario {
     @Column(length = 60)
     private String email;
 
+    @Column(unique = true, length = 50)
+    private String nombreUsuario;
+
     @Column(length = 60)
     private String contrasenia;
     private String telefono;
-    private String barrio;
-    private String ciudad;
+
+    private String genero;
+    private Integer edad;
+
+    private String provincia;
+    private String municipio;
+    private String departamento;
 
     private boolean activo = true;
 
@@ -45,14 +53,32 @@ public class Usuario {
         this.avistamientos = new LinkedList<>();
     }
 
-    public Usuario(String nombre, String apellido, String email, String contrasenia, String telefono, String barrio, String ciudad) {
+    public Usuario(String nombre, String apellido, String email, String contrasenia, String telefono, String provincia, String municipio, String departamento) {
         this.nombre = nombre;
         this.apellido = apellido;
         this.email = email;
         this.contrasenia = PasswordUtils.hashPassword(contrasenia);
         this.telefono = telefono;
-        this.barrio = barrio;
-        this.ciudad = ciudad;
+        this.provincia = provincia;
+        this.municipio = municipio;
+        this.departamento = departamento;
+        this.mascotas = new LinkedList<>();
+        this.avistamientos = new LinkedList<>();
+    }
+
+    public Usuario(String nombreUsuario, String nombre, String apellido, String email, String contrasenia,
+                   String telefono, String genero, Integer edad, String provincia, String municipio, String departamento) {
+        this.nombreUsuario = nombreUsuario;
+        this.nombre = nombre;
+        this.apellido = apellido;
+        this.email = email;
+        this.contrasenia = PasswordUtils.hashPassword(contrasenia);
+        this.telefono = telefono;
+        this.genero = genero;
+        this.edad = edad;
+        this.provincia = provincia;
+        this.municipio = municipio;
+        this.departamento = departamento;
         this.mascotas = new LinkedList<>();
         this.avistamientos = new LinkedList<>();
     }
@@ -130,20 +156,52 @@ public class Usuario {
         this.telefono = telefono;
     }
 
-    public String getBarrio() {
-        return barrio;
+    public String getNombreUsuario() {
+        return nombreUsuario;
     }
 
-    public void setBarrio(String barrio) {
-        this.barrio = barrio;
+    public void setNombreUsuario(String nombreUsuario) {
+        this.nombreUsuario = nombreUsuario;
     }
 
-    public String getCiudad() {
-        return ciudad;
+    public String getGenero() {
+        return genero;
     }
 
-    public void setCiudad(String ciudad) {
-        this.ciudad = ciudad;
+    public void setGenero(String genero) {
+        this.genero = genero;
+    }
+
+    public Integer getEdad() {
+        return edad;
+    }
+
+    public void setEdad(Integer edad) {
+        this.edad = edad;
+    }
+
+    public String getProvincia() {
+        return provincia;
+    }
+
+    public void setProvincia(String provincia) {
+        this.provincia = provincia;
+    }
+
+    public String getMunicipio() {
+        return municipio;
+    }
+
+    public void setMunicipio(String municipio) {
+        this.municipio = municipio;
+    }
+
+    public String getDepartamento() {
+        return departamento;
+    }
+
+    public void setDepartamento(String departamento) {
+        this.departamento = departamento;
     }
 
     public List<Mascota> getMascotas() {

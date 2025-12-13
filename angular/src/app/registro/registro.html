@@ -1,0 +1,189 @@
+<div class="registro-container">
+  <div class="registro-card">
+    <h2>Crear Cuenta</h2>
+
+    <form (ngSubmit)="onSubmit()" #registroForm="ngForm">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombreUsuario">Nombre de Usuario *</label>
+          <input
+            type="text"
+            id="nombreUsuario"
+            name="nombreUsuario"
+            [(ngModel)]="usuario.nombreUsuario"
+            required
+            placeholder="usuario123"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="email">Correo Electrónico *</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            [(ngModel)]="usuario.email"
+            required
+            email
+            placeholder="correo@ejemplo.com"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="nombre">Nombre *</label>
+          <input
+            type="text"
+            id="nombre"
+            name="nombre"
+            [(ngModel)]="usuario.nombre"
+            required
+            placeholder="Juan"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="apellido">Apellido *</label>
+          <input
+            type="text"
+            id="apellido"
+            name="apellido"
+            [(ngModel)]="usuario.apellido"
+            required
+            placeholder="Pérez"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="password">Contraseña *</label>
+          <input
+            type="password"
+            id="password"
+            name="password"
+            [(ngModel)]="usuario.password"
+            required
+            minlength="6"
+            placeholder="Mínimo 6 caracteres"
+            class="form-control">
+        </div>
+
+        <div class="form-group">
+          <label for="telefono">Teléfono *</label>
+          <input
+            type="tel"
+            id="telefono"
+            name="telefono"
+            [(ngModel)]="usuario.telefono"
+            required
+            placeholder="+54 9 11 1234-5678"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="genero">Género *</label>
+          <select
+            id="genero"
+            name="genero"
+            [(ngModel)]="usuario.genero"
+            required
+            class="form-control">
+            <option value="">Seleccione...</option>
+            <option value="Masculino">Masculino</option>
+            <option value="Femenino">Femenino</option>
+            <option value="Otro">Otro</option>
+            <option value="Prefiero no decir">Prefiero no decir</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="edad">Edad *</label>
+          <input
+            type="number"
+            id="edad"
+            name="edad"
+            [(ngModel)]="usuario.edad"
+            required
+            min="18"
+            max="120"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="ubicacion-section">
+        <h3>Ubicación</h3>
+        <button
+          type="button"
+          class="btn-ubicacion"
+          (click)="obtenerUbicacionActual()"
+          [disabled]="loadingUbicacion">
+          <span *ngIf="!loadingUbicacion">📍 Obtener Ubicación Actual</span>
+          <span *ngIf="loadingUbicacion">Obteniendo ubicación...</span>
+        </button>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label for="provincia">Provincia *</label>
+            <input
+              type="text"
+              id="provincia"
+              name="provincia"
+              [(ngModel)]="usuario.provincia"
+              required
+              placeholder="Buenos Aires"
+              class="form-control">
+          </div>
+
+          <div class="form-group">
+            <label for="municipio">Municipio *</label>
+            <input
+              type="text"
+              id="municipio"
+              name="municipio"
+              [(ngModel)]="usuario.municipio"
+              required
+              placeholder="La Plata"
+              class="form-control">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="departamento">Departamento *</label>
+          <input
+            type="text"
+            id="departamento"
+            name="departamento"
+            [(ngModel)]="usuario.departamento"
+            required
+            placeholder="La Plata"
+            class="form-control">
+        </div>
+      </div>
+
+      <div class="success-message" *ngIf="successMessage">
+        {{ successMessage }}
+      </div>
+
+      <div class="error-message" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+
+      <button
+        type="submit"
+        class="btn-primary"
+        [disabled]="loading || !registroForm.valid">
+        <span *ngIf="!loading">Registrarse</span>
+        <span *ngIf="loading">Registrando...</span>
+      </button>
+    </form>
+
+    <div class="login-link">
+      <p>¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión aquí</a></p>
+    </div>
+  </div>
+</div>
+

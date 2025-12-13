@@ -41,8 +41,9 @@ public class AvistamientoDAOTest {
                 "pedro.martinez@example.com",
                 "password789",
                 "3518888888",
+                "Córdoba",
                 "Nueva Córdoba",
-                "Córdoba"
+                "Capital"
         );
         usuarioReportador = usuarioService.crearUsuario(usuarioReportador);
 

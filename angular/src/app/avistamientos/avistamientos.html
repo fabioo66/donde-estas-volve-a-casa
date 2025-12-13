@@ -1,9 +1,10 @@
 <main class="flex-1 px-4 sm:px-6 lg:px-8 py-10">
   <div class="mx-auto max-w-7xl">
-    <!-- Mascotas Perdidas Recientes -->
+    <!-- Avistamientos Recientes -->
     <section class="mb-12">
       <div class="mb-6">
-        <h2 class="text-xl sm:text-2xl font-bold text-stone-800 dark:text-stone-200">Mascotas Perdidas Recientes</h2>
+        <h2 class="text-xl sm:text-2xl font-bold text-stone-800 dark:text-stone-200">Avistamientos Reportados</h2>
+        <p class="text-sm text-stone-600 dark:text-stone-400 mt-2">Comunidad reportando mascotas perdidas</p>
       </div>
 
       <!-- Loading state -->
@@ -20,35 +21,35 @@
         </div>
       }
 
-      <!-- Cards de mascotas -->
+      <!-- Cards de avistamientos -->
       @if (!isLoading && !error) {
-        @if (mascotas.length === 0) {
+        @if (avistamientos.length === 0) {
           <div class="text-center py-12">
-            <p class="text-stone-500 dark:text-stone-400">No hay mascotas perdidas en este momento</p>
+            <p class="text-stone-500 dark:text-stone-400">No hay avistamientos reportados en este momento</p>
           </div>
         } @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
-            @for (mascota of mascotas; track mascota.id) {
+            @for (avistamiento of avistamientos; track avistamiento.id) {
               <div class="bg-white dark:bg-[#1a2632] rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group">
-                <!-- Imagen de la mascota con carrusel -->
+                <!-- Imagen del avistamiento con carrusel -->
                 <div class="relative aspect-square overflow-hidden bg-stone-200 dark:bg-stone-700">
                   <!-- Carousel de fotos -->
-                  @if (tieneMasDe1Foto(mascota)) {
+                  @if (tieneMasDe1Foto(avistamiento)) {
                     <!-- Múltiples fotos - mostrar carousel -->
                     <div class="relative w-full h-full">
-                      @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
+                      @for (fotoUrl of obtenerTodasLasFotos(avistamiento); track fotoUrl; let i = $index) {
                         <img
                           [src]="fotoUrl"
-                          [alt]="mascota.nombre + ' - Foto ' + (i + 1)"
-                          [class.opacity-100]="i === getFotoActual(mascota.id)"
-                          [class.opacity-0]="i !== getFotoActual(mascota.id)"
+                          [alt]="'Avistamiento ' + avistamiento.id + ' - Foto ' + (i + 1)"
+                          [class.opacity-100]="i === getFotoActual(avistamiento.id)"
+                          [class.opacity-0]="i !== getFotoActual(avistamiento.id)"
                           class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
                           (error)="$any($event.target).src='https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'">
                       }
 
                       <!-- Botones de navegación -->
                       <button
-                        (click)="cambiarFoto(mascota, 'prev', $event)"
+                        (click)="cambiarFoto(avistamiento, 'prev', $event)"
                         class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                         aria-label="Foto anterior">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -57,7 +58,7 @@
                       </button>
 
                       <button
-                        (click)="cambiarFoto(mascota, 'next', $event)"
+                        (click)="cambiarFoto(avistamiento, 'next', $event)"
                         class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
                         aria-label="Foto siguiente">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -70,17 +71,19 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
                         </svg>
-                        <span>{{ getFotoActual(mascota.id) + 1 }}/{{ getCantidadFotos(mascota) }}</span>
+                        <span>{{ getFotoActual(avistamiento.id) + 1 }}/{{ getCantidadFotos(avistamiento) }}</span>
                       </div>
 
                       <!-- Indicadores de puntos -->
                       <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-                        @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
+                        @for (fotoUrl of obtenerTodasLasFotos(avistamiento); track fotoUrl; let i = $index) {
                           <div
-                            [class.bg-white]="i === getFotoActual(mascota.id)"
-                            [class.bg-white/50]="i !== getFotoActual(mascota.id)"
-                            [class.w-4]="i === getFotoActual(mascota.id)"
-                            [class.w-1.5]="i !== getFotoActual(mascota.id)"
+                            [ngClass]="{
+                              'bg-white': i === getFotoActual(avistamiento.id),
+                              'bg-white/50': i !== getFotoActual(avistamiento.id),
+                              'w-4': i === getFotoActual(avistamiento.id),
+                              'w-1.5': i !== getFotoActual(avistamiento.id)
+                            }"
                             class="h-1.5 rounded-full transition-all duration-300"></div>
                         }
                       </div>
@@ -88,108 +91,101 @@
                   } @else {
                     <!-- Una sola foto -->
                     <img
-                      [src]="obtenerImagenMascota(mascota)"
-                      [alt]="mascota.nombre"
+                      [src]="obtenerImagenAvistamiento(avistamiento)"
+                      [alt]="'Avistamiento ' + avistamiento.id"
                       class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                       (error)="$any($event.target).src='https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400'">
                   }
 
-                  <!-- Badge de estado -->
-                  <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                    PERDIDO
+                  <!-- Badge de avistamiento -->
+                  <div class="absolute top-2 right-2 bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+                    AVISTADO
                   </div>
                 </div>
 
-                <!-- Información de la mascota -->
+                <!-- Información del avistamiento -->
                 <div class="p-4">
                   <h3 class="text-lg font-bold text-stone-800 dark:text-stone-200 truncate mb-1">
-                    {{ mascota.nombre }}
+                    {{ avistamiento.mascota.nombre }}
                   </h3>
                   <p class="text-sm text-stone-600 dark:text-stone-400 truncate mb-2">
-                    {{ mascota.raza || mascota.tipo || 'Sin raza' }}
+                    {{ avistamiento.mascota.raza || avistamiento.mascota.tipo || 'Sin raza' }}
                   </p>
 
                   <!-- Información adicional -->
                   <div class="space-y-2">
                     <!-- Tamaño y Color en una fila -->
                     <div class="flex items-center gap-3 text-xs">
-                      @if (mascota.tamanio) {
+                      @if (avistamiento.mascota.tamanio) {
                         <div class="flex items-center gap-1 text-stone-600 dark:text-stone-400">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path d="M3 12v3c0 1.657 3.134 3 7 3s7-1.343 7-3v-3c0 1.657-3.134 3-7 3s-7-1.343-7-3z" />
                             <path d="M3 7v3c0 1.657 3.134 3 7 3s7-1.343 7-3V7c0 1.657-3.134 3-7 3S3 8.657 3 7z" />
                             <path d="M17 5c0 1.657-3.134 3-7 3S3 6.657 3 5s3.134-3 7-3 7 1.343 7 3z" />
                           </svg>
-                          <span>{{ formatearTamanio(mascota.tamanio) }}</span>
+                          <span>{{ formatearTamanio(avistamiento.mascota.tamanio) }}</span>
                         </div>
                       }
-                      @if (mascota.color) {
+                      @if (avistamiento.mascota.color) {
                         <div class="flex items-center gap-1 text-stone-600 dark:text-stone-400">
                           <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                             <path fill-rule="evenodd" d="M4 2a2 2 0 00-2 2v11a3 3 0 106 0V4a2 2 0 00-2-2H4zm1 14a1 1 0 100-2 1 1 0 000 2zm5-1.757l4.9-4.9a2 2 0 000-2.828L13.485 5.1a2 2 0 00-2.828 0L10 5.757v8.486zM16 18H9.071l6-6H16a2 2 0 012 2v2a2 2 0 01-2 2z" clip-rule="evenodd" />
                           </svg>
-                          <span>{{ mascota.color }}</span>
+                          <span>{{ avistamiento.mascota.color }}</span>
                         </div>
                       }
                     </div>
 
-                    <!-- Descripción -->
-                    @if (mascota.descripcion) {
+                    <!-- Descripción del avistamiento -->
+                    @if (avistamiento.descripcion) {
                       <p class="text-xs text-stone-600 dark:text-stone-400 line-clamp-2 leading-relaxed">
-                        {{ mascota.descripcion }}
+                        {{ avistamiento.descripcion }}
                       </p>
                     }
 
-                    <!-- Fecha de pérdida -->
-                    @if (mascota.fecha) {
+                    <!-- Ubicación -->
+                    @if (avistamiento.coordenada) {
+                      <div class="flex items-center gap-1 text-xs text-stone-600 dark:text-stone-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Ubicación:</span>
+                        <span class="truncate">{{ avistamiento.coordenada }}</span>
+                      </div>
+                    }
+
+                    <!-- Reportado por -->
+                    @if (avistamiento.usuario) {
+                      <div class="flex items-center gap-1 text-xs text-stone-600 dark:text-stone-400">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+                        </svg>
+                        <span class="font-medium">Por:</span>
+                        <span class="truncate">{{ avistamiento.usuario.nombre }}</span>
+                      </div>
+                    }
+
+                    <!-- Fecha del avistamiento -->
+                    @if (avistamiento.fecha) {
                       <div class="flex items-center gap-1 text-xs text-stone-500 dark:text-stone-500 pt-1 border-t border-stone-200 dark:border-stone-700">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd" />
                         </svg>
-                        <span class="font-medium">Perdido:</span>
-                        <span>{{ obtenerFechaFormateada(mascota.fecha) }}</span>
+                        <span class="font-medium">Avistado:</span>
+                        <span>{{ obtenerFechaFormateada(avistamiento.fecha) }}</span>
                       </div>
                     }
 
-                    <!-- Botón ver ubicación en mapa -->
-                    @if (mascota.coordenadas) {
+                    <!-- Botón ver ubicación del avistamiento -->
+                    @if (avistamiento.coordenada) {
                       <button
-                        (click)="abrirMapaUbicacion(mascota)"
+                        (click)="abrirMapaUbicacion(avistamiento)"
                         class="w-full mt-2 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                        title="Ver última ubicación conocida">
+                        title="Ver ubicación del avistamiento">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                           <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
                         </svg>
                         Ver Ubicación
-                      </button>
-                    }
-
-                    <!-- Botón reportar avistamiento -->
-                    @if (isLoggedIn()) {
-                      <!-- Usuario autenticado - botón activo -->
-                      <a 
-                        [routerLink]="['/reportar-avistamiento', mascota.id]"
-                        class="block w-full mt-3 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 text-center cursor-pointer">
-                        <span class="flex items-center justify-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                          </svg>
-                          Reportar Avistamiento
-                        </span>
-                      </a>
-                    } @else {
-                      <!-- Usuario no autenticado - botón deshabilitado con mensaje -->
-                      <button
-                        (click)="irALogin()"
-                        class="w-full mt-3 bg-stone-400 hover:bg-stone-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 cursor-pointer relative group"
-                        title="Inicia sesión para reportar avistamientos">
-                        <span class="flex items-center justify-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                          </svg>
-                          Inicia sesión para reportar avistamiento
-                        </span>
                       </button>
                     }
                   </div>
@@ -204,7 +200,7 @@
 </main>
 
 <!-- Modal del mapa -->
-@if (mostrarMapaModal && mascotaSeleccionada) {
+@if (mostrarMapaModal && avistamientoSeleccionado) {
   <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4" (click)="cerrarMapaModal()">
     <div class="bg-white dark:bg-[#1a2632] rounded-xl shadow-2xl w-full max-w-4xl overflow-hidden" (click)="$event.stopPropagation()">
       <!-- Header del modal -->
@@ -214,8 +210,8 @@
             <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
           </svg>
           <div>
-            <h3 class="text-lg font-bold text-white">{{ mascotaSeleccionada.nombre }}</h3>
-            <p class="text-xs text-white/80">Última ubicación conocida</p>
+            <h3 class="text-lg font-bold text-white">{{ avistamientoSeleccionado.mascota?.nombre || 'Mascota' }}</h3>
+            <p class="text-xs text-white/80">Ubicación del avistamiento</p>
           </div>
         </div>
         <button
@@ -238,7 +234,7 @@
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
               <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
             </svg>
-            <span>Esta es la ubicación donde {{ mascotaSeleccionada.nombre }} fue visto por última vez</span>
+            <span>Esta es la ubicación donde {{ avistamientoSeleccionado.mascota?.nombre || 'la mascota' }} fue avistado</span>
           </div>
           <button
             (click)="cerrarMapaModal()"
@@ -250,3 +246,4 @@
     </div>
   </div>
 }
+
