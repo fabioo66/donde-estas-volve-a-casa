@@ -1,8 +1,8 @@
 import { Routes } from '@angular/router';
 import { Home } from './home/home';
-import { MascotaFormComponent } from './components/mascota-form/mascota-form.component';
-import { MascotaEditComponent } from './components/mascota-edit/mascota-edit.component';
-import { MascotaListComponent } from './components/mascota-list/mascota-list.component';
+import { MascotaFormComponent } from './mascota/mascota-form/mascota-form.component';
+import { MascotaEditComponent } from './mascota/mascota-edit/mascota-edit.component';
+import { MascotaListComponent } from './mascota/mascota-list/mascota-list.component';
 import { AvistamientosComponent } from './avistamientos/avistamientos';
 import { ReportarAvistamientoComponent } from './reportar-avistamiento/reportar-avistamiento';
 import { LoginComponent } from './login/login';
@@ -10,6 +10,8 @@ import { RegistroComponent } from './registro/registro';
 import { PerfilComponent } from './perfil/perfil';
 import { AccesoDenegadoComponent } from './acceso-denegado/acceso-denegado';
 import { authGuard } from './guards/auth.guard';
+import { DashboardComponent } from './dashboard/dashboard';
+import { MisPublicacionesComponent } from './mis-publicaciones/mis-publicaciones.component';
 
 export const routes: Routes = [
   {
@@ -22,6 +24,11 @@ export const routes: Routes = [
     component: Home
   },
   {
+    path: 'dashboard',
+    component: DashboardComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'mascotas',
     component: MascotaListComponent
   },
@@ -32,6 +39,13 @@ export const routes: Routes = [
   {
     path: 'mascota/:id/editar',
     component: MascotaEditComponent
+  },
+  {
+    path: 'mis-publicaciones',
+    component: MisPublicacionesComponent,
+    canActivate: [authGuard]
+  },
+  {
     path: 'avistamientos',
     component: AvistamientosComponent
   },

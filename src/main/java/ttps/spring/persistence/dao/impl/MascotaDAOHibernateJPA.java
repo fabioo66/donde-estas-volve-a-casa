@@ -28,6 +28,14 @@ public class MascotaDAOHibernateJPA extends GenericDAOHibernateJPA<Mascota> impl
     }
 
     @Override
+    public List<Mascota> findByUsuario(Long usuarioId) {
+        return entityManager.createQuery(
+                "SELECT m FROM Mascota m WHERE m.usuario.id = :usuarioId", Mascota.class)
+                .setParameter("usuarioId", usuarioId)
+                .getResultList();
+    }
+
+    @Override
     public List<Mascota> findMascotasPerdidas() {
         return entityManager.createQuery(
                 "SELECT m FROM Mascota m WHERE (m.estado = :perdidoPropio OR m.estado = :perdidoAjeno) AND m.activo = true",

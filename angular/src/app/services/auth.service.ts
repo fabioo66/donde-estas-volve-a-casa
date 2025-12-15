@@ -67,6 +67,33 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean {
-    return this.currentUserSubject.value !== null;
+    // Verificar primero el BehaviorSubject
+    const currentUser = this.currentUserSubject.value;
+
+    // Si tenemos un usuario en el BehaviorSubject, verificar que tenga token válido
+    if (currentUser && currentUser.token) {
+      return true;
+    }
+
+    // Si no hay usuario en memoria, verificar localStorage como fallback
+    if (this.isBrowser) {
+      const storedUser = localStorage.getItem('currentUser');
+      if (storedUser) {
+        try {
+          const parsedUser = JSON.parse(storedUser);
+          if (parsedUser && parsedUser.token) {
+            // Sincronizar el BehaviorSubject con localStorage
+            this.currentUserSubject.next(parsedUser);
+            return true;
+          }
+        } catch (error) {
+          console.error('Error parsing stored user:', error);
+          // Limpiar localStorage corrupto
+          localStorage.removeItem('currentUser');
+        }
+      }
+    }
+
+    return false;
   }
 }

@@ -30,7 +30,7 @@ export class MascotaService {
       timeout(10000), // 10 segundos timeout
       map(mascotas => mascotas.map(m => ({
         ...m,
-        tamanio: m.tamaño || m.tamanio // Mapear tamaño a tamanio
+        tamanio: m.tamanio || m.tamano // El backend devuelve "tamanio" sin ñ
       }))),
       catchError(error => {
         console.error('Error en servicio de mascotas:', error);
@@ -40,22 +40,38 @@ export class MascotaService {
   }
 
   obtenerMascota(id: number): Observable<Mascota> {
+    console.log(`🔍 Intentando obtener mascota con ID: ${id}`);
     return this.http.get<any>(`${this.apiUrl}/${id}`).pipe(
-      timeout(10000),
-      map(mascota => ({
-        ...mascota,
-        tamanio: mascota.tamaño || mascota.tamanio
-      })),
+      timeout(5000), // Reducido a 5 segundos
+      map(mascota => {
+        console.log('✅ Mascota obtenida del backend:', mascota);
+        return {
+          ...mascota,
+          tamanio: mascota.tamanio || mascota.tamano
+        };
+      }),
       catchError(error => {
-        console.error('Error en servicio de mascotas:', error);
+        console.error('❌ Error detallado en obtenerMascota:', error);
+        if (error.name === 'TimeoutError') {
+          console.error('❌ Timeout: El backend no responde');
+          return throwError(() => ({
+            message: 'El servidor no responde. Verifica que esté ejecutándose.',
+            status: 'TIMEOUT',
+            originalError: error
+          }));
+        }
         return throwError(() => error);
       })
     );
   }
 
   obtenerMascotasUsuario(usuarioId: number): Observable<Mascota[]> {
-  return this.http.get<Mascota[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
+    return this.http.get<any[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
       timeout(10000),
+      map(mascotas => mascotas.map(m => ({
+        ...m,
+        tamanio: m.tamanio || m.tamano
+      }))),
       catchError(error => {
         console.error('Error en servicio de mascotas:', error);
         return throwError(() => error);
@@ -64,41 +80,35 @@ export class MascotaService {
   }
 
   crearMascota(usuarioId: number, mascota: MascotaRequest): Observable<Mascota> {
-    // Mapear tamano (frontend) a tamaño (backend)
-    const mascotaBackend = {
-      ...mascota,
-      tamaño: mascota.tamanio
-    };
-    // Remover la propiedad tamano para evitar conflictos
-    delete (mascotaBackend as any).tamanio;
-
-    return this.http.post<any>(`${this.apiUrl}/usuario/${usuarioId}`, mascotaBackend).pipe(
+    return this.http.post<any>(`${this.apiUrl}/usuario/${usuarioId}`, mascota).pipe(
       map(m => ({
         ...m,
-        tamanio: m.tamaño || m.tamanio
+        tamanio: m.tamanio || m.tamano
       }))
     );
   }
 
   actualizarMascota(id: number, mascota: MascotaRequest): Observable<Mascota> {
-    // Mapear tamano (frontend) a tamaño (backend)
-    const mascotaBackend = {
-      ...mascota,
-      tamaño: mascota.tamanio
-    };
-    // Remover la propiedad tamano para evitar conflictos
-    delete (mascotaBackend as any).tamanio;
-
-    return this.http.put<any>(`${this.apiUrl}/${id}`, mascotaBackend).pipe(
+    return this.http.put<any>(`${this.apiUrl}/${id}`, mascota).pipe(
       map(m => ({
         ...m,
-        tamanio: m.tamaño || m.tamanio
+        tamanio: m.tamanio || m.tamano
       }))
     );
   }
 
-  eliminarMascota(id: number): Observable<any> {
-    return this.http.delete(`${this.apiUrl}/${id}`);
+  eliminarMascota(id: number): Observable<Mascota> {
+    return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
+      timeout(10000),
+      map(mascota => ({
+        ...mascota,
+        tamanio: mascota.tamanio || mascota.tamano
+      })),
+      catchError(error => {
+        console.error('Error al eliminar mascota:', error);
+        return throwError(() => error);
+      })
+    );
   }
 
   // Utility para convertir archivo a base64

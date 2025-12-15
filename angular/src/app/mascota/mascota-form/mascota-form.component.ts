@@ -1,8 +1,9 @@
-import { Component } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnDestroy, AfterViewInit, Inject, PLATFORM_ID, ChangeDetectorRef } from '@angular/core';
+import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MascotaService, MascotaRequest } from '../../services/mascota.service';
+import { AuthService } from '../../services/auth.service';
 import { Estado, Tamanio } from '../../models/mascota.model';
 
 @Component({
@@ -12,7 +13,7 @@ import { Estado, Tamanio } from '../../models/mascota.model';
   templateUrl: './mascota-form.component.html',
   styleUrls: ['./mascota-form.component.css']
 })
-export class MascotaFormComponent {
+export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   // Propiedades del formulario usando template-driven forms
   mascota: MascotaRequest = {
     nombre: '',
@@ -32,9 +33,18 @@ export class MascotaFormComponent {
   Estados = Estado;
   Tamanios = Tamanio;
 
+  // Propiedades para el mapa
+  mostrarMapa = false;
+  map: any;
+  marker: any;
+  L: any;
+
   constructor(
     private mascotaService: MascotaService,
-    private router: Router
+    private authService: AuthService,
+    private router: Router,
+    private cdr: ChangeDetectorRef,
+    @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   onFileSelect(event: any): void {
@@ -67,7 +77,7 @@ export class MascotaFormComponent {
     });
   }
 
-  eliminarArchivo(index: number): void {
+  removerImagen(index: number): void {
     this.archivosSeleccionados.splice(index, 1);
     this.previsualizaciones.splice(index, 1);
   }
@@ -84,6 +94,14 @@ export class MascotaFormComponent {
     this.loading = true;
 
     try {
+      // Obtener el usuario autenticado actual
+      const currentUser = this.authService.getCurrentUser();
+      if (!currentUser) {
+        alert('Debe estar autenticado para publicar una mascota');
+        this.router.navigate(['/login']);
+        return;
+      }
+
       // Convertir archivos a base64
       const fotosBase64: string[] = [];
       for (const archivo of this.archivosSeleccionados) {
@@ -96,13 +114,13 @@ export class MascotaFormComponent {
         fotosBase64: fotosBase64
       };
 
-      // TODO: Obtener ID del usuario autenticado
-      const usuarioId = 1; // Placeholder - esto debería venir del servicio de autenticación
+      // Usar el ID del usuario autenticado
+      const usuarioId = currentUser.id;
 
       await this.mascotaService.crearMascota(usuarioId, mascotaData).toPromise();
 
       alert('Mascota reportada exitosamente');
-      this.router.navigate(['/mascotas']);
+      this.router.navigate(['/dashboard']);
     } catch (error) {
       console.error('Error al crear mascota:', error);
       alert('Error al reportar la mascota. Inténtalo nuevamente.');
@@ -120,5 +138,87 @@ export class MascotaFormComponent {
       return 'Este campo es requerido';
     }
     return '';
+  }
+
+  ngAfterViewInit(): void {
+    // Inicializar el mapa cuando se muestre
+    if (this.mostrarMapa) {
+      setTimeout(() => this.inicializarMapa(), 100);
+    }
+  }
+
+  ngOnDestroy(): void {
+    // Limpiar el mapa al destruir el componente
+    if (this.map) {
+      this.map.remove();
+    }
+  }
+
+  async toggleMapa(): Promise<void> {
+    this.mostrarMapa = !this.mostrarMapa;
+    if (this.mostrarMapa && !this.map && isPlatformBrowser(this.platformId)) {
+      // Importar Leaflet dinámicamente solo en el navegador
+      if (!this.L) {
+        this.L = await import('leaflet');
+      }
+      setTimeout(() => this.inicializarMapa(), 100);
+    }
+  }
+
+  inicializarMapa(): void {
+    if (!isPlatformBrowser(this.platformId) || !this.L) return;
+
+    // Coordenadas de La Plata por defecto
+    const latDefault = -34.9215;
+    const lngDefault = -57.9545;
+
+    // Crear el mapa centrado en La Plata
+    this.map = this.L.map('map').setView([latDefault, lngDefault], 13);
+
+    // Agregar capa de OpenStreetMap
+    this.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 19
+    }).addTo(this.map);
+
+    // Forzar el recalculo del tamaño del mapa después de un pequeño delay
+    setTimeout(() => {
+      if (this.map) {
+        this.map.invalidateSize();
+      }
+    }, 200);
+
+    // Si ya hay coordenadas en el form, colocar el marcador ahí
+    if (this.mascota.coordenadas) {
+      const coords = this.mascota.coordenadas.split(',');
+      if (coords.length === 2) {
+        const lat = parseFloat(coords[0].trim());
+        const lng = parseFloat(coords[1].trim());
+        if (!isNaN(lat) && !isNaN(lng)) {
+          this.agregarMarcador(lat, lng);
+          this.map.setView([lat, lng], 13);
+        }
+      }
+    }
+
+    // Agregar evento de click en el mapa
+    this.map.on('click', (e: any) => {
+      const lat = e.latlng.lat;
+      const lng = e.latlng.lng;
+      this.agregarMarcador(lat, lng);
+      this.mascota.coordenadas = `${lat}, ${lng}`;
+    });
+  }
+
+  agregarMarcador(lat: number, lng: number): void {
+    if (!this.L) return;
+
+    // Remover marcador anterior si existe
+    if (this.marker) {
+      this.marker.remove();
+    }
+
+    // Crear nuevo marcador
+    this.marker = this.L.marker([lat, lng]).addTo(this.map);
   }
 }

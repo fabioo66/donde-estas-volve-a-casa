@@ -237,8 +237,8 @@ public class MascotaController {
 
             // Borrado logico
             mascota.setActivo(false);
-            mascotaService.actualizarMascota(mascota);
-            return ResponseEntity.ok("Mascota eliminada correctamente");
+            Mascota mascotaEliminada = mascotaService.actualizarMascota(mascota);
+            return ResponseEntity.ok(mascotaEliminada);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Error al eliminar mascota: " + e.getMessage());

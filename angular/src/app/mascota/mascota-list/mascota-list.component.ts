@@ -174,7 +174,7 @@ export class MascotaListComponent implements OnInit {
     }
   }
 
-  getTamanoTexto(tamanio: string): string {
+  getTamanioTexto(tamanio: string): string {
     switch (tamanio) {
       case 'PEQUENIO':
         return 'Pequeño';
