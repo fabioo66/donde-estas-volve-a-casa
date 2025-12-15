@@ -1,51 +1,38 @@
-import { inject, PLATFORM_ID } from '@angular/core';
+import { inject } from '@angular/core';
 import { Router, CanActivateFn } from '@angular/router';
 import { AuthService } from '../services/auth.service';
-import { isPlatformBrowser } from '@angular/common';
 
 export const authGuard: CanActivateFn = (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
-  const platformId = inject(PLATFORM_ID);
-  const isBrowser = isPlatformBrowser(platformId);
 
-  console.log('AuthGuard ejecutándose para:', state.url);
+  console.log('🔐 AuthGuard verificando acceso a:', state.url);
 
-  // Verificación directa tanto del servicio como del localStorage
-  let isAuthenticated = false;
-  let userInfo = null;
-
-  // Primero verificar el servicio
-  const currentUser = authService.getCurrentUser();
-  if (currentUser && currentUser.token) {
-    isAuthenticated = true;
-    userInfo = currentUser;
-    console.log('Usuario encontrado en servicio:', userInfo);
-  }
-
-  // Si no está en el servicio, verificar localStorage directamente
-  if (!isAuthenticated && isBrowser) {
-    const storedUser = localStorage.getItem('currentUser');
-    if (storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        if (parsedUser && parsedUser.token) {
-          isAuthenticated = true;
-          userInfo = parsedUser;
-          console.log('Usuario encontrado en localStorage:', userInfo);
-        }
-      } catch (error) {
-        console.error('Error parsing localStorage user:', error);
-      }
-    }
-  }
+  // Usar el método unificado de autenticación
+  const isAuthenticated = authService.isAuthenticated();
 
   if (isAuthenticated) {
-    console.log('Acceso permitido a:', state.url);
+    console.log('✅ Acceso permitido a:', state.url);
+
+    // Mostrar información del token en desarrollo
+    const tokenInfo = authService.getTokenInfo();
+    if (tokenInfo) {
+      console.log('🎫 Info del token:', {
+        usuario: tokenInfo.payload?.email,
+        expiraEn: Math.round(tokenInfo.remainingTime / 1000 / 60) + ' minutos',
+        expiraraPronto: tokenInfo.willExpireSoon
+      });
+    }
+
     return true;
   }
 
+  console.log('❌ Acceso denegado a:', state.url, '- Usuario no autenticado o token expirado');
+
   // Redirigir a página de acceso denegado
-  router.navigate(['/acceso-denegado']);
+  router.navigate(['/acceso-denegado'], {
+    queryParams: { returnUrl: state.url }
+  });
+
   return false;
 };
