@@ -2,6 +2,7 @@ import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { LoginRequest } from '../models/usuario.model';
 
@@ -63,7 +64,12 @@ export class LoginComponent {
         console.log('Login exitoso', response);
         this.loading = false;
         this.cdr.detectChanges();
-        this.router.navigate(['/home']);
+
+        // Agregar un pequeño retraso para asegurar que el estado se ha sincronizado
+        setTimeout(() => {
+          console.log('Navegando a dashboard...');
+          this.router.navigate(['/dashboard']);
+        }, 100);
       },
       error: (error) => {
         console.error('Error completo en login:', error);

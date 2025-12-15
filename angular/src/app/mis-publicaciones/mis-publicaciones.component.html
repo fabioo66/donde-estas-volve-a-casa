@@ -1,0 +1,273 @@
+<div class="container mx-auto px-4 py-8">
+  <div class="flex items-center justify-between mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Mis Publicaciones</h1>
+    <div class="flex gap-4">
+      <button
+        (click)="volverAlDashboard()"
+        class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+      >
+        ← Volver al Dashboard
+      </button>
+      <button
+        (click)="crearNuevaPublicacion()"
+        class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
+      >
+        + Nueva Publicación
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading state -->
+  <div *ngIf="isLoading" class="text-center py-8">
+    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+    <p class="mt-4 text-gray-600">Cargando publicaciones...</p>
+  </div>
+
+  <!-- Error state -->
+  <div *ngIf="error && !isLoading" class="bg-red-100 border border-red-300 text-red-700 px-4 py-3 rounded mb-4">
+    <div class="flex items-center justify-between">
+      <div>
+        <p class="font-semibold">Error al cargar publicaciones</p>
+        <p class="text-sm">{{ error }}</p>
+      </div>
+      <button
+        (click)="reintentar()"
+        class="bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition-colors"
+      >
+        Reintentar
+      </button>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div *ngIf="!isLoading && !error && misPublicaciones.length === 0" class="bg-white border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center p-16 text-center">
+    <div class="mb-4">
+      <span class="material-symbols-outlined text-6xl text-gray-400">
+        pets
+      </span>
+    </div>
+    <h4 class="text-lg font-bold text-gray-900">Aún no has publicado ninguna mascota</h4>
+    <p class="text-sm text-gray-500 max-w-md mt-2 mb-6">
+      Comienza a publicar mascotas perdidas o encontradas para ayudar a reunirlas con sus dueños.
+    </p>
+    <button
+      (click)="crearNuevaPublicacion()"
+      class="bg-primary text-white font-bold text-sm py-2 px-6 rounded-lg hover:bg-opacity-90 transition-colors"
+    >
+      Publicar Mascota
+    </button>
+  </div>
+
+  <!-- Publications grid -->
+  <div *ngIf="!isLoading && !error && misPublicaciones.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div
+      *ngFor="let mascota of misPublicaciones"
+      class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow relative"
+      [ngClass]="{ 'opacity-75': !mascota.activo }"
+    >
+      <!-- Overlay para publicaciones eliminadas -->
+      <div
+        *ngIf="!mascota.activo"
+        class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
+      >
+        Eliminada
+      </div>
+
+      <!-- Image -->
+      <div
+        class="h-48 bg-gray-200 flex items-center justify-center cursor-pointer"
+        [ngClass]="{ 'filter grayscale': !mascota.activo }"
+        (click)="abrirModal(mascota)"
+      >
+        <div *ngIf="!mascota.fotos" class="text-gray-400">
+          <span class="material-symbols-outlined text-4xl">pets</span>
+        </div>
+        <img
+          *ngIf="mascota.fotos"
+          [src]="obtenerFotoPrincipal(mascota)"
+          [alt]="mascota.nombre"
+          class="w-full h-full object-cover hover:opacity-90 transition-opacity"
+        />
+      </div>
+
+      <!-- Content -->
+      <div class="p-4">
+        <div class="flex items-start justify-between mb-2">
+          <h3
+            class="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors"
+            (click)="abrirModal(mascota)"
+          >
+            {{ mascota.nombre }}
+          </h3>
+          <span
+            class="px-2 py-1 text-xs rounded-full"
+            [ngClass]="{
+              'bg-red-100 text-red-800': mascota.estado === 'PERDIDO_PROPIO',
+              'bg-orange-100 text-orange-800': mascota.estado === 'PERDIDO_AJENO',
+              'bg-green-100 text-green-800': mascota.estado === 'RECUPERADO',
+              'bg-blue-100 text-blue-800': mascota.estado === 'ADOPTADO'
+            }"
+          >
+            {{ getEstadoTexto(mascota.estado) }}
+          </span>
+        </div>
+
+        <p class="text-sm text-gray-600 mb-2">
+          {{ mascota.tipo }} • {{ mascota.raza || 'Mestizo' }}
+        </p>
+
+        <p class="text-xs text-gray-500 mb-3">
+          Publicado: {{ formatearFecha(mascota.fecha) }}
+        </p>
+
+        <p class="text-sm text-gray-700 mb-4 line-clamp-2">
+          {{ mascota.descripcion }}
+        </p>
+        <!-- Action buttons -->
+        <div class="flex gap-2">
+          <button
+            (click)="editarMascota(mascota.id)"
+            [disabled]="!mascota.activo"
+            class="flex-1 text-white px-3 py-2 rounded text-sm transition-colors"
+            [ngClass]="{
+              'bg-blue-500 hover:bg-blue-600': mascota.activo,
+              'bg-gray-400 cursor-not-allowed': !mascota.activo
+            }"
+          >
+            {{ mascota.activo ? 'Editar' : 'No editable' }}
+          </button>
+
+          <!-- Botón eliminar / estado eliminado -->
+          <button
+            *ngIf="mascota.activo"
+            (click)="eliminarMascota(mascota.id)"
+            class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 transition-colors"
+          >
+            Eliminar
+          </button>
+
+          <!-- Estado eliminado -->
+          <div
+            *ngIf="!mascota.activo"
+            class="flex-1 bg-gray-300 text-gray-600 px-3 py-2 rounded text-sm text-center font-medium"
+          >
+            Publicación eliminada
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de detalles -->
+<div
+  *ngIf="mostrarModal && mascotaSeleccionada"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+  (click)="cerrarModal()"
+>
+  <div class="bg-white rounded-lg max-w-2xl max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+    <!-- Modal header -->
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <h2 class="text-2xl font-bold text-gray-900">{{ mascotaSeleccionada.nombre }}</h2>
+        <button
+          (click)="cerrarModal()"
+          class="text-gray-500 hover:text-gray-700"
+        >
+          <span class="material-symbols-outlined text-2xl">close</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal content -->
+    <div class="p-6">
+      <!-- Images -->
+      <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="mb-6">
+        <div class="grid grid-cols-1 gap-4">
+          <img
+            *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada)"
+            [src]="foto"
+            [alt]="mascotaSeleccionada.nombre"
+            class="w-full h-64 object-cover rounded-lg"
+          />
+        </div>
+      </div>
+
+      <!-- Details -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">Información básica</h3>
+          <div class="space-y-2 text-sm">
+            <div><strong>Tipo:</strong> {{ mascotaSeleccionada.tipo }}</div>
+            <div><strong>Raza:</strong> {{ mascotaSeleccionada.raza || 'Mestizo' }}</div>
+            <div><strong>Color:</strong> {{ mascotaSeleccionada.color }}</div>
+            <div><strong>Tamaño:</strong> {{ mascotaSeleccionada.tamanio }}</div>
+            <div><strong>Estado:</strong> {{ getEstadoTexto(mascotaSeleccionada.estado) }}</div>
+          </div>
+        </div>
+
+        <div>
+          <h3 class="font-semibold text-gray-900 mb-2">Fechas</h3>
+          <div class="space-y-2 text-sm">
+            <div><strong>Publicado:</strong> {{ formatearFecha(mascotaSeleccionada.fecha) }}</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="mb-6">
+        <h3 class="font-semibold text-gray-900 mb-2">Descripción</h3>
+        <p class="text-sm text-gray-700">{{ mascotaSeleccionada.descripcion }}</p>
+      </div>
+
+      <!-- Location -->
+      <div *ngIf="mascotaSeleccionada.coordenadas" class="mb-6">
+        <h3 class="font-semibold text-gray-900 mb-2">Coordenadas</h3>
+        <p class="text-sm text-gray-700">{{ mascotaSeleccionada.coordenadas }}</p>
+      </div>
+
+      <!-- Action buttons in modal -->
+      <div class="flex gap-3">
+        <button
+          *ngIf="mascotaSeleccionada.activo"
+          (click)="editarMascota(mascotaSeleccionada.id)"
+          class="flex-1 bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition-colors"
+        >
+          Editar Publicación
+        </button>
+
+        <button
+          *ngIf="mascotaSeleccionada.activo"
+          (click)="reportarAvistamiento(mascotaSeleccionada.id)"
+          class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+        >
+          Ver Avistamientos
+        </button>
+
+        <button
+          *ngIf="mascotaSeleccionada.activo"
+          (click)="eliminarMascota(mascotaSeleccionada.id)"
+          class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
+        >
+          Eliminar
+        </button>
+
+        <!-- Estado cuando está eliminada -->
+        <div
+          *ngIf="!mascotaSeleccionada.activo"
+          class="w-full text-center"
+        >
+          <div class="bg-gray-100 text-gray-600 px-4 py-3 rounded-lg font-medium">
+            📋 Esta publicación ha sido eliminada
+          </div>
+          <button
+            (click)="reportarAvistamiento(mascotaSeleccionada.id)"
+            class="mt-3 w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
+          >
+            Ver Avistamientos
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

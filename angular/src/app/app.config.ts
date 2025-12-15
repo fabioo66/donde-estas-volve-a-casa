@@ -15,8 +15,7 @@ export const appConfig: ApplicationConfig = {
       withInterceptors([authInterceptor])
     ),
     provideClientHydration(
-      withEventReplay(),
-      withNoHttpTransferCache() // Desactivar cache HTTP para debugging
+      withEventReplay()
     )
   ]
 };

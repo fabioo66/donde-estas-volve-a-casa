@@ -40,7 +40,7 @@ public class MascotaService {
     }
 
     public List<Mascota> obtenerMascotasPorUsuario(Long usuarioId) {
-        return mascotaDAO.findByUsuarioActivas(usuarioId);
+        return mascotaDAO.findByUsuario(usuarioId);
     }
 
     public List<Mascota> obtenerMascotasPerdidas() {

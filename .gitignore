@@ -38,3 +38,5 @@ build/
 
 ### Uploads ###
 uploads/
+
+docker-compose.yml

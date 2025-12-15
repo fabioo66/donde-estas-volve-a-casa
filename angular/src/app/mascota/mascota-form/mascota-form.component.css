@@ -1,0 +1,83 @@
+/* Estilos para el componente de formulario de mascota */
+
+.material-symbols-outlined {
+  font-variation-settings:
+  'FILL' 0,
+  'wght' 400,
+  'GRAD' 0,
+  'opsz' 24
+}
+
+/* Estilos para el mapa */
+#map {
+  height: 400px;
+  width: 100%;
+  z-index: 1;
+}
+
+/* Asegurar que Leaflet se vea correctamente */
+.leaflet-container {
+  font-family: inherit;
+}
+
+/* Estilos para inputs focus */
+.focus\:border-primary:focus {
+  border-color: #13a4ec !important;
+}
+
+.focus\:ring-primary:focus {
+  --tw-ring-color: rgba(19, 164, 236, 0.1) !important;
+}
+
+/* Estilos para radio buttons */
+.form-radio {
+  color: #13a4ec;
+}
+
+/* Hover states */
+.hover\:bg-primary\/20:hover {
+  background-color: rgba(19, 164, 236, 0.2);
+}
+
+.hover\:bg-primary\/90:hover {
+  background-color: rgba(19, 164, 236, 0.9);
+}
+
+/* Transition effects */
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Disabled button styles */
+.disabled\:opacity-50:disabled {
+  opacity: 0.5;
+}
+
+/* Contenedor del formulario */
+.container {
+  max-width: 100%;
+  padding: 0 1rem;
+}
+
+@media (min-width: 640px) {
+  .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .container {
+    padding: 0 2rem;
+  }
+}
+
+/* Animaciones para preview de imágenes */
+.preview-image {
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.preview-image:hover {
+  transform: scale(1.05);
+}

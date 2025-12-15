@@ -1,7 +1,7 @@
 <div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f7f8] dark:bg-[#101c22]">
   <div class="layout-container flex h-full grow flex-col">
     <!-- Header Global con Autenticación -->
-    <header class="flex items-center justify-between whitespace-nowrap border-b-2 border-[#13a4ec] px-4 sm:px-6 lg:px-10 py-3 bg-white dark:bg-[#1a2632] shadow-lg sticky top-0 z-50">
+    <header *ngIf="showHeader" class="flex items-center justify-between whitespace-nowrap border-b-2 border-[#13a4ec] px-4 sm:px-6 lg:px-10 py-3 bg-white dark:bg-[#1a2632] shadow-lg sticky top-0 z-50">
       <!-- Logo y Título -->
       <div class="flex items-center gap-3 cursor-pointer" (click)="irAHome()">
         <div class="text-3xl">🐾</div>
@@ -76,15 +76,24 @@
     </header>
 
     <!-- Menú móvil desplegable -->
-    <div *ngIf="mobileMenuOpen" class="md:hidden bg-white dark:bg-[#1a2632] border-b border-stone-200/80 dark:border-stone-700/60 shadow-lg">
+    <div *ngIf="mobileMenuOpen && showHeader" class="md:hidden bg-white dark:bg-[#1a2632] border-b border-stone-200/80 dark:border-stone-700/60 shadow-lg">
       <nav class="flex flex-col px-4 py-3 space-y-3">
-        <a 
+        <a
           (click)="closeMobileMenu()"
-          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800" 
-          routerLink="/avistamientos" 
+          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+          routerLink="/avistamientos"
           routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
           Avistamientos
         </a>
+        @if (isLoggedIn()) {
+          <a
+            (click)="closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            routerLink="/dashboard"
+            routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+            Dashboard
+          </a>
+        }
       </nav>
     </div>
 

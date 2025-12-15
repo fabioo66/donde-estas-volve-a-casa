@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8"/>
+  <link crossorigin="" href="https://fonts.gstatic.com/" rel="preconnect"/>
+  <link as="style" href="https://fonts.googleapis.com/css2?display=swap&amp;family=Public+Sans%3Awght%40400%3B500%3B700%3B900" onload="this.rel='stylesheet'" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#13a4ec",
+              "background-light": "#f6f7f8",
+              "background-dark": "#101c22",
+            },
+            fontFamily: {
+              display: ["Public Sans"],
+            },
+            borderRadius: { DEFAULT: "0.25rem", lg: "0.5rem", xl: "0.75rem", full: "9999px" },
+          },
+        },
+      };
+    </script>
+  <title>Mascotas Perdidas - ¿Dónde estás? Volvé a casa</title>
+</head>
+<body class="font-display bg-background-light text-slate-800 dark:bg-background-dark dark:text-slate-200">
+<div class="flex min-h-screen w-full flex-col">
+  <!-- Header -->
+  <header class="border-b border-slate-200/80 bg-background-light/80 dark:border-slate-800/80 dark:bg-background-dark/80 sticky top-0 z-50 backdrop-blur-sm">
+    <div class="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center gap-3">
+        <svg class="h-8 w-8 text-primary" fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+          <path d="M24 45.8096C19.6865 45.8096 15.4698 44.5305 11.8832 42.134C8.29667 39.7376 5.50128 36.3314 3.85056 32.3462C2.19985 28.361 1.76794 23.9758 2.60947 19.7452C3.451 15.5145 5.52816 11.6284 8.57829 8.5783C11.6284 5.52817 15.5145 3.45101 19.7452 2.60948C23.9758 1.76795 28.361 2.19986 32.3462 3.85057C36.3314 5.50129 39.7376 8.29668 42.134 11.8833C44.5305 15.4698 45.8096 19.6865 45.8096 24L24 24L24 45.8096Z" fill="currentColor"></path>
+        </svg>
+        <h1 class="text-xl font-bold text-slate-900 dark:text-slate-50">¿Donde estas? Volve a casa</h1>
+      </div>
+      <nav class="hidden items-center gap-6 md:flex">
+        <a class="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-primary" routerLink="/">Inicio</a>
+        <a class="font-semibold text-primary" routerLink="/mascotas">Buscar</a>
+        <a class="text-sm font-medium text-slate-600 hover:text-primary dark:text-slate-300 dark:hover:text-primary" routerLink="/mascota/nuevo">Reportar</a>
+      </nav>
+      <div class="flex items-center gap-4">
+        <button class="flex h-10 w-10 items-center justify-center rounded-full bg-background-light hover:bg-primary/10 dark:bg-background-dark dark:hover:bg-primary/20">
+          <span class="material-symbols-outlined text-slate-600 dark:text-slate-300"> notifications </span>
+        </button>
+        <div class="h-10 w-10 rounded-full bg-cover bg-center bg-slate-300"></div>
+      </div>
+    </div>
+  </header>
+
+  <main class="flex-1">
+    <!-- Hero Section -->
+    <div class="bg-gradient-to-r from-primary/10 to-blue-600/10 py-12 sm:py-16">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center">
+          <h2 class="text-3xl sm:text-4xl font-bold tracking-tight text-slate-900 dark:text-slate-50 mb-4">
+            Mascotas Perdidas
+          </h2>
+          <p class="text-lg sm:text-xl text-slate-600 dark:text-slate-400 mb-8">
+            Ayudanos a reunir mascotas con sus familias
+          </p>
+          <button
+            (click)="reportarMascota()"
+            class="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary/90 transition-colors"
+          >
+            <span class="material-symbols-outlined">add</span>
+            Reportar Mascota
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="border-b border-slate-200 dark:border-slate-700 py-6">
+      <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-4">
+          <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-4">Filtrar resultados</h3>
+        </div>
+
+        <!-- Responsive filter grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
+          <!-- Nombre -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Nombre</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroNombre"
+              (input)="aplicarFiltros()"
+              placeholder="Buscar por nombre..."
+              class="w-full rounded-lg border-slate-300 text-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            />
+          </div>
+
+          <!-- Tamaño -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tamaño</label>
+            <select
+              [(ngModel)]="filtroTamanio"
+              (change)="aplicarFiltros()"
+              class="w-full rounded-lg border-slate-300 text-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <option value="">Todos</option>
+              <option value="PEQUENIO">Pequeño</option>
+              <option value="MEDIANO">Mediano</option>
+              <option value="GRANDE">Grande</option>
+            </select>
+          </div>
+
+          <!-- Color -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Color</label>
+            <input
+              type="text"
+              [(ngModel)]="filtroColor"
+              (input)="aplicarFiltros()"
+              placeholder="Color..."
+              class="w-full rounded-lg border-slate-300 text-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            />
+          </div>
+
+          <!-- Tipo -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Tipo</label>
+            <select
+              [(ngModel)]="filtroTipo"
+              (change)="aplicarFiltros()"
+              class="w-full rounded-lg border-slate-300 text-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <option value="">Todos</option>
+              <option value="PERRO">Perro</option>
+              <option value="GATO">Gato</option>
+              <option value="OTRO">Otro</option>
+            </select>
+          </div>
+
+          <!-- Estado -->
+          <div>
+            <label class="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">Estado</label>
+            <select
+              [(ngModel)]="filtroEstado"
+              (change)="aplicarFiltros()"
+              class="w-full rounded-lg border-slate-300 text-sm focus:border-primary focus:ring-primary dark:border-slate-600 dark:bg-slate-800 dark:text-slate-200"
+            >
+              <option value="">Todos</option>
+              <option value="PERDIDO_PROPIO">Perdido Propio</option>
+              <option value="PERDIDO_AJENO">Perdido Ajeno</option>
+              <option value="ADOPTADO">Para Adopción</option>
+              <option value="RECUPERADO">Recuperado</option>
+            </select>
+          </div>
+
+          <!-- Limpiar filtros -->
+          <div class="flex items-end">
+            <button
+              (click)="limpiarFiltros()"
+              class="w-full px-4 py-2 text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg border border-slate-300 transition-colors dark:text-slate-300 dark:hover:text-slate-100 dark:hover:bg-slate-700 dark:border-slate-600"
+            >
+              Limpiar
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <!-- Loading State -->
+      <div *ngIf="loading" class="flex items-center justify-center py-12">
+        <div class="text-center">
+          <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+          <p class="mt-4 text-slate-600 dark:text-slate-400">Cargando mascotas...</p>
+        </div>
+      </div>
+
+      <!-- Results Counter -->
+      <div *ngIf="!loading" class="flex items-center justify-between mb-6">
+        <p class="text-slate-600 dark:text-slate-400">
+          Mostrando {{ mascotasPaginadas.length }} de {{ mascotasFiltradas.length }} mascotas
+        </p>
+      </div>
+
+      <!-- No Results -->
+      <div *ngIf="!loading && mascotasFiltradas.length === 0" class="text-center py-12">
+        <div class="mx-auto w-24 h-24 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-4">
+          <span class="material-symbols-outlined text-3xl text-slate-400">pets</span>
+        </div>
+        <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-50 mb-2">No se encontraron mascotas</h3>
+        <p class="text-slate-600 dark:text-slate-400 mb-4">Prueba ajustando los filtros de búsqueda</p>
+        <button
+          (click)="limpiarFiltros()"
+          class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-lg transition-colors"
+        >
+          <span class="material-symbols-outlined text-sm">refresh</span>
+          Limpiar filtros
+        </button>
+      </div>
+
+      <!-- Results Grid -->
+      <div *ngIf="!loading && mascotasFiltradas.length > 0">
+        <!-- Responsive grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          <div
+            *ngFor="let mascota of mascotasPaginadas"
+            class="bg-white dark:bg-slate-800 rounded-lg shadow-sm border border-slate-200 dark:border-slate-700 overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+            (click)="verDetalle(mascota)"
+          >
+            <!-- Imagen -->
+            <div class="aspect-[4/3] bg-slate-100 dark:bg-slate-700 relative">
+              <img
+                [src]="obtenerPrimeraFoto(mascota)"
+                [alt]="mascota.nombre"
+                class="w-full h-full object-cover"
+                loading="lazy"
+                onerror="this.src='/assets/images/mascota-default.svg'"
+              />
+              <!-- Estado badge -->
+              <div class="absolute top-3 right-3">
+                <span [class]="'px-2 py-1 text-xs font-semibold rounded-full ' + getEstadoColor(mascota.estado)">
+                  {{ mascota.estado }}
+                </span>
+              </div>
+            </div>
+
+            <!-- Contenido -->
+            <div class="p-4">
+              <div class="flex items-start justify-between mb-2">
+                <h3 class="text-lg font-semibold text-slate-900 dark:text-slate-50 truncate">
+                  {{ mascota.nombre }}
+                </h3>
+                <button
+                  (click)="editarMascota(mascota); $event.stopPropagation()"
+                  class="p-1 text-slate-400 hover:text-primary transition-colors"
+                  title="Editar"
+                >
+                  <span class="material-symbols-outlined text-sm">edit</span>
+                </button>
+              </div>
+
+              <!-- Información básica -->
+              <div class="space-y-1 mb-3">
+                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm">pets</span>
+                  <span>{{ mascota.tipo }} • {{ getTamanioTexto(mascota.tamanio) }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm">palette</span>
+                  <span>{{ mascota.color }}</span>
+                </div>
+                <div class="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
+                  <span class="material-symbols-outlined text-sm">calendar_today</span>
+                  <span>{{ formatearFecha(mascota.fecha) }}</span>
+                </div>
+              </div>
+
+              <!-- Descripción -->
+              <p *ngIf="mascota.descripcion" class="text-sm text-slate-600 dark:text-slate-400 line-clamp-2 mb-3">
+                {{ mascota.descripcion }}
+              </p>
+
+              <!-- Raza -->
+              <div *ngIf="mascota.raza" class="text-xs text-slate-500 dark:text-slate-500">
+                Raza: {{ mascota.raza }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div *ngIf="totalPaginas > 1" class="flex items-center justify-center">
+          <nav class="flex items-center gap-1" aria-label="Paginación">
+            <!-- Página anterior -->
+            <button
+              (click)="cambiarPagina(paginaActual - 1)"
+              [disabled]="paginaActual === 1"
+              class="p-2 text-slate-500 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Página anterior"
+            >
+              <span class="material-symbols-outlined">chevron_left</span>
+            </button>
+
+            <!-- Números de página -->
+            <div class="flex items-center gap-1">
+              <!-- Primera página -->
+              <button
+                *ngIf="paginaActual > 3"
+                (click)="cambiarPagina(1)"
+                class="w-10 h-10 text-sm font-medium rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                1
+              </button>
+
+              <!-- Puntos suspensivos -->
+              <span *ngIf="paginaActual > 4" class="px-2 text-slate-400">...</span>
+
+              <!-- Números de página -->
+              <button
+                *ngFor="let pagina of paginasArray; let i = index"
+                (click)="cambiarPagina(pagina)"
+                [class]="pagina === paginaActual
+                  ? 'w-10 h-10 text-sm font-medium rounded-lg bg-primary text-white'
+                  : 'w-10 h-10 text-sm font-medium rounded-lg hover:bg-primary/10 hover:text-primary transition-colors'"
+                [hidden]="getAbsValue(pagina - paginaActual) > 2 && pagina !== 1 && pagina !== totalPaginas"
+              >
+                {{ pagina }}
+              </button>
+
+              <!-- Puntos suspensivos -->
+              <span *ngIf="paginaActual < totalPaginas - 3" class="px-2 text-slate-400">...</span>
+
+              <!-- Última página -->
+              <button
+                *ngIf="paginaActual < totalPaginas - 2"
+                (click)="cambiarPagina(totalPaginas)"
+                class="w-10 h-10 text-sm font-medium rounded-lg hover:bg-primary/10 hover:text-primary transition-colors"
+              >
+                {{ totalPaginas }}
+              </button>
+            </div>
+
+            <!-- Página siguiente -->
+            <button
+              (click)="cambiarPagina(paginaActual + 1)"
+              [disabled]="paginaActual === totalPaginas"
+              class="p-2 text-slate-500 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed"
+              aria-label="Página siguiente"
+            >
+              <span class="material-symbols-outlined">chevron_right</span>
+            </button>
+          </nav>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

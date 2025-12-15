@@ -1,0 +1,288 @@
+/* Responsive styles for mascota list component */
+
+/* Base container styles */
+.container {
+  max-width: 100%;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 640px) {
+  /* Mobile: Single column */
+  .responsive-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Mobile filter adjustments */
+  .filter-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1024px) {
+  /* Tablet: Two columns */
+  .responsive-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  /* Tablet filter adjustments */
+  .filter-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  /* Desktop: Three columns */
+  .responsive-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Desktop filter adjustments */
+  .filter-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  /* Large desktop: Filter grid adjustments */
+  .filter-grid {
+    grid-template-columns: repeat(6, 1fr);
+    gap: 1rem;
+  }
+}
+
+/* Card hover effects */
+.mascota-card {
+  transition: all 0.3s ease;
+}
+
+.mascota-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Image aspect ratio and loading states */
+.mascota-image {
+  aspect-ratio: 4/3;
+  background-color: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.mascota-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.mascota-image:hover img {
+  transform: scale(1.05);
+}
+
+/* Loading spinner animation */
+.animate-spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Badge styles for status */
+.status-badge {
+  backdrop-filter: blur(4px);
+  background-color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dark mode status badge adjustments */
+@media (prefers-color-scheme: dark) {
+  .status-badge {
+    background-color: rgba(0, 0, 0, 0.8);
+  }
+}
+
+/* Text truncation utilities */
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+}
+
+.truncate {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Pagination responsive adjustments */
+@media (max-width: 640px) {
+  .pagination-container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .pagination-info {
+    text-align: center;
+    font-size: 0.875rem;
+  }
+
+  /* Hide page numbers on very small screens */
+  .page-numbers {
+    display: none;
+  }
+
+  .page-numbers.mobile-visible {
+    display: flex;
+    justify-content: center;
+    gap: 0.25rem;
+  }
+
+  .page-button {
+    min-width: 2rem;
+    height: 2rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Filter section responsive */
+@media (max-width: 768px) {
+  .filter-section {
+    padding: 1rem 0;
+  }
+
+  .filter-title {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+  }
+}
+
+/* Button responsive sizing */
+@media (max-width: 640px) {
+  .action-button {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .icon-button {
+    padding: 0.5rem;
+  }
+}
+
+/* Form field responsive styling */
+.form-field {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-field:focus {
+  outline: none;
+  border-color: #13a4ec;
+  box-shadow: 0 0 0 3px rgba(19, 164, 236, 0.1);
+}
+
+/* Hero section responsive adjustments */
+@media (max-width: 640px) {
+  .hero-section {
+    padding: 2rem 0;
+  }
+
+  .hero-title {
+    font-size: 1.875rem;
+    line-height: 2.25rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+    line-height: 1.5rem;
+  }
+}
+
+/* Card content responsive spacing */
+@media (max-width: 640px) {
+  .card-content {
+    padding: 1rem;
+  }
+
+  .card-title {
+    font-size: 1rem;
+    line-height: 1.25rem;
+  }
+
+  .card-info {
+    font-size: 0.75rem;
+  }
+}
+
+/* Empty state responsive */
+.empty-state {
+  padding: 3rem 1rem;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .empty-state {
+    padding: 2rem 1rem;
+  }
+
+  .empty-state-icon {
+    width: 4rem;
+    height: 4rem;
+    font-size: 2rem;
+  }
+
+  .empty-state-title {
+    font-size: 1.125rem;
+  }
+
+  .empty-state-description {
+    font-size: 0.875rem;
+  }
+}
+
+/* Utility classes for responsive design */
+.hide-mobile {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .hide-mobile {
+    display: none;
+  }
+}
+
+.show-mobile {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .show-mobile {
+    display: block;
+  }
+}
+
+/* Transition utilities */
+.transition-colors {
+  transition-property: color, background-color, border-color;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-shadow {
+  transition-property: box-shadow;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+.transition-transform {
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
