@@ -11,4 +11,7 @@ public interface AvistamientoDAO extends GenericDAO<Avistamiento> {
 
     // Contar avistamientos pendientes/activos para estadísticas
     int contarAvistamientosPendientes();
+
+    // Obtener solo avistamientos activos
+    List<Avistamiento> findAvistamientosActivos();
 }
