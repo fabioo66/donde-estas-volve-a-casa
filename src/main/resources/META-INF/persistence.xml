@@ -7,24 +7,26 @@
     <persistence-unit name="my-persistence-unit" transaction-type="RESOURCE_LOCAL">
         <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
 
-        <!-- Aquí van tus entidades -->
-        <class>ttps.models.Mascota</class>
-        <class>ttps.models.Usuario</class>
-        <class>ttps.models.Avistamiento</class>
-
+        <!-- Entidades -->
+        <class>ttps.spring.models.Mascota</class>
+        <class>ttps.spring.models.Usuario</class>
+        <class>ttps.spring.models.UsuarioRegistrado</class>
+        <class>ttps.spring.models.Administrador</class>
+        <class>ttps.spring.models.Avistamiento</class>
 
         <properties>
-            <!-- 🔌 Datos de conexión -->
+            <!-- Datos de conexión -->
             <property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
             <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3307/proyectoTTPS?useSSL=false&amp;serverTimezone=UTC"/>
             <property name="jakarta.persistence.jdbc.user" value="valen"/>
             <property name="jakarta.persistence.jdbc.password" value="valen"/>
 
-            <!-- ⚙️ Propiedades de Hibernate -->
+            <!-- Propiedades de Hibernate -->
             <property name="hibernate.dialect" value="org.hibernate.dialect.MySQL8Dialect"/>
-            <property name="hibernate.hbm2ddl.auto" value="create"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
             <property name="hibernate.show_sql" value="true"/>
             <property name="hibernate.format_sql" value="true"/>
         </properties>
     </persistence-unit>
 </persistence>
+

@@ -1,0 +1,103 @@
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden bg-[#f6f7f8] dark:bg-[#101c22]">
+  <div class="layout-container flex h-full grow flex-col">
+    <!-- Header Global con Autenticación -->
+    <header *ngIf="showHeader" class="flex items-center justify-between whitespace-nowrap border-b-2 border-[#13a4ec] px-4 sm:px-6 lg:px-10 py-3 bg-white dark:bg-[#1a2632] shadow-lg sticky top-0 z-50">
+      <!-- Logo y Título -->
+      <div class="flex items-center gap-3 cursor-pointer" (click)="irAHome()">
+        <div class="text-3xl">🐾</div>
+        <div>
+          <h1 class="text-xl sm:text-2xl font-bold text-[#13a4ec]">Donde Estás, Volvé a Casa</h1>
+          <p class="text-xs text-stone-500 dark:text-stone-400 hidden sm:block">Ayudamos a reunir mascotas con sus familias</p>
+        </div>
+      </div>
+
+      <!-- Navegación y Autenticación -->
+      <nav class="flex items-center gap-3">
+        <!-- Links de navegación - visible en tablet y desktop -->
+        <div class="hidden md:flex items-center gap-4 lg:gap-8 mr-4">
+          <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/avistamientos" routerLinkActive="text-[#13a4ec]">Avistamientos</a>
+        </div>
+
+        <!-- Botón hamburguesa para móvil -->
+        <button (click)="toggleMobileMenu()" class="md:hidden p-2 text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] transition-colors" aria-label="Menú de navegación">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path *ngIf="!mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+            <path *ngIf="mobileMenuOpen" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <!-- Autenticación -->
+        @if (!isLoggedIn()) {
+          <!-- Usuario no autenticado -->
+          <button
+            (click)="irALogin()"
+            class="flex items-center justify-center rounded-full h-9 sm:h-10 px-4 sm:px-6 bg-[#13a4ec] text-white text-xs sm:text-sm font-bold shadow-sm hover:bg-[#13a4ec]/90 transition-colors whitespace-nowrap gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+            <span class="hidden sm:inline">Iniciar Sesión / Registrarse</span>
+            <span class="sm:hidden">Ingresar</span>
+          </button>
+        } @else {
+          <!-- Usuario autenticado -->
+          <div class="flex items-center gap-2">
+            <!-- Saludo al usuario (oculto en móvil) -->
+            <div class="hidden lg:flex items-center gap-2 px-3 py-2 bg-stone-100 dark:bg-stone-800 rounded-lg">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec]" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+              </svg>
+              <span class="text-stone-700 dark:text-stone-300 text-sm">
+                Hola, <strong>{{ currentUser?.nombre }}</strong>
+              </span>
+            </div>
+
+            <!-- Botón Mi Perfil -->
+            <button
+              (click)="irAPerfil()"
+              class="bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+              </svg>
+              <span class="hidden sm:inline">Mi Perfil</span>
+            </button>
+
+            <!-- Botón Cerrar Sesión -->
+            <button
+              (click)="cerrarSesion()"
+              class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
+              </svg>
+              <span class="hidden sm:inline">Cerrar Sesión</span>
+            </button>
+          </div>
+        }
+      </nav>
+    </header>
+
+    <!-- Menú móvil desplegable -->
+    <div *ngIf="mobileMenuOpen && showHeader" class="md:hidden bg-white dark:bg-[#1a2632] border-b border-stone-200/80 dark:border-stone-700/60 shadow-lg">
+      <nav class="flex flex-col px-4 py-3 space-y-3">
+        <a
+          (click)="closeMobileMenu()"
+          class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+          routerLink="/avistamientos"
+          routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+          Avistamientos
+        </a>
+        @if (isLoggedIn()) {
+          <a
+            (click)="closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            routerLink="/dashboard"
+            routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+            Dashboard
+          </a>
+        }
+      </nav>
+    </div>
+
+    <!-- Router Outlet -->
+    <router-outlet></router-outlet>
+  </div>
+</div>

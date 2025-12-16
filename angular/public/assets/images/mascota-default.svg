@@ -1,0 +1,29 @@
+<svg width="400" height="300" viewBox="0 0 400 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="400" height="300" fill="#f1f5f9"/>
+  <!-- Silueta de mascota genérica -->
+  <g transform="translate(150, 80)">
+    <!-- Cuerpo -->
+    <ellipse cx="50" cy="80" rx="40" ry="60" fill="#cbd5e1"/>
+    <!-- Cabeza -->
+    <circle cx="50" cy="40" r="30" fill="#cbd5e1"/>
+    <!-- Orejas -->
+    <ellipse cx="35" cy="20" rx="8" ry="15" fill="#94a3b8"/>
+    <ellipse cx="65" cy="20" rx="8" ry="15" fill="#94a3b8"/>
+    <!-- Ojos -->
+    <circle cx="42" cy="35" r="3" fill="#64748b"/>
+    <circle cx="58" cy="35" r="3" fill="#64748b"/>
+    <!-- Nariz -->
+    <ellipse cx="50" cy="45" rx="2" ry="1.5" fill="#64748b"/>
+    <!-- Patas -->
+    <ellipse cx="35" cy="130" rx="6" ry="15" fill="#cbd5e1"/>
+    <ellipse cx="50" cy="130" rx="6" ry="15" fill="#cbd5e1"/>
+    <ellipse cx="65" cy="130" rx="6" ry="15" fill="#cbd5e1"/>
+    <!-- Cola -->
+    <ellipse cx="15" cy="75" rx="5" ry="20" fill="#cbd5e1" transform="rotate(-30 15 75)"/>
+  </g>
+  <!-- Texto -->
+  <text x="200" y="220" font-family="Arial, sans-serif" font-size="14" fill="#64748b" text-anchor="middle">
+    Sin foto disponible
+  </text>
+</svg>
+

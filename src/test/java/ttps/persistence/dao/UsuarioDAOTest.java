@@ -1,23 +1,26 @@
 package ttps.persistence.dao;
 
 import org.junit.jupiter.api.*;
-import ttps.models.Usuario;
-import ttps.persistence.dao.impl.UsuarioDAOHibernateJPA;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import ttps.spring.Application;
+import ttps.spring.models.Usuario;
+import ttps.spring.services.UsuarioService;
 
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@SpringBootTest(classes = Application.class)
+@TestInstance(TestInstance.Lifecycle.PER_CLASS)
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class UsuarioDAOTest {
 
-    private static UsuarioDAOHibernateJPA usuarioDAO;
-    private static Usuario usuarioTest;
+    @Autowired
+    private UsuarioService usuarioService;
 
-    @BeforeAll
-    public static void setUp() {
-        usuarioDAO = new UsuarioDAOHibernateJPA();
-    }
+    private Usuario usuarioTest;
+
 
     @Test
     @Order(1)
@@ -30,12 +33,13 @@ public class UsuarioDAOTest {
                 "juan.perez@example.com",
                 "password123",
                 "3515555555",
-                "Centro",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Centro"
         );
 
         // Act
-        Usuario usuarioCreado = usuarioDAO.persist(usuarioTest);
+        Usuario usuarioCreado = usuarioService.crearUsuario(usuarioTest);
 
         // Assert
         assertNotNull(usuarioCreado, "El usuario creado no debe ser null");
@@ -55,7 +59,7 @@ public class UsuarioDAOTest {
         long usuarioId = usuarioTest.getId();
 
         // Act
-        Usuario usuarioObtenido = usuarioDAO.get(usuarioId);
+        Usuario usuarioObtenido = usuarioService.obtenerUsuario(usuarioId);
 
         // Assert
         assertNotNull(usuarioObtenido, "El usuario obtenido no debe ser null");
@@ -71,7 +75,7 @@ public class UsuarioDAOTest {
     @DisplayName("Test READ ALL - Obtener todos los usuarios")
     public void testGetAllUsuarios() {
         // Act
-        List<Usuario> usuarios = usuarioDAO.getAll("nombre");
+        List<Usuario> usuarios = usuarioService.obtenerTodosLosUsuarios();
 
         // Assert
         assertNotNull(usuarios, "La lista de usuarios no debe ser null");
@@ -87,24 +91,32 @@ public class UsuarioDAOTest {
     @DisplayName("Test UPDATE - Actualizar un usuario")
     public void testUpdateUsuario() {
         // Arrange
-        Usuario usuarioParaActualizar = usuarioDAO.get(usuarioTest.getId());
+        Usuario usuarioParaActualizar = usuarioService.obtenerUsuario(usuarioTest.getId());
         String nuevoTelefono = "3516666666";
-        String nuevaCiudad = "Villa Carlos Paz";
+        String nuevaProvincia = "Córdoba";
+        String nuevoMunicipio = "Villa Carlos Paz";
+        String nuevoDepartamento = "Punilla";
 
         // Act
         usuarioParaActualizar.setTelefono(nuevoTelefono);
-        usuarioParaActualizar.setCiudad(nuevaCiudad);
-        Usuario usuarioActualizado = usuarioDAO.update(usuarioParaActualizar);
+        usuarioParaActualizar.setProvincia(nuevaProvincia);
+        usuarioParaActualizar.setMunicipio(nuevoMunicipio);
+        usuarioParaActualizar.setDepartamento(nuevoDepartamento);
+        Usuario usuarioActualizado = usuarioService.actualizarUsuario(usuarioParaActualizar);
 
         // Assert
         assertNotNull(usuarioActualizado, "El usuario actualizado no debe ser null");
         assertEquals(nuevoTelefono, usuarioActualizado.getTelefono());
-        assertEquals(nuevaCiudad, usuarioActualizado.getCiudad());
+        assertEquals(nuevaProvincia, usuarioActualizado.getProvincia());
+        assertEquals(nuevoMunicipio, usuarioActualizado.getMunicipio());
+        assertEquals(nuevoDepartamento, usuarioActualizado.getDepartamento());
 
         // Verificar que los cambios persisten en la base de datos
-        Usuario usuarioVerificado = usuarioDAO.get(usuarioTest.getId());
+        Usuario usuarioVerificado = usuarioService.obtenerUsuario(usuarioTest.getId());
         assertEquals(nuevoTelefono, usuarioVerificado.getTelefono());
-        assertEquals(nuevaCiudad, usuarioVerificado.getCiudad());
+        assertEquals(nuevaProvincia, usuarioVerificado.getProvincia());
+        assertEquals(nuevoMunicipio, usuarioVerificado.getMunicipio());
+        assertEquals(nuevoDepartamento, usuarioVerificado.getDepartamento());
 
         System.out.println("✓ Usuario actualizado - Nuevo teléfono: " + usuarioActualizado.getTelefono());
     }
@@ -114,13 +126,13 @@ public class UsuarioDAOTest {
     @DisplayName("Test DELETE - Borrado lógico de usuario")
     public void testDeleteUsuario() {
         // Arrange
-        Usuario usuarioAEliminar = usuarioDAO.get(usuarioTest.getId());
+        Usuario usuarioAEliminar = usuarioService.obtenerUsuario(usuarioTest.getId());
 
         // Act
-        usuarioDAO.delete(usuarioAEliminar);
+        usuarioService.eliminarUsuario(usuarioAEliminar);
 
         // Assert - El registro sigue existiendo pero está marcado como inactivo
-        Usuario usuarioBorrado = usuarioDAO.get(usuarioTest.getId());
+        Usuario usuarioBorrado = usuarioService.obtenerUsuario(usuarioTest.getId());
         assertNotNull(usuarioBorrado, "El usuario con borrado lógico no debe ser null");
         assertFalse(usuarioBorrado.isActivo(), "El usuario debe estar marcado como inactivo");
 
@@ -138,17 +150,18 @@ public class UsuarioDAOTest {
                 "ana.lopez@example.com",
                 "password999",
                 "3519999999",
-                "Alta Córdoba",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Alta Córdoba"
         );
-        usuarioParaBorradoLogico = usuarioDAO.persist(usuarioParaBorradoLogico);
+        usuarioParaBorradoLogico = usuarioService.crearUsuario(usuarioParaBorradoLogico);
         long idUsuario = usuarioParaBorradoLogico.getId();
 
         // Act - Borrado lógico por ID
-        usuarioDAO.delete(idUsuario);
+        usuarioService.eliminarUsuario(idUsuario);
 
         // Assert
-        Usuario usuarioBorradoLogico = usuarioDAO.get(idUsuario);
+        Usuario usuarioBorradoLogico = usuarioService.obtenerUsuario(idUsuario);
         assertNotNull(usuarioBorradoLogico, "El usuario con borrado lógico no debe ser null");
         assertFalse(usuarioBorradoLogico.isActivo(), "El usuario debe estar marcado como inactivo");
 
@@ -167,10 +180,11 @@ public class UsuarioDAOTest {
                 "pedro.martinez@example.com",
                 contraseniaOriginal,
                 "3517777777",
-                "Nueva Córdoba",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Nueva Córdoba"
         );
-        usuario = usuarioDAO.persist(usuario);
+        usuario = usuarioService.crearUsuario(usuario);
 
         // Act & Assert - Verificar contraseña correcta
         assertTrue(usuario.verificarContrasenia(contraseniaOriginal),
@@ -208,15 +222,16 @@ public class UsuarioDAOTest {
                 "maria.garcia@example.com",
                 contraseniaInicial,
                 "3518888888",
-                "Güemes",
-                "Córdoba"
+                "Córdoba",
+                "Córdoba Capital",
+                "Güemes"
         );
-        usuario = usuarioDAO.persist(usuario);
+        usuario = usuarioService.crearUsuario(usuario);
         String hashInicial = usuario.getContrasenia();
 
         // Act - Cambiar la contraseña usando setContrasenia
         usuario.setContrasenia(nuevaContrasenia);
-        Usuario usuarioActualizado = usuarioDAO.update(usuario);
+        Usuario usuarioActualizado = usuarioService.actualizarUsuario(usuario);
 
         // Assert - La contraseña inicial ya no debe ser válida
         assertFalse(usuarioActualizado.verificarContrasenia(contraseniaInicial),
@@ -231,7 +246,7 @@ public class UsuarioDAOTest {
                 "El hash de la contraseña debe haber cambiado");
 
         // Verificar que los cambios persisten en la base de datos
-        Usuario usuarioVerificado = usuarioDAO.get(usuarioActualizado.getId());
+        Usuario usuarioVerificado = usuarioService.obtenerUsuario(usuarioActualizado.getId());
         assertTrue(usuarioVerificado.verificarContrasenia(nuevaContrasenia),
                 "La nueva contraseña debe persistir en la base de datos");
 
@@ -240,3 +255,4 @@ public class UsuarioDAOTest {
         System.out.println("  - Hash nuevo:   " + usuarioActualizado.getContrasenia());
     }
 }
+

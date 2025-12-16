@@ -1,0 +1,240 @@
+<main class="flex-1">
+  <div class="container mx-auto max-w-2xl px-4 py-12 sm:px-6 lg:px-8">
+    <div class="space-y-8">
+      <div class="space-y-2 text-center">
+        <h2 class="text-3xl font-bold tracking-tight text-slate-900">Reportar una Mascota</h2>
+        <p class="text-slate-500">Completá el formulario para reportar una mascota perdida o encontrada.</p>
+      </div>
+
+      <div class="rounded-lg border border-slate-200 bg-white p-6">
+        <form (ngSubmit)="onSubmit(mascotaForm)" #mascotaForm="ngForm" class="space-y-6">
+          <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="pet-name">Nombre de la Mascota *</label>
+              <input
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="pet-name"
+                name="nombre"
+                [(ngModel)]="mascota.nombre"
+                #nombre="ngModel"
+                required
+                placeholder="Ingresá el nombre de la mascota"
+              />
+              <div *ngIf="esCampoInvalido(nombre)" class="text-red-500 text-xs">
+                {{ getMensajeError(nombre) }}
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="date">Fecha de Pérdida/Encuentro *</label>
+              <input
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="date"
+                name="fecha"
+                [(ngModel)]="mascota.fecha"
+                #fecha="ngModel"
+                required
+                type="date"
+              />
+              <div *ngIf="esCampoInvalido(fecha)" class="text-red-500 text-xs">
+                {{ getMensajeError(fecha) }}
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="size">Tamaño *</label>
+              <select
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="size"
+                name="tamanio"
+                [(ngModel)]="mascota.tamanio"
+                #tamanio="ngModel"
+                required
+              >
+                <option value="">Seleccionar tamaño</option>
+                <option value="PEQUENIO">Pequeño</option>
+                <option value="MEDIANO">Mediano</option>
+                <option value="GRANDE">Grande</option>
+              </select>
+              <div *ngIf="esCampoInvalido(tamanio)" class="text-red-500 text-xs">
+                {{ getMensajeError(tamanio) }}
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="color">Color *</label>
+              <input
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="color"
+                name="color"
+                [(ngModel)]="mascota.color"
+                #color="ngModel"
+                required
+                placeholder="Ej: Negro, Blanco, Marrón, Mestizo"
+              />
+              <div *ngIf="esCampoInvalido(color)" class="text-red-500 text-xs">
+                {{ getMensajeError(color) }}
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="tipo">Tipo de Animal *</label>
+              <input
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="tipo"
+                name="tipo"
+                [(ngModel)]="mascota.tipo"
+                #tipo="ngModel"
+                required
+                placeholder="Ej: Perro, Gato"
+              />
+              <div *ngIf="esCampoInvalido(tipo)" class="text-red-500 text-xs">
+                {{ getMensajeError(tipo) }}
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-slate-700" for="raza">Raza</label>
+              <input
+                class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                id="raza"
+                name="raza"
+                [(ngModel)]="mascota.raza"
+                placeholder="Ej: Mestizo, Labrador"
+              />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <label class="text-sm font-medium text-slate-700" for="description">Descripción Extra *</label>
+            <textarea
+              class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+              id="description"
+              name="descripcion"
+              [(ngModel)]="mascota.descripcion"
+              #descripcion="ngModel"
+              required
+              placeholder="Ingresá detalles adicionales sobre la mascota"
+              rows="4"
+            ></textarea>
+            <div *ngIf="esCampoInvalido(descripcion)" class="text-red-500 text-xs">
+              {{ getMensajeError(descripcion) }}
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <label class="text-sm font-medium text-slate-700">Fotos</label>
+            <div class="flex flex-col items-center justify-center rounded-lg border-2 border-dashed border-slate-300 p-8 text-center">
+              <span class="material-symbols-outlined text-5xl text-slate-400">cloud_upload</span>
+              <p class="mt-2 text-sm font-semibold text-slate-600">Arrastrá y soltá o hacé clic para subir</p>
+              <p class="text-xs text-slate-500">PNG, JPG, GIF hasta 10MB</p>
+              <input
+                type="file"
+                (change)="onFileSelect($event)"
+                multiple
+                accept="image/*"
+                class="hidden"
+                #fileInput
+              />
+              <button
+                class="mt-4 rounded-lg bg-primary/10 px-4 py-2 text-sm font-semibold text-primary hover:bg-primary/20"
+                type="button"
+                (click)="fileInput.click()"
+              >
+                Subir Archivo
+              </button>
+            </div>
+            <!-- Previsualización de imágenes -->
+            <div *ngIf="previsualizaciones.length > 0" class="grid grid-cols-2 md:grid-cols-3 gap-4 mt-4">
+              <div *ngFor="let preview of previsualizaciones; let i = index" class="relative">
+                <img [src]="preview" [alt]="'Vista previa ' + (i + 1)" class="w-full h-24 object-cover rounded-lg border" />
+                <button
+                  type="button"
+                  (click)="removerImagen(i)"
+                  class="absolute -top-2 -right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="space-y-4">
+            <label class="text-sm font-medium text-slate-700">Última Ubicación Vista</label>
+            <div class="space-y-4">
+              <button
+                type="button"
+                (click)="toggleMapa()"
+                class="w-full rounded-lg border-2 border-dashed border-slate-300 p-4 text-center hover:border-primary hover:bg-primary/5 transition-colors"
+              >
+                <span class="material-symbols-outlined text-3xl text-slate-400 block">location_on</span>
+                <p class="mt-2 text-sm font-semibold text-slate-600">
+                  {{ mostrarMapa ? 'Ocultar Mapa' : 'Seleccionar Ubicación en el Mapa' }}
+                </p>
+                <p class="text-xs text-slate-500" *ngIf="mascota.coordenadas">
+                  Coordenadas actuales: {{ mascota.coordenadas }}
+                </p>
+              </button>
+
+              <!-- Mapa -->
+              <div *ngIf="mostrarMapa" class="space-y-4">
+                <div id="map" class="aspect-video w-full rounded-lg border border-slate-200"></div>
+                <div class="text-xs text-slate-500 text-center">
+                  Hacé clic en el mapa para marcar la ubicación donde se perdió o se encontró la mascota
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <fieldset class="space-y-2">
+            <legend class="text-sm font-medium text-slate-700">Estado *</legend>
+            <div class="flex flex-wrap gap-4 pt-2">
+              <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary">
+                <input
+                  class="form-radio h-4 w-4 border-slate-300 text-primary focus:ring-primary"
+                  name="estado"
+                  type="radio"
+                  value="PERDIDO_PROPIO"
+                  [(ngModel)]="mascota.estado"
+                  #estado="ngModel"
+                  required
+                />
+                Mi mascota está perdida
+              </label>
+              <label class="flex cursor-pointer items-center gap-2 rounded-lg border border-slate-300 px-4 py-2 text-sm has-[:checked]:border-primary has-[:checked]:bg-primary/10 has-[:checked]:text-primary">
+                <input
+                  class="form-radio h-4 w-4 border-slate-300 text-primary focus:ring-primary"
+                  name="estado"
+                  type="radio"
+                  value="PERDIDO_AJENO"
+                  [(ngModel)]="mascota.estado"
+                />
+                Encontré una mascota
+              </label>
+            </div>
+            <div *ngIf="esCampoInvalido(estado)" class="text-red-500 text-xs">
+              {{ getMensajeError(estado) }}
+            </div>
+          </fieldset>
+
+          <div class="pt-4">
+            <button
+              class="w-full rounded-lg bg-primary px-6 py-3 text-base font-semibold text-white shadow-sm hover:bg-primary/90 disabled:opacity-50"
+              type="submit"
+              [disabled]="loading || !mascotaForm.valid"
+            >
+              <span *ngIf="!loading">Enviar Reporte</span>
+              <span *ngIf="loading" class="flex items-center justify-center">
+                <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Enviando...
+              </span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</main>

@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  width: 100%;
+  min-height: calc(100vh - 73px);
+}
+
+/* Estilos personalizados para el scroll horizontal de mascotas */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: #13a4ec rgba(0, 0, 0, 0.05);
+  -webkit-overflow-scrolling: touch;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  height: 6px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background: #13a4ec;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background: #0f8acc;
+}
+
+/* Dark mode scroll */
+@media (prefers-color-scheme: dark) {
+  .scrollbar-custom {
+    scrollbar-color: #13a4ec rgba(255, 255, 255, 0.05);
+  }
+
+  .scrollbar-custom::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+  }
+}
+
+/* Animaciones suaves para hover en tarjetas */
+section > div > div {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Optimización para pantallas pequeñas */
+@media (max-width: 640px) {
+  .scrollbar-custom {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
+  }
+}
+
