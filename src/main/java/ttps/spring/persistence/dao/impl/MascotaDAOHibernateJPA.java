@@ -44,4 +44,29 @@ public class MascotaDAOHibernateJPA extends GenericDAOHibernateJPA<Mascota> impl
                 .setParameter("perdidoAjeno", Estado.PERDIDO_AJENO)
                 .getResultList();
     }
+
+    @Override
+    public int contarMascotasPerdidas() {
+        return Math.toIntExact((Long) entityManager.createQuery(
+                "SELECT COUNT(m) FROM Mascota m WHERE (m.estado = :perdidoPropio OR m.estado = :perdidoAjeno) AND m.activo = true")
+                .setParameter("perdidoPropio", Estado.PERDIDO_PROPIO)
+                .setParameter("perdidoAjeno", Estado.PERDIDO_AJENO)
+                .getSingleResult());
+    }
+
+    @Override
+    public int contarMascotasRecuperadas() {
+        return Math.toIntExact((Long) entityManager.createQuery(
+                "SELECT COUNT(m) FROM Mascota m WHERE m.estado = :recuperado AND m.activo = true")
+                .setParameter("recuperado", Estado.RECUPERADO)
+                .getSingleResult());
+    }
+
+    @Override
+    public int contarMascotasAdoptadas() {
+        return Math.toIntExact((Long) entityManager.createQuery(
+                "SELECT COUNT(m) FROM Mascota m WHERE m.estado = :adoptado AND m.activo = true")
+                .setParameter("adoptado", Estado.ADOPTADO)
+                .getSingleResult());
+    }
 }

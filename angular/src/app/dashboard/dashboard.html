@@ -49,28 +49,28 @@
     <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
       <div class="bg-white p-6 rounded-lg border border-gray-200">
         <p class="text-sm font-medium text-gray-500">Mascotas Perdidas</p>
-        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats">{{ stats.mascotasPerdidas }}</p>
+        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.mascotasPerdidas }}</p>
         <div class="mt-2" *ngIf="isLoadingStats">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
       <div class="bg-white p-6 rounded-lg border border-gray-200">
         <p class="text-sm font-medium text-gray-500">Recuperadas</p>
-        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats">{{ stats.recuperadas }}</p>
+        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.recuperadas }}</p>
         <div class="mt-2" *ngIf="isLoadingStats">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
       <div class="bg-white p-6 rounded-lg border border-gray-200">
         <p class="text-sm font-medium text-gray-500">Adoptadas</p>
-        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats">{{ stats.adoptadas }}</p>
+        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.adoptadas }}</p>
         <div class="mt-2" *ngIf="isLoadingStats">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>
       </div>
       <div class="bg-white p-6 rounded-lg border border-gray-200">
         <p class="text-sm font-medium text-gray-500">Seguimientos Pendientes</p>
-        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats">{{ stats.seguimientosPendientes }}</p>
+        <p class="text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.seguimientosPendientes }}</p>
         <div class="mt-2" *ngIf="isLoadingStats">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         </div>

@@ -14,4 +14,9 @@ public interface MascotaDAO extends GenericDAO<Mascota> {
 
     // Buscar mascotas perdidas (según enum Estado: PERDIDO_PROPIO o PERDIDO_AJENO)
     List<Mascota> findMascotasPerdidas();
+
+    // Métodos de conteo para estadísticas del dashboard
+    int contarMascotasPerdidas();
+    int contarMascotasRecuperadas();
+    int contarMascotasAdoptadas();
 }
