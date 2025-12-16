@@ -1,8 +1,7 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
-import { firstValueFrom } from 'rxjs';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { LoginRequest } from '../models/usuario.model';
 
@@ -13,7 +12,7 @@ import { LoginRequest } from '../models/usuario.model';
   templateUrl: './login.html',
   styleUrls: ['./login.css']
 })
-export class LoginComponent {
+export class LoginComponent implements OnInit {
   credentials: LoginRequest = {
     email: '',
     password: ''
@@ -21,11 +20,26 @@ export class LoginComponent {
   errorMessage: string = '';
   loading: boolean = false;
 
+  private route = inject(ActivatedRoute);
+  private returnUrl: string | null = null;
+
   constructor(
     private authService: AuthService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    // Verificar si el usuario ya está autenticado
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate(['/dashboard']);
+      return;
+    }
+
+    // Obtener URL de retorno de los query parameters
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || null;
+    console.log('🔗 URL de retorno configurada:', this.returnUrl);
+  }
 
   onSubmit(): void {
     // Limpiar mensajes previos
@@ -61,14 +75,16 @@ export class LoginComponent {
 
     this.authService.login(this.credentials).subscribe({
       next: (response) => {
-        console.log('Login exitoso', response);
+        console.log('✅ Login exitoso', response);
         this.loading = false;
         this.cdr.detectChanges();
 
-        // Agregar un pequeño retraso para asegurar que el estado se ha sincronizado
+        // Redirigir a la URL de retorno o al dashboard
+        const targetUrl = this.returnUrl || '/dashboard';
+        console.log('🎯 Navegando a:', targetUrl);
+
         setTimeout(() => {
-          console.log('Navegando a dashboard...');
-          this.router.navigate(['/dashboard']);
+          this.router.navigate([targetUrl]);
         }, 100);
       },
       error: (error) => {

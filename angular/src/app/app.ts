@@ -46,23 +46,31 @@ export class App implements OnInit {
 
   // Métodos de autenticación
   isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
+    return this.authService.isAuthenticated();
   }
 
-  irALogin(): void {
-    this.router.navigate(['/login']);
-  }
-
-  irAPerfil(): void {
-    this.router.navigate(['/perfil']);
+  getUserName(): string {
+    return this.currentUser?.nombre || 'Usuario';
   }
 
   cerrarSesion(): void {
+    console.log('🚪 Cerrando sesión desde header...');
     this.authService.logout();
     this.router.navigate(['/home']);
   }
 
+  irALogin(): void {
+    this.closeMobileMenu();
+    this.router.navigate(['/login']);
+  }
+
+  irAPerfil(): void {
+    this.closeMobileMenu();
+    this.router.navigate(['/perfil']);
+  }
+
   irAHome(): void {
+    this.closeMobileMenu();
     this.router.navigate(['/home']);
   }
 }

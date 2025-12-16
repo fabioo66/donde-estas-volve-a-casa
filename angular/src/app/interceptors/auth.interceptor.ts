@@ -1,26 +1,20 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { inject } from '@angular/core';
+import { AuthService } from '../services/auth.service';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const platformId = inject(PLATFORM_ID);
-  const isBrowser = isPlatformBrowser(platformId);
+  const authService = inject(AuthService);
 
-  if (isBrowser) {
-    const currentUser = localStorage.getItem('currentUser');
+  // Obtener token válido (ya valida expiración internamente)
+  const token = authService.getToken();
 
-    if (currentUser) {
-      const user = JSON.parse(currentUser);
-
-      // Si existe un token, agregarlo a los headers
-      if (user.token) {
-        req = req.clone({
-          setHeaders: {
-            Authorization: `Bearer ${user.token}`
-          }
-        });
+  if (token) {
+    console.log('🔗 Agregando token a request:', req.url);
+    req = req.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
       }
-    }
+    });
   }
 
   return next(req);

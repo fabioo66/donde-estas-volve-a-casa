@@ -1,72 +1,110 @@
 <main class="flex-1 flex items-center justify-center px-4 py-12 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-[#0d1419] dark:to-[#1a2632]">
   <div class="max-w-2xl w-full">
     <div class="bg-white dark:bg-[#1a2632] rounded-2xl shadow-2xl p-8 sm:p-12 text-center">
-      <!-- Icono de candado -->
-      <div class="flex justify-center mb-6">
-        <div class="bg-amber-100 dark:bg-amber-900/30 rounded-full p-6">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-amber-600 dark:text-amber-500" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-          </svg>
+
+      <!-- Estado: Usuario autenticado pero en página de error -->
+      <div *ngIf="isAuthenticated">
+        <!-- Icono de éxito -->
+        <div class="flex justify-center mb-6">
+          <div class="bg-green-100 dark:bg-green-900/30 rounded-full p-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-green-600 dark:text-green-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Título -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-200 mb-4">
+          ¡Ya estás autenticado!
+        </h1>
+
+        <!-- Descripción -->
+        <p class="text-lg text-stone-600 dark:text-stone-400 mb-8 leading-relaxed">
+          Tu sesión está activa. Serás redirigido automáticamente...
+        </p>
+
+        <!-- Botón de acción -->
+        <div class="flex flex-col gap-4 justify-center">
+          <button
+            (click)="irADashboard()"
+            class="bg-[#13a4ec] hover:bg-[#0f8acc] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zM3 10a1 1 0 011-1h6a1 1 0 011 1v6a1 1 0 01-1 1H4a1 1 0 01-1-1v-6zM14 9a1 1 0 00-1 1v6a1 1 0 001 1h2a1 1 0 001-1v-6a1 1 0 00-1-1h-2z" />
+            </svg>
+            Ir al Dashboard
+          </button>
         </div>
       </div>
 
-      <!-- Título -->
-      <h1 class="text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-200 mb-4">
-        Acceso Restringido
-      </h1>
-
-      <!-- Descripción -->
-      <p class="text-lg text-stone-600 dark:text-stone-400 mb-8 leading-relaxed">
-        Esta funcionalidad requiere que inicies sesión en tu cuenta para continuar. 
-        Necesitamos verificar tu identidad para permitirte reportar avistamientos de mascotas.
-      </p>
-
-      <!-- Beneficios de registrarse -->
-      <div class="bg-stone-50 dark:bg-stone-800/50 rounded-lg p-6 mb-8">
-        <h3 class="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3 uppercase tracking-wide">
-          ¿Por qué necesito iniciar sesión?
-        </h3>
-        <ul class="space-y-2 text-left">
-          <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+      <!-- Estado: Usuario no autenticado -->
+      <div *ngIf="!isAuthenticated">
+        <!-- Icono de candado -->
+        <div class="flex justify-center mb-6">
+          <div class="bg-amber-100 dark:bg-amber-900/30 rounded-full p-6">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-16 w-16 text-amber-600 dark:text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
             </svg>
-            <span>Reportar avistamientos de mascotas perdidas</span>
-          </li>
-          <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <span>Ayudar a reunir mascotas con sus familias</span>
-          </li>
-          <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
-            </svg>
-            <span>Mantener un registro confiable de avistamientos</span>
-          </li>
-        </ul>
-      </div>
+          </div>
+        </div>
 
-      <!-- Botones de acción -->
-      <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <button
-          (click)="irALogin()"
-          class="bg-[#13a4ec] hover:bg-[#0f8acc] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
-          </svg>
-          Iniciar Sesión
-        </button>
+        <!-- Título -->
+        <h1 class="text-3xl sm:text-4xl font-bold text-stone-800 dark:text-stone-200 mb-4">
+          Acceso Restringido
+        </h1>
 
-        <button
-          (click)="irARegistro()"
-          class="bg-stone-600 hover:bg-stone-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
-          </svg>
-          Crear Cuenta
-        </button>
+        <!-- Descripción -->
+        <p class="text-lg text-stone-600 dark:text-stone-400 mb-8 leading-relaxed">
+          Esta funcionalidad requiere que inicies sesión en tu cuenta para continuar.
+          Necesitamos verificar tu identidad para permitirte reportar avistamientos de mascotas.
+        </p>
+
+        <!-- Beneficios de registrarse -->
+        <div class="bg-stone-50 dark:bg-stone-800/50 rounded-lg p-6 mb-8">
+          <h3 class="text-sm font-semibold text-stone-700 dark:text-stone-300 mb-3 uppercase tracking-wide">
+            ¿Por qué necesito iniciar sesión?
+          </h3>
+          <ul class="space-y-2 text-left">
+            <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span>Reportar avistamientos de mascotas perdidas</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span>Ayudar a reunir mascotas con sus familias</span>
+            </li>
+            <li class="flex items-start gap-3 text-sm text-stone-600 dark:text-stone-400">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-[#13a4ec] flex-shrink-0 mt-0.5" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+              </svg>
+              <span>Mantener un registro confiable de avistamientos</span>
+            </li>
+          </ul>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="flex flex-col sm:flex-row gap-4 justify-center">
+          <button
+            (click)="irALogin()"
+            class="bg-[#13a4ec] hover:bg-[#0f8acc] text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
+            </svg>
+            Iniciar Sesión
+          </button>
+
+          <button
+            (click)="irARegistro()"
+            class="bg-stone-600 hover:bg-stone-700 text-white px-8 py-3 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center justify-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+              <path d="M8 9a3 3 0 100-6 3 3 0 000 6zM8 11a6 6 0 016 6H2a6 6 0 016-6zM16 7a1 1 0 10-2 0v1h-1a1 1 0 100 2h1v1a1 1 0 102 0v-1h1a1 1 0 100-2h-1V7z" />
+            </svg>
+            Crear Cuenta
+          </button>
+        </div>
       </div>
 
       <!-- Link para volver -->
