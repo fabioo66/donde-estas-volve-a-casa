@@ -34,12 +34,7 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public mascotasPerdidas: Mascota[] = []; // Cambio: mascotas perdidas en lugar de publicaciones
   public fotoActualPorMascota: Map<number, number> = new Map(); // Para el carrusel de fotos
 
-  public stats: DashboardStats = {
-    mascotasPerdidas: 0,
-    recuperadas: 0,
-    adoptadas: 0,
-    seguimientosPendientes: 0
-  };
+  public stats: DashboardStats | null = null; // Inicializar como null para no mostrar datos falsos
 
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
@@ -118,12 +113,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
       error: (error) => {
         console.error('❌ Error al cargar estadísticas:', error);
         this.isLoadingStats = false;
-        this.stats = {
-          mascotasPerdidas: 0,
-          recuperadas: 0,
-          adoptadas: 0,
-          seguimientosPendientes: 0
-        };
         this.cdr.detectChanges();
       }
     });

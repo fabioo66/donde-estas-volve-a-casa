@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, of, forkJoin, map, catchError } from 'rxjs';
+import { Observable, map, catchError } from 'rxjs';
 
 export interface DashboardStats {
   mascotasPerdidas: number;
@@ -18,26 +18,18 @@ export class DashboardService {
   constructor(private http: HttpClient) {}
 
   obtenerEstadisticas(): Observable<DashboardStats> {
-    console.log('🔄 Obteniendo estadísticas del dashboard...');
+    console.log('🔄 Obteniendo estadísticas del dashboard desde API...');
 
-    // Por ahora usar datos básicos para evitar problemas de loading
-    // TODO: Implementar llamadas reales cuando se solucione el problema de autenticación
-    const statsBasicas: DashboardStats = {
-      mascotasPerdidas: 2,
-      recuperadas: 0,
-      adoptadas: 0,
-      seguimientosPendientes: 0
-    };
-
-    console.log('✅ Estadísticas retornadas:', statsBasicas);
-    return of(statsBasicas);
+    return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/estadisticas`).pipe(
+      map(response => {
+        console.log('✅ Estadísticas recibidas de la API:', response);
+        return response;
+      }),
+      catchError(error => {
+        console.error('❌ Error al obtener estadísticas de la API:', error);
+        throw error;
+      })
+    );
   }
 
-  obtenerResumenUsuario(): Observable<any> {
-    return this.http.get<any>(`${this.apiUrl}/dashboard/resumen`);
-  }
-
-  obtenerActividadReciente(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/dashboard/actividad`);
-  }
 }
