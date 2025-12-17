@@ -1,7 +1,50 @@
 /* Dashboard Styles */
 :host {
   display: block;
-  min-height: 100vh;
+  width: 100%;
+  min-height: calc(100vh - 73px);
+}
+
+/* Asegurar que las tarjetas tengan el tamaño correcto */
+.mascota-card {
+  max-width: 100%;
+  width: 100%;
+}
+
+.mascota-card .aspect-square {
+  aspect-ratio: 1 / 1;
+  width: 100%;
+  height: auto;
+}
+
+/* Limitar el tamaño máximo de las tarjetas */
+@media (min-width: 1280px) {
+  .mascota-card {
+    max-width: 240px;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .mascota-card {
+    max-width: 220px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  .mascota-card {
+    max-width: 200px;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 767px) {
+  .mascota-card {
+    max-width: 180px;
+  }
+}
+
+/* Animaciones suaves para hover en tarjetas */
+.mascota-card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 /* Material Icons */
