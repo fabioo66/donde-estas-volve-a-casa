@@ -16,6 +16,10 @@
         <!-- Links de navegación - visible en tablet y desktop -->
         <div class="hidden md:flex items-center gap-4 lg:gap-8 mr-4">
           <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/avistamientos" routerLinkActive="text-[#13a4ec]">Avistamientos</a>
+          @if (isLoggedIn()) {
+            <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/mascota/nuevo" routerLinkActive="text-[#13a4ec]">Publicar Mascota</a>
+            <a class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors" routerLink="/mis-publicaciones" routerLinkActive="text-[#13a4ec]">Mis Publicaciones</a>
+          }
         </div>
 
         <!-- Botón hamburguesa para móvil -->
@@ -51,25 +55,38 @@
               </span>
             </div>
 
-            <!-- Botón Mi Perfil -->
-            <button
-              (click)="irAPerfil()"
-              class="bg-stone-600 hover:bg-stone-700 text-white px-3 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
-              </svg>
-              <span class="hidden sm:inline">Mi Perfil</span>
-            </button>
+            <!-- Menú desplegable del usuario -->
+            <div class="relative">
+              <!-- Botón del menú -->
+              <button
+                (click)="toggleUserMenu()"
+                class="flex items-center gap-1 px-3 py-2 text-stone-700 dark:text-stone-300 hover:text-[#13a4ec] transition-colors rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+                aria-label="Menú del usuario">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              </button>
 
-            <!-- Botón Cerrar Sesión -->
-            <button
-              (click)="cerrarSesion()"
-              class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded-lg font-semibold transition-all duration-300 shadow-md hover:shadow-lg flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 sm:h-5 sm:w-5" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M3 3a1 1 0 00-1 1v12a1 1 0 102 0V4a1 1 0 00-1-1zm10.293 9.293a1 1 0 001.414 1.414l3-3a1 1 0 000-1.414l-3-3a1 1 0 10-1.414 1.414L14.586 9H7a1 1 0 100 2h7.586l-1.293 1.293z" clip-rule="evenodd" />
-              </svg>
-              <span class="hidden sm:inline">Cerrar Sesión</span>
-            </button>
+              <!-- Menú desplegable -->
+              <div *ngIf="userMenuOpen" class="absolute right-0 mt-2 w-48 bg-white dark:bg-[#1a2632] rounded-lg shadow-lg border border-stone-200 dark:border-stone-700 py-2 z-50">
+                <a
+                  (click)="irAPerfil(); closeUserMenu()"
+                  class="flex items-center gap-3 px-4 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-[#13a4ec] cursor-pointer transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  Perfil
+                </a>
+                <button
+                  (click)="logout()"
+                  class="w-full flex items-center gap-3 px-4 py-2 text-sm text-stone-700 dark:text-stone-300 hover:bg-stone-100 dark:hover:bg-stone-800 hover:text-red-600 cursor-pointer transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                  </svg>
+                  Logout
+                </button>
+              </div>
+            </div>
           </div>
         }
       </nav>
@@ -93,6 +110,40 @@
             routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
             Dashboard
           </a>
+          <a
+            (click)="closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            routerLink="/mascota/nuevo"
+            routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+            Publicar Mascota
+          </a>
+          <a
+            (click)="closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            routerLink="/mis-publicaciones"
+            routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+            Mis Publicaciones
+          </a>
+          <a
+            (click)="closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800"
+            routerLink="/reportar-avistamiento"
+            routerLinkActive="text-[#13a4ec] bg-stone-100 dark:bg-stone-800">
+            Reportar Avistamiento
+          </a>
+          <!-- Separador -->
+          <hr class="border-stone-200 dark:border-stone-700">
+          <!-- Enlaces del usuario -->
+          <a
+            (click)="irAPerfil(); closeMobileMenu()"
+            class="text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-[#13a4ec] cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800">
+            Perfil
+          </a>
+          <button
+            (click)="logout(); closeMobileMenu()"
+            class="w-full text-left text-sm font-medium text-stone-800 dark:text-stone-200 hover:text-red-600 cursor-pointer transition-colors py-2 px-3 rounded-lg hover:bg-stone-100 dark:hover:bg-stone-800">
+            Logout
+          </button>
         }
       </nav>
     </div>

@@ -1,9 +1,8 @@
 import { Component, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
+import { Router, RouterOutlet, RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from './services/auth.service';
 import { LoginResponse } from './models/usuario.model';
-import { filter } from 'rxjs/operators';
 
 @Component({
   selector: 'app-root',
@@ -14,6 +13,7 @@ import { filter } from 'rxjs/operators';
 export class App implements OnInit {
   protected readonly title = signal('donde-estas-volve-a-casa');
   public mobileMenuOpen = false;
+  public userMenuOpen = false; // Nueva propiedad para el menú desplegable del usuario
   public currentUser: LoginResponse | null = null;
   public showHeader = true; // Nueva propiedad para controlar la visibilidad del header
 
@@ -27,12 +27,8 @@ export class App implements OnInit {
       this.currentUser = user;
     });
 
-    // Escuchar cambios de ruta para ocultar header en dashboard
-    this.router.events.pipe(
-      filter(event => event instanceof NavigationEnd)
-    ).subscribe((event: NavigationEnd) => {
-      this.showHeader = !event.url.startsWith('/dashboard');
-    });
+    // El header ahora se muestra en todas las páginas
+    this.showHeader = true;
   }
 
   // Métodos del menú móvil
@@ -44,19 +40,24 @@ export class App implements OnInit {
     this.mobileMenuOpen = false;
   }
 
+  // Métodos del menú de usuario
+  toggleUserMenu() {
+    this.userMenuOpen = !this.userMenuOpen;
+  }
+
+  closeUserMenu() {
+    this.userMenuOpen = false;
+  }
+
   // Métodos de autenticación
   isLoggedIn(): boolean {
     return this.authService.isAuthenticated();
   }
 
-  getUserName(): string {
-    return this.currentUser?.nombre || 'Usuario';
-  }
-
-  cerrarSesion(): void {
-    console.log('🚪 Cerrando sesión desde header...');
+  logout(): void {
+    this.closeUserMenu();
     this.authService.logout();
-    this.router.navigate(['/home']);
+    this.router.navigate(['/login']);
   }
 
   irALogin(): void {

@@ -31,26 +31,23 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   public isLoading = false;
   public isLoadingStats = false;
   public error: string | null = null;
-  public mascotasPerdidas: Mascota[] = []; // Cambio: mascotas perdidas en lugar de publicaciones
-  public fotoActualPorMascota: Map<number, number> = new Map(); // Para el carrusel de fotos
-
-  public stats: DashboardStats | null = null; // Inicializar como null para no mostrar datos falsos
+  public mascotasPerdidas: Mascota[] = [];
+  public fotoActualPorMascota: Map<number, number> = new Map();
+  public stats: DashboardStats | null = null;
 
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
   }
 
   ngOnInit(): void {
-    const userSub = this.authService.currentUser$.subscribe(user => {
+    this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
-      if (!user) {
-        this.router.navigate(['/login']);
-      }
     });
-    this.subscriptions.push(userSub);
 
     // Cargar mascotas perdidas
     this.cargarMascotasPerdidas();
+    // Cargar estadísticas también desde el inicio
+    this.cargarDatos();
   }
 
   ngAfterViewInit(): void {
@@ -118,59 +115,6 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  public navegarA(ruta: string): void {
-    this.router.navigate([ruta]);
-  }
-
-  public logout(): void {
-    this.authService.logout();
-    this.router.navigate(['/login']);
-  }
-
-  public irAPublicarMascota(): void {
-    this.router.navigate(['/mascota/nuevo']);
-  }
-
-  public verTodasLasPublicaciones(): void {
-    this.router.navigate(['/mis-publicaciones']);
-  }
-
-  public reportarAvistamiento(id: number): void {
-    this.router.navigate(['/reportar-avistamiento', id]);
-  }
-
-  public editarMascota(id: number): void {
-    this.router.navigate(['/mascota', id, 'editar']);
-  }
-
-  public getEstadoTexto(estado: string): string {
-    switch (estado) {
-      case 'PERDIDO_PROPIO':
-        return 'Perdido';
-      case 'PERDIDO_AJENO':
-        return 'Encontrado';
-      case 'RECUPERADO':
-        return 'Recuperado';
-      case 'ADOPTADO':
-        return 'Adoptado';
-      default:
-        return estado;
-    }
-  }
-
-  public obtenerFotoPrincipal(mascota: Mascota): string {
-    try {
-      if (mascota.fotos) {
-        const fotosArray = JSON.parse(mascota.fotos);
-        if (Array.isArray(fotosArray) && fotosArray.length > 0) {
-          return `http://localhost:8080${fotosArray[0]}`;
-        }
-      }
-    } catch (error) {
-      console.error('Error al parsear fotos:', error);
-    }
-    return '/assets/images/mascota-default.svg';
-  }
 
   obtenerImagenMascota(mascota: Mascota): string {
     if (mascota.fotos) {
@@ -185,43 +129,99 @@ export class DashboardComponent implements OnInit, AfterViewInit, OnDestroy {
         console.error('Error al parsear fotos:', error);
       }
     }
-    return '/assets/images/mascota-default.svg';
+    return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
   }
 
-  obtenerFotos(mascota: Mascota): string[] {
-    try {
-      if (mascota.fotos) {
+  obtenerTodasLasFotos(mascota: Mascota): string[] {
+    if (mascota.fotos) {
+      try {
         const fotosArray = JSON.parse(mascota.fotos);
-        if (Array.isArray(fotosArray)) {
-          return fotosArray.map(foto => `http://localhost:8080${foto}`);
+        if (fotosArray && fotosArray.length > 0) {
+          return fotosArray.map((url: string) => `http://localhost:8080${url}`);
         }
+      } catch (error) {
+        console.error('Error al parsear fotos:', error);
       }
-    } catch (error) {
-      console.error('Error al parsear fotos:', error);
     }
     return [];
   }
 
-  anteriorFoto(mascota: Mascota): void {
-    const fotos = this.obtenerFotos(mascota);
-    if (fotos.length > 1) {
-      const actual = this.fotoActualPorMascota.get(mascota.id) || 0;
-      const nueva = actual === 0 ? fotos.length - 1 : actual - 1;
-      this.fotoActualPorMascota.set(mascota.id, nueva);
-    }
+  tieneMasDe1Foto(mascota: Mascota): boolean {
+    return this.obtenerTodasLasFotos(mascota).length > 1;
   }
 
-  siguienteFoto(mascota: Mascota): void {
-    const fotos = this.obtenerFotos(mascota);
-    if (fotos.length > 1) {
-      const actual = this.fotoActualPorMascota.get(mascota.id) || 0;
-      const nueva = actual === fotos.length - 1 ? 0 : actual + 1;
-      this.fotoActualPorMascota.set(mascota.id, nueva);
-    }
+  getCantidadFotos(mascota: Mascota): number {
+    return this.obtenerTodasLasFotos(mascota).length;
   }
 
-  public formatearFecha(fecha: string): string {
+  getFotoActual(mascotaId: number): number {
+    return this.fotoActualPorMascota.get(mascotaId) || 0;
+  }
+
+  cambiarFoto(mascota: Mascota, direccion: 'next' | 'prev', event: Event): void {
+    event.stopPropagation();
+    event.preventDefault();
+
+    const fotos = this.obtenerTodasLasFotos(mascota);
+    if (fotos.length <= 1) return;
+
+    const fotoActual = this.fotoActualPorMascota.get(mascota.id) || 0;
+    let nuevaFoto: number;
+
+    if (direccion === 'next') {
+      nuevaFoto = (fotoActual + 1) % fotos.length;
+    } else {
+      nuevaFoto = fotoActual === 0 ? fotos.length - 1 : fotoActual - 1;
+    }
+
+    this.fotoActualPorMascota.set(mascota.id, nuevaFoto);
+  }
+
+  obtenerFechaFormateada(fecha: string | Date): string {
     if (!fecha) return '';
-    return new Date(fecha).toLocaleDateString('es-ES');
+    const fechaObj = new Date(fecha);
+    const hoy = new Date();
+    const diffTime = Math.abs(hoy.getTime() - fechaObj.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+
+    if (diffDays === 0) return 'Hoy';
+    if (diffDays === 1) return 'Ayer';
+    if (diffDays < 7) return `Hace ${diffDays} días`;
+    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
+    return fechaObj.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
   }
+
+  formatearTamanio(tamanio: string): string {
+    if (!tamanio) return '';
+
+    const tamanioMap: { [key: string]: string } = {
+      'PEQUENIO': 'Pequeño',
+      'MEDIANO': 'Mediano',
+      'GRANDE': 'Grande'
+    };
+
+    return tamanioMap[tamanio.toUpperCase()] || tamanio;
+  }
+
+  editarMascota(id: number): void {
+    this.router.navigate(['/mascota', id, 'editar']);
+  }
+
+  eliminarMascota(id: number): void {
+    // Aquí agregarías la lógica de confirmación y eliminación
+    if (confirm('¿Estás seguro de que deseas eliminar esta publicación?')) {
+      console.log('Eliminar mascota con ID:', id);
+      // Implementar llamada al servicio para eliminar
+    }
+  }
+
+  // Funciones trackBy para mejorar rendimiento
+  trackByMascotaId(index: number, mascota: Mascota): number {
+    return mascota.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
+
 }
