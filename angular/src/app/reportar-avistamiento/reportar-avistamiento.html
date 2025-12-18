@@ -126,13 +126,19 @@
 
             <!-- Descripción -->
             <div>
-              <label class="block text-sm font-medium text-stone-700 dark:text-stone-300 mb-2">
-                Descripción <span class="text-red-500">*</span>
-              </label>
+              <div class="flex items-center justify-between mb-2">
+                <label class="block text-sm font-medium text-stone-700 dark:text-stone-300">
+                  Descripción <span class="text-red-500">*</span>
+                </label>
+                <span class="text-xs text-stone-500 dark:text-stone-400">
+                  {{ avistamientoForm.descripcion?.length || 0 }}/250 caracteres
+                </span>
+              </div>
               <textarea 
                 [(ngModel)]="avistamientoForm.descripcion"
                 name="descripcion"
                 rows="5"
+                maxlength="250"
                 placeholder="Describe dónde y cuándo viste a la mascota. Incluye todos los detalles que puedan ayudar al dueño..."
                 class="w-full px-4 py-3 border border-stone-300 dark:border-stone-600 rounded-lg bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:ring-2 focus:ring-[#13a4ec] focus:border-transparent resize-none"
                 [disabled]="enviandoAvistamiento"
