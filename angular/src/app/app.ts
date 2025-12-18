@@ -72,10 +72,6 @@ export class App implements OnInit {
 
   irAHome(): void {
     this.closeMobileMenu();
-    if (this.isLoggedIn()) {
-      this.router.navigate(['/dashboard']);
-    } else {
-      this.router.navigate(['/home']);
-    }
+    this.router.navigate(['/home']);
   }
 }
