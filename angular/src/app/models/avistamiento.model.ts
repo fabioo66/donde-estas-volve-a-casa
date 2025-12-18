@@ -12,6 +12,7 @@ export interface Avistamiento {
     raza: string;
     color: string;
     tamanio: string;
+    fotos?: string; // JSON string con array de URLs de las fotos de la mascota
   };
   usuario: {
     id: number;
@@ -19,4 +20,3 @@ export interface Avistamiento {
     email: string;
   };
 }
-
