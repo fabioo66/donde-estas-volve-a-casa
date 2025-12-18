@@ -72,6 +72,8 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.previsualizaciones.push(e.target?.result as string);
+        // Forzar detección de cambios para actualizar la vista inmediatamente
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     });

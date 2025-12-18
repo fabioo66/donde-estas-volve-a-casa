@@ -175,6 +175,8 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
         const reader = new FileReader();
         reader.onload = (e: any) => {
           this.avistamientoForm.fotosBase64.push(e.target.result);
+          // Forzar detección de cambios para actualizar la vista inmediatamente
+          this.cdr.detectChanges();
         };
         reader.readAsDataURL(file);
       }
