@@ -49,7 +49,8 @@ public class AvistamientoResponse {
                 avistamiento.getMascota().getTipo(),
                 avistamiento.getMascota().getRaza(),
                 avistamiento.getMascota().getColor(),
-                avistamiento.getMascota().getTamaño() != null ? avistamiento.getMascota().getTamaño().name() : null
+                avistamiento.getMascota().getTamaño() != null ? avistamiento.getMascota().getTamaño().name() : null,
+                avistamiento.getMascota().getFotos()
             );
         }
         
@@ -148,15 +149,19 @@ public class AvistamientoResponse {
         @Schema(description = "Tamaño de la mascota")
         private String tamanio;
 
+        @Schema(description = "Fotos de la mascota en formato JSON")
+        private String fotos;
+
         public MascotaInfo() {}
 
-        public MascotaInfo(int id, String nombre, String tipo, String raza, String color, String tamanio) {
+        public MascotaInfo(int id, String nombre, String tipo, String raza, String color, String tamanio, String fotos) {
             this.id = id;
             this.nombre = nombre;
             this.tipo = tipo;
             this.raza = raza;
             this.color = color;
             this.tamanio = tamanio;
+            this.fotos = fotos;
         }
 
         // Getters y Setters
@@ -206,6 +211,14 @@ public class AvistamientoResponse {
 
         public void setTamanio(String tamanio) {
             this.tamanio = tamanio;
+        }
+
+        public String getFotos() {
+            return fotos;
+        }
+
+        public void setFotos(String fotos) {
+            this.fotos = fotos;
         }
     }
 

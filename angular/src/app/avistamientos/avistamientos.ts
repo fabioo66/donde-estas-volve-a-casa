@@ -51,12 +51,12 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
     this.avistamientos = [];
-    
+
     // Cancelar suscripción anterior si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    
+
     this.subscription = this.avistamientoService.obtenerTodosLosAvistamientos().subscribe({
       next: (avistamientos) => {
         this.avistamientos = avistamientos;
@@ -79,29 +79,33 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
   }
 
   obtenerImagenAvistamiento(avistamiento: Avistamiento): string {
-    if (avistamiento.fotos) {
+    // Intentar obtener la foto de la mascota primero
+    if (avistamiento.mascota?.fotos) {
       try {
-        const fotosArray = JSON.parse(avistamiento.fotos);
+        const fotosArray = JSON.parse(avistamiento.mascota.fotos);
         if (fotosArray && fotosArray.length > 0) {
           const fotoUrl = fotosArray[0];
           return `http://localhost:8080${fotoUrl}`;
         }
       } catch (e) {
-        console.error('Error parseando fotos del avistamiento', avistamiento.id, ':', e);
+        console.error('Error parseando fotos de la mascota', avistamiento.mascota.id, ':', e);
       }
     }
+
+    // Si no hay fotos de la mascota, usar imagen por defecto
     return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
   }
 
   obtenerTodasLasFotos(avistamiento: Avistamiento): string[] {
-    if (avistamiento.fotos) {
+    // Obtener las fotos de la mascota
+    if (avistamiento.mascota?.fotos) {
       try {
-        const fotosArray = JSON.parse(avistamiento.fotos);
+        const fotosArray = JSON.parse(avistamiento.mascota.fotos);
         if (fotosArray && fotosArray.length > 0) {
           return fotosArray.map((url: string) => `http://localhost:8080${url}`);
         }
       } catch (e) {
-        console.error('Error parseando fotos:', e);
+        console.error('Error parseando fotos de la mascota:', e);
       }
     }
     return [];
@@ -242,4 +246,3 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     }, 100);
   }
 }
-
