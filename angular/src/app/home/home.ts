@@ -6,6 +6,8 @@ import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
 import { LoginResponse } from '../models/usuario.model';
 import { Subscription } from 'rxjs';
+import { HomeService, HomeStats } from '../services/home.service';
+
 
 @Component({
   selector: 'app-home',
@@ -16,17 +18,21 @@ import { Subscription } from 'rxjs';
 export class Home implements OnInit, OnDestroy {
   private mascotaService = inject(MascotaService);
   private authService = inject(AuthService);
+  private homeService = inject(HomeService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
   private subscription?: Subscription;
 
+
   public mascotas: Mascota[] = [];
   public isLoading = true;
+  public isLoadingStats = false;
   public error: string | null = null;
   public fotoActualPorMascota: Map<number, number> = new Map();
   public currentUser: LoginResponse | null = null;
+  public stats: HomeStats | null = null;
 
   // Mapa modal
   public mostrarMapaModal = false;
@@ -43,6 +49,10 @@ export class Home implements OnInit, OnDestroy {
     this.cargarMascotasPerdidas();
     this.authService.currentUser$.subscribe(user => {
       this.currentUser = user;
+      // Solo cargar estadísticas si el usuario está logueado
+      if (user) {
+        this.cargarDatos();
+      }
     });
   }
 
@@ -62,12 +72,12 @@ export class Home implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
     this.mascotas = [];
-    
+
     // Cancelar suscripción anterior si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    
+
     this.subscription = this.mascotaService.obtenerMascotasPerdidas().subscribe({
       next: (mascotas) => {
         console.log('✅ Mascotas recibidas:', mascotas.length, mascotas);
@@ -274,5 +284,28 @@ export class Home implements OnInit, OnDestroy {
         this.map.invalidateSize();
       }
     }, 100);
+  }
+
+  public cargarDatos(): void {
+    console.log('🔄 Cargando datos del dashboard...');
+
+    // Activar loading para estadísticas
+    this.isLoadingStats = true;
+    this.cdr.detectChanges();
+
+    // Cargar estadísticas (simplificado)
+    this.homeService.obtenerEstadisticas().subscribe({
+      next: (stats) => {
+        this.stats = stats;
+        this.isLoadingStats = false;
+        this.cdr.detectChanges();
+        console.log('✅ Estadísticas cargadas:', stats);
+      },
+      error: (error) => {
+        console.error('❌ Error al cargar estadísticas:', error);
+        this.isLoadingStats = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 }

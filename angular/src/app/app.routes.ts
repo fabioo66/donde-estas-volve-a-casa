@@ -10,7 +10,6 @@ import { RegistroComponent } from './registro/registro';
 import { PerfilComponent } from './perfil/perfil';
 import { AccesoDenegadoComponent } from './acceso-denegado/acceso-denegado';
 import { authGuard } from './guards/auth.guard';
-import { DashboardComponent } from './dashboard/dashboard';
 import { MisPublicacionesComponent } from './mis-publicaciones/mis-publicaciones.component';
 
 export const routes: Routes = [
@@ -22,11 +21,6 @@ export const routes: Routes = [
   {
     path: 'home',
     component: Home
-  },
-  {
-    path: 'dashboard',
-    component: DashboardComponent,
-    canActivate: [authGuard]
   },
   {
     path: 'mascotas',

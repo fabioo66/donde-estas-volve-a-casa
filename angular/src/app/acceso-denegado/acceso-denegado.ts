@@ -47,8 +47,8 @@ export class AccesoDenegadoComponent implements OnInit {
       console.log('↩️ Redirigiendo a URL de retorno:', this.returnUrl);
       this.router.navigate([this.returnUrl]);
     } else {
-      console.log('🏠 Redirigiendo al dashboard');
-      this.router.navigate(['/dashboard']);
+      console.log('🏠 Redirigiendo al home');
+      this.router.navigate(['/home']);
     }
   }
 
@@ -76,7 +76,7 @@ export class AccesoDenegadoComponent implements OnInit {
 
   irADashboard(): void {
     if (this.isAuthenticated) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/home']);
     } else {
       this.irALogin();
     }

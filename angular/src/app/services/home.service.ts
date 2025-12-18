@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map, catchError } from 'rxjs';
 
-export interface DashboardStats {
+export interface HomeStats {
   mascotasPerdidas: number;
   recuperadas: number;
   adoptadas: number;
@@ -12,15 +12,15 @@ export interface DashboardStats {
 @Injectable({
   providedIn: 'root'
 })
-export class DashboardService {
+export class HomeService {
   private apiUrl = 'http://localhost:8080';
 
   constructor(private http: HttpClient) {}
 
-  obtenerEstadisticas(): Observable<DashboardStats> {
-    console.log('🔄 Obteniendo estadísticas del dashboard desde API...');
+  obtenerEstadisticas(): Observable<HomeStats> {
+    console.log('🔄 Obteniendo estadísticas del home desde API...');
 
-    return this.http.get<DashboardStats>(`${this.apiUrl}/dashboard/estadisticas`).pipe(
+    return this.http.get<HomeStats>(`${this.apiUrl}/home/estadisticas`).pipe(
       map(response => {
         console.log('✅ Estadísticas recibidas de la API:', response);
         return response;

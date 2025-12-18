@@ -1,5 +1,43 @@
 <main class="flex-1 px-4 sm:px-6 lg:px-8 py-10">
   <div class="mx-auto max-w-7xl">
+
+    <!-- Estadísticas - Solo mostrar cuando el usuario esté logueado -->
+    @if (isLoggedIn()) {
+      <h2 class="text-xl sm:text-2xl font-bold text-stone-800 dark:text-stone-200 mb-6 sm:mb-8">Dashboard</h2>
+
+      <!-- Estadísticas -->
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
+          <p class="text-sm font-medium text-gray-500">Mascotas Perdidas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.mascotasPerdidas }}</p>
+          <div class="mt-2" *ngIf="isLoadingStats">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
+          </div>
+        </div>
+        <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
+          <p class="text-sm font-medium text-gray-500">Recuperadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.recuperadas }}</p>
+          <div class="mt-2" *ngIf="isLoadingStats">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
+          </div>
+        </div>
+        <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
+          <p class="text-sm font-medium text-gray-500">Adoptadas</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.adoptadas }}</p>
+          <div class="mt-2" *ngIf="isLoadingStats">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
+          </div>
+        </div>
+        <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
+          <p class="text-sm font-medium text-gray-500">Seguimientos Pendientes</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.seguimientosPendientes }}</p>
+          <div class="mt-2" *ngIf="isLoadingStats">
+            <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
+          </div>
+        </div>
+      </div>
+    }
+
     <!-- Mascotas Perdidas Recientes -->
     <section class="mb-12">
       <div class="mb-6">
@@ -77,10 +115,10 @@
                       <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
                         @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
                           <div
-                            [class.bg-white]="i === getFotoActual(mascota.id)"
-                            [class.bg-white/50]="i !== getFotoActual(mascota.id)"
-                            [class.w-4]="i === getFotoActual(mascota.id)"
-                            [class.w-1.5]="i !== getFotoActual(mascota.id)"
+                            [ngClass]="{
+                              'bg-white w-4': i === getFotoActual(mascota.id),
+                              'bg-white/50 w-1.5': i !== getFotoActual(mascota.id)
+                            }"
                             class="h-1.5 rounded-full transition-all duration-300"></div>
                         }
                       </div>
@@ -167,7 +205,7 @@
                     <!-- Botón reportar avistamiento -->
                     @if (isLoggedIn()) {
                       <!-- Usuario autenticado - botón activo -->
-                      <a 
+                      <a
                         [routerLink]="['/reportar-avistamiento', mascota.id]"
                         class="block w-full mt-3 bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 text-center cursor-pointer">
                         <span class="flex items-center justify-center gap-2">

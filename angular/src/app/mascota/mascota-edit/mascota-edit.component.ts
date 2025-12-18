@@ -179,8 +179,8 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
   }
 
   cancelar(): void {
-    console.log('🔙 Cancelando edición, volviendo al dashboard...');
-    this.router.navigate(['/dashboard']);
+    console.log('🔙 Cancelando edición, volviendo al home...');
+    this.router.navigate(['/home']);
   }
 }
 

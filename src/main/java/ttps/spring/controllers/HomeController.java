@@ -7,31 +7,31 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import ttps.spring.services.DashboardService;
+import ttps.spring.services.HomeService;
 
 import java.util.Map;
 
 @RestController
-@RequestMapping("/dashboard")
-@Tag(name = "Dashboard", description = "API para estadísticas del dashboard")
+@RequestMapping("/home")
+@Tag(name = "Home", description = "API para estadísticas del home")
 @CrossOrigin(origins = "http://localhost:4200")
-public class DashboardController {
+public class HomeController {
 
-    private final DashboardService dashboardService;
+    private final HomeService homeService;
 
     @Autowired
-    public DashboardController(DashboardService dashboardService) {
-        this.dashboardService = dashboardService;
+    public HomeController(HomeService homeService) {
+        this.homeService = homeService;
     }
 
     @GetMapping("/estadisticas")
-    @Operation(summary = "Obtener estadísticas del dashboard",
+    @Operation(summary = "Obtener estadísticas del home",
                description = "Retorna las estadísticas principales: mascotas perdidas, recuperadas, adoptadas y seguimientos pendientes")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Estadísticas obtenidas exitosamente")
     })
     public ResponseEntity<Map<String, Integer>> obtenerEstadisticas() {
-        Map<String, Integer> estadisticas = dashboardService.obtenerEstadisticas();
+        Map<String, Integer> estadisticas = homeService.obtenerEstadisticas();
         return ResponseEntity.ok(estadisticas);
     }
 
@@ -39,7 +39,7 @@ public class DashboardController {
     @Operation(summary = "Obtener cantidad de mascotas perdidas",
                description = "Retorna el número total de mascotas con estado PERDIDO_PROPIO o PERDIDO_AJENO")
     public ResponseEntity<Integer> obtenerMascotasPerdidas() {
-        int count = dashboardService.contarMascotasPerdidas();
+        int count = homeService.contarMascotasPerdidas();
         return ResponseEntity.ok(count);
     }
 
@@ -47,7 +47,7 @@ public class DashboardController {
     @Operation(summary = "Obtener cantidad de mascotas recuperadas",
                description = "Retorna el número total de mascotas con estado RECUPERADO")
     public ResponseEntity<Integer> obtenerMascotasRecuperadas() {
-        int count = dashboardService.contarMascotasRecuperadas();
+        int count = homeService.contarMascotasRecuperadas();
         return ResponseEntity.ok(count);
     }
 
@@ -55,7 +55,7 @@ public class DashboardController {
     @Operation(summary = "Obtener cantidad de mascotas adoptadas",
                description = "Retorna el número total de mascotas con estado ADOPTADO")
     public ResponseEntity<Integer> obtenerMascotasAdoptadas() {
-        int count = dashboardService.contarMascotasAdoptadas();
+        int count = homeService.contarMascotasAdoptadas();
         return ResponseEntity.ok(count);
     }
 
@@ -63,7 +63,7 @@ public class DashboardController {
     @Operation(summary = "Obtener cantidad de seguimientos pendientes",
                description = "Retorna el número total de avistamientos activos sin resolver")
     public ResponseEntity<Integer> obtenerSeguimientosPendientes() {
-        int count = dashboardService.contarSeguimientosPendientes();
+        int count = homeService.contarSeguimientosPendientes();
         return ResponseEntity.ok(count);
     }
 }

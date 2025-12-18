@@ -183,7 +183,7 @@ export class MisPublicacionesComponent implements OnInit {
   }
 
   volverAlDashboard(): void {
-    this.router.navigate(['/dashboard']);
+    this.router.navigate(['/home']);
   }
 
   crearNuevaPublicacion(): void {

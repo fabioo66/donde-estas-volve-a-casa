@@ -120,7 +120,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       await this.mascotaService.crearMascota(usuarioId, mascotaData).toPromise();
 
       alert('Mascota reportada exitosamente');
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/home']);
     } catch (error) {
       console.error('Error al crear mascota:', error);
       alert('Error al reportar la mascota. Inténtalo nuevamente.');
