@@ -79,33 +79,33 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
   }
 
   obtenerImagenAvistamiento(avistamiento: Avistamiento): string {
-    // Intentar obtener la foto de la mascota primero
-    if (avistamiento.mascota?.fotos) {
+    // Intentar obtener la foto del avistamiento primero
+    if (avistamiento.fotos) {
       try {
-        const fotosArray = JSON.parse(avistamiento.mascota.fotos);
+        const fotosArray = JSON.parse(avistamiento.fotos);
         if (fotosArray && fotosArray.length > 0) {
           const fotoUrl = fotosArray[0];
           return `http://localhost:8080${fotoUrl}`;
         }
       } catch (e) {
-        console.error('Error parseando fotos de la mascota', avistamiento.mascota.id, ':', e);
+        console.error('Error parseando fotos del avistamiento', avistamiento.id, ':', e);
       }
     }
 
-    // Si no hay fotos de la mascota, usar imagen por defecto
+    // Si no hay fotos del avistamiento, usar imagen por defecto
     return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
   }
 
   obtenerTodasLasFotos(avistamiento: Avistamiento): string[] {
-    // Obtener las fotos de la mascota
-    if (avistamiento.mascota?.fotos) {
+    // Obtener las fotos del avistamiento
+    if (avistamiento.fotos) {
       try {
-        const fotosArray = JSON.parse(avistamiento.mascota.fotos);
+        const fotosArray = JSON.parse(avistamiento.fotos);
         if (fotosArray && fotosArray.length > 0) {
           return fotosArray.map((url: string) => `http://localhost:8080${url}`);
         }
       } catch (e) {
-        console.error('Error parseando fotos de la mascota:', e);
+        console.error('Error parseando fotos del avistamiento:', e);
       }
     }
     return [];
