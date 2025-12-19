@@ -232,14 +232,6 @@
 
         <button
           *ngIf="mascotaSeleccionada.activo"
-          (click)="reportarAvistamiento(mascotaSeleccionada.id)"
-          class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-        >
-          Ver Avistamientos
-        </button>
-
-        <button
-          *ngIf="mascotaSeleccionada.activo"
           (click)="eliminarMascota(mascotaSeleccionada.id)"
           class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
         >
