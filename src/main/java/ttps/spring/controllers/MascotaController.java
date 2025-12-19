@@ -95,43 +95,6 @@ public class MascotaController {
             }
 
             Mascota creada = mascotaService.crearMascota(mascota);
-
-            // Crear avistamiento automáticamente SOLO si el estado es PERDIDO_AJENO
-            if (creada.getEstado() == Estado.PERDIDO_AJENO) {
-                try {
-                    Avistamiento avistamiento = new Avistamiento();
-                    avistamiento.setFecha(LocalDate.now());
-                    avistamiento.setMascota(creada);
-                    avistamiento.setUsuario(usuario);
-
-                    // Usar las mismas coordenadas de la mascota para el avistamiento
-                    if (request.getCoordenadas() != null) {
-                        avistamiento.setCoordenada(request.getCoordenadas());
-                    }
-
-                    // Crear descripción automática para el avistamiento de mascota perdida ajena
-                    String descripcionAvistamiento = "Avistamiento inicial - Mascota encontrada sin dueño conocido";
-
-                    if (request.getDescripcion() != null && !request.getDescripcion().trim().isEmpty()) {
-                        descripcionAvistamiento += ". " + request.getDescripcion();
-                    }
-                    avistamiento.setDescripcion(descripcionAvistamiento);
-
-                    // Usar las mismas fotos de la mascota para el avistamiento inicial
-                    if (creada.getFotos() != null && !creada.getFotos().isEmpty()) {
-                        avistamiento.setFotos(creada.getFotos());
-                    }
-
-                    // Crear el avistamiento
-                    avistamientoService.crearAvistamiento(avistamiento);
-
-                } catch (Exception e) {
-                    // Log del error pero no fallar la creación de la mascota
-                    System.err.println("Error al crear avistamiento automático para mascota " +
-                        creada.getId() + ": " + e.getMessage());
-                }
-            }
-
             return ResponseEntity.status(HttpStatus.CREATED).body(creada);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
