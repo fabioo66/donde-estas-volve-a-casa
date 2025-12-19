@@ -14,10 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.MascotaRequest;
+import ttps.spring.models.Avistamiento;
 import ttps.spring.models.Estado;
 import ttps.spring.models.Mascota;
 import ttps.spring.models.Tamanio;
 import ttps.spring.models.Usuario;
+import ttps.spring.services.AvistamientoService;
 import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
@@ -32,14 +34,17 @@ public class MascotaController {
 
     private final MascotaService mascotaService;
     private final UsuarioService usuarioService;
+    private final AvistamientoService avistamientoService;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
 
     @Autowired
     public MascotaController(MascotaService mascotaService, UsuarioService usuarioService,
-                            FileStorageService fileStorageService, ObjectMapper objectMapper) {
+                            AvistamientoService avistamientoService, FileStorageService fileStorageService,
+                            ObjectMapper objectMapper) {
         this.mascotaService = mascotaService;
         this.usuarioService = usuarioService;
+        this.avistamientoService = avistamientoService;
         this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
     }
@@ -90,6 +95,43 @@ public class MascotaController {
             }
 
             Mascota creada = mascotaService.crearMascota(mascota);
+
+            // Crear avistamiento automáticamente SOLO si el estado es PERDIDO_AJENO
+            if (creada.getEstado() == Estado.PERDIDO_AJENO) {
+                try {
+                    Avistamiento avistamiento = new Avistamiento();
+                    avistamiento.setFecha(LocalDate.now());
+                    avistamiento.setMascota(creada);
+                    avistamiento.setUsuario(usuario);
+
+                    // Usar las mismas coordenadas de la mascota para el avistamiento
+                    if (request.getCoordenadas() != null) {
+                        avistamiento.setCoordenada(request.getCoordenadas());
+                    }
+
+                    // Crear descripción automática para el avistamiento de mascota perdida ajena
+                    String descripcionAvistamiento = "Avistamiento inicial - Mascota encontrada sin dueño conocido";
+
+                    if (request.getDescripcion() != null && !request.getDescripcion().trim().isEmpty()) {
+                        descripcionAvistamiento += ". " + request.getDescripcion();
+                    }
+                    avistamiento.setDescripcion(descripcionAvistamiento);
+
+                    // Usar las mismas fotos de la mascota para el avistamiento inicial
+                    if (creada.getFotos() != null && !creada.getFotos().isEmpty()) {
+                        avistamiento.setFotos(creada.getFotos());
+                    }
+
+                    // Crear el avistamiento
+                    avistamientoService.crearAvistamiento(avistamiento);
+
+                } catch (Exception e) {
+                    // Log del error pero no fallar la creación de la mascota
+                    System.err.println("Error al crear avistamiento automático para mascota " +
+                        creada.getId() + ": " + e.getMessage());
+                }
+            }
+
             return ResponseEntity.status(HttpStatus.CREATED).body(creada);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
