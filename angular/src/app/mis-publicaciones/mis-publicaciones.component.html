@@ -3,18 +3,34 @@
     <h1 class="text-3xl font-bold text-gray-900">Mis Publicaciones</h1>
     <div class="flex gap-4">
       <button
-        (click)="volverAlDashboard()"
-        class="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
-      >
-        ← Volver al Dashboard
-      </button>
-      <button
         (click)="crearNuevaPublicacion()"
         class="bg-primary text-white px-6 py-2 rounded-lg hover:bg-opacity-90 transition-colors"
       >
         + Nueva Publicación
       </button>
     </div>
+  </div>
+
+  <!-- Banner de éxito -->
+  <div *ngIf="successMessage" class="mb-6 rounded-md bg-green-50 border border-green-200 p-4 flex items-start justify-between success-banner">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-green-600">check_circle</span>
+      <div class="text-sm text-green-700 font-medium">{{ successMessage }}</div>
+    </div>
+    <button type="button" (click)="closeMessages()" class="text-green-600 hover:text-green-800 font-semibold text-sm">
+      ×
+    </button>
+  </div>
+
+  <!-- Banner de error -->
+  <div *ngIf="errorMessage" class="mb-6 rounded-md bg-red-50 border border-red-200 p-4 flex items-start justify-between error-banner">
+    <div class="flex items-center gap-3">
+      <span class="material-symbols-outlined text-red-600">error</span>
+      <div class="text-sm text-red-700 font-medium">{{ errorMessage }}</div>
+    </div>
+    <button type="button" (click)="closeMessages()" class="text-red-600 hover:text-red-800 font-semibold text-sm">
+      ×
+    </button>
   </div>
 
   <!-- Loading state -->
@@ -79,14 +95,11 @@
         [ngClass]="{ 'filter grayscale': !mascota.activo }"
         (click)="abrirModal(mascota)"
       >
-        <div *ngIf="!mascota.fotos" class="text-gray-400">
-          <span class="material-symbols-outlined text-4xl">pets</span>
-        </div>
         <img
-          *ngIf="mascota.fotos"
           [src]="obtenerFotoPrincipal(mascota)"
           [alt]="mascota.nombre"
           class="w-full h-full object-cover hover:opacity-90 transition-opacity"
+          (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
         />
       </div>
 
@@ -140,7 +153,7 @@
           <!-- Botón eliminar / estado eliminado -->
           <button
             *ngIf="mascota.activo"
-            (click)="eliminarMascota(mascota.id)"
+            (click)="eliminarMascota(mascota)"
             class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 transition-colors"
           >
             Eliminar
@@ -182,13 +195,21 @@
     <!-- Modal content -->
     <div class="p-6">
       <!-- Images -->
-      <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="mb-6">
-        <div class="grid grid-cols-1 gap-4">
+      <div class="mb-6">
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="grid grid-cols-1 gap-4">
           <img
             *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada)"
             [src]="foto"
             [alt]="mascotaSeleccionada.nombre"
             class="w-full h-64 object-cover rounded-lg"
+            (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+          />
+        </div>
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0" class="grid grid-cols-1 gap-4">
+          <img
+            [src]="'/assets/images/mascota-default.svg'"
+            [alt]="mascotaSeleccionada.nombre"
+            class="w-full h-64 object-contain rounded-lg bg-gray-100"
           />
         </div>
       </div>
@@ -238,15 +259,7 @@
 
         <button
           *ngIf="mascotaSeleccionada.activo"
-          (click)="reportarAvistamiento(mascotaSeleccionada.id)"
-          class="flex-1 bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 transition-colors"
-        >
-          Ver Avistamientos
-        </button>
-
-        <button
-          *ngIf="mascotaSeleccionada.activo"
-          (click)="eliminarMascota(mascotaSeleccionada.id)"
+          (click)="eliminarMascota(mascotaSeleccionada)"
           class="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors"
         >
           Eliminar
@@ -267,6 +280,67 @@
             Ver Avistamientos
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de confirmación de eliminación -->
+<div
+  *ngIf="mostrarModalEliminacion && mascotaAEliminar"
+  class="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+  (click)="cerrarModalEliminacion()"
+>
+  <div class="bg-white rounded-lg max-w-md w-full confirmation-modal" (click)="$event.stopPropagation()">
+    <!-- Header del modal -->
+    <div class="p-6 border-b border-gray-200">
+      <div class="flex items-center gap-3">
+        <span class="material-symbols-outlined text-red-600 text-2xl">warning</span>
+        <h2 class="text-xl font-bold text-gray-900">Confirmar eliminación</h2>
+      </div>
+    </div>
+
+    <!-- Contenido del modal -->
+    <div class="p-6">
+      <div class="mb-4">
+        <p class="text-gray-700 mb-3">
+          ¿Estás seguro de que quieres eliminar la publicación de
+          <strong>{{ mascotaAEliminar.nombre }}</strong>?
+        </p>
+      </div>
+
+      <!-- Información de la mascota -->
+      <div class="bg-gray-50 rounded-lg p-4 mb-6">
+        <div class="flex items-center gap-3">
+          <img
+            [src]="obtenerFotoPrincipal(mascotaAEliminar)"
+            [alt]="mascotaAEliminar.nombre"
+            class="w-12 h-12 object-cover rounded-lg"
+            (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+          />
+          <div>
+            <h3 class="font-semibold text-gray-900">{{ mascotaAEliminar.nombre }}</h3>
+            <p class="text-sm text-gray-600">
+              {{ mascotaAEliminar.tipo }} • {{ getEstadoTexto(mascotaAEliminar.estado) }}
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Botones de acción -->
+      <div class="flex gap-3">
+        <button
+          (click)="cerrarModalEliminacion()"
+          class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+        >
+          Cancelar
+        </button>
+        <button
+          (click)="confirmarEliminacion()"
+          class="flex-1 bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors font-medium"
+        >
+          Sí, eliminar
+        </button>
       </div>
     </div>
   </div>

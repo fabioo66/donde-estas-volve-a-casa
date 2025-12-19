@@ -28,7 +28,7 @@ public class AvistamientoService {
     }
 
     public List<Avistamiento> obtenerTodosLosAvistamientos() {
-        return avistamientoDAO.getAll("fecha");
+        return avistamientoDAO.findAvistamientosActivos();
     }
 
     public Avistamiento actualizarAvistamiento(Avistamiento avistamiento) {
@@ -41,6 +41,19 @@ public class AvistamientoService {
 
     public void eliminarAvistamiento(Avistamiento avistamiento) {
         avistamientoDAO.delete(avistamiento);
+    }
+
+    public List<Avistamiento> obtenerAvistamientosPorMascota(Long mascotaId) {
+        return avistamientoDAO.findByMascotaId(mascotaId);
+    }
+
+    public void eliminarTodosLosAvistamientosDeMascota(Long mascotaId) {
+        List<Avistamiento> avistamientos = avistamientoDAO.findByMascotaId(mascotaId);
+        for (Avistamiento avistamiento : avistamientos) {
+            if (avistamiento.isActivo()) {
+                avistamientoDAO.delete(avistamiento);
+            }
+        }
     }
 }
 

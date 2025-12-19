@@ -1,0 +1,45 @@
+/* Estilos para el footer */
+.layout-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Para que el footer se quede abajo */
+footer {
+  margin-top: auto;
+}
+
+/* Hover effects para los iconos de redes sociales */
+footer svg {
+  transition: all 0.3s ease;
+}
+
+footer a:hover svg {
+  transform: scale(1.1);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  footer .grid {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  footer .col-span-2 {
+    grid-column: span 1;
+  }
+}
+
+/* Smooth transitions for links */
+footer a {
+  transition: color 0.3s ease;
+}
+
+/* Better spacing for mobile */
+@media (max-width: 640px) {
+  footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}

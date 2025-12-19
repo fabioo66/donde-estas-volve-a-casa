@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.persistence.dao.interfaces.MascotaDAO;
+import ttps.spring.models.Estado;
 import ttps.spring.models.Mascota;
 
 import java.util.List;
@@ -13,10 +14,12 @@ import java.util.List;
 public class MascotaService {
 
     private final MascotaDAO mascotaDAO;
+    private final AvistamientoService avistamientoService;
 
     @Autowired
-    public MascotaService(MascotaDAO mascotaDAO) {
+    public MascotaService(MascotaDAO mascotaDAO, AvistamientoService avistamientoService) {
         this.mascotaDAO = mascotaDAO;
+        this.avistamientoService = avistamientoService;
     }
 
     public Mascota crearMascota(Mascota mascota) {
@@ -28,7 +31,20 @@ public class MascotaService {
     }
 
     public Mascota actualizarMascota(Mascota mascota) {
-        return mascotaDAO.update(mascota);
+        // Obtener el estado anterior antes de actualizar
+        Mascota mascotaAnterior = mascotaDAO.get(Long.valueOf(mascota.getId()));
+        Estado estadoAnterior = mascotaAnterior != null ? mascotaAnterior.getEstado() : null;
+
+        // Actualizar la mascota
+        Mascota mascotaActualizada = mascotaDAO.update(mascota);
+
+        // Si cambió el estado a RECUPERADO, eliminar todos los avistamientos activos
+        if (mascota.getEstado() == Estado.RECUPERADO &&
+            estadoAnterior != Estado.RECUPERADO) {
+            avistamientoService.eliminarTodosLosAvistamientosDeMascota(Long.valueOf(mascota.getId()));
+        }
+
+        return mascotaActualizada;
     }
 
     public void eliminarMascota(Long id) {

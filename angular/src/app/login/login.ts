@@ -32,7 +32,7 @@ export class LoginComponent implements OnInit {
   ngOnInit(): void {
     // Verificar si el usuario ya está autenticado
     if (this.authService.isAuthenticated()) {
-      this.router.navigate(['/dashboard']);
+      this.router.navigate(['/home']);
       return;
     }
 
@@ -80,7 +80,7 @@ export class LoginComponent implements OnInit {
         this.cdr.detectChanges();
 
         // Redirigir a la URL de retorno o al dashboard
-        const targetUrl = this.returnUrl || '/dashboard';
+        const targetUrl = this.returnUrl || '/home';
         console.log('🎯 Navegando a:', targetUrl);
 
         setTimeout(() => {

@@ -20,7 +20,8 @@ public class Mascota {
     private String nombre;
 
     @Enumerated(EnumType.STRING)
-    private Tamanio tamaño;
+    @Column(name = "tamaño")
+    private Tamanio tamanio;
 
     private String color;
     private LocalDate fecha;
@@ -52,10 +53,10 @@ public class Mascota {
         this.avistamientos = new ArrayList<>();
     }
 
-    public Mascota(int id, String nombre, Tamanio tamaño, String color, LocalDate fecha, Estado estado, String fotos, String coordenadas, String descripcion, Usuario usuario, String tipo, String raza) {
+    public Mascota(int id, String nombre, Tamanio tamanio, String color, LocalDate fecha, Estado estado, String fotos, String coordenadas, String descripcion, Usuario usuario, String tipo, String raza) {
         this.id = id;
         this.nombre = nombre;
-        this.tamaño = tamaño;
+        this.tamanio = tamanio;
         this.color = color;
         this.fecha = fecha;
         this.estado = estado;
@@ -84,12 +85,12 @@ public class Mascota {
         this.nombre = nombre;
     }
 
-    public Tamanio getTamaño() {
-        return tamaño;
+    public Tamanio getTamanio() {
+        return tamanio;
     }
 
-    public void setTamanio(Tamanio tamaño) {
-        this.tamaño = tamaño;
+    public void setTamanio(Tamanio tamanio) {
+        this.tamanio = tamanio;
     }
 
     public String getColor() {

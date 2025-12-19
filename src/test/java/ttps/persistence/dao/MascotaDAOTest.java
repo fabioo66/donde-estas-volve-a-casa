@@ -71,7 +71,7 @@ public class MascotaDAOTest {
         assertTrue(mascotaCreada.getId() > 0, "El ID debe ser mayor a 0");
         assertEquals("Bobby", mascotaCreada.getNombre());
         assertEquals("Perro", mascotaCreada.getTipo());
-        assertEquals(Tamanio.GRANDE, mascotaCreada.getTamaño());
+        assertEquals(Tamanio.GRANDE, mascotaCreada.getTamanio());
         assertEquals(Estado.PERDIDO_PROPIO, mascotaCreada.getEstado());
         assertNotNull(mascotaCreada.getUsuario());
         assertEquals(usuarioDuenio.getId(), mascotaCreada.getUsuario().getId());

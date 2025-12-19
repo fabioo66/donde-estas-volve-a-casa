@@ -11,13 +11,13 @@ import java.util.Map;
 
 @Service
 @Transactional
-public class DashboardService {
+public class HomeService {
 
     private final MascotaDAO mascotaDAO;
     private final AvistamientoDAO avistamientoDAO;
 
     @Autowired
-    public DashboardService(MascotaDAO mascotaDAO, AvistamientoDAO avistamientoDAO) {
+    public HomeService(MascotaDAO mascotaDAO, AvistamientoDAO avistamientoDAO) {
         this.mascotaDAO = mascotaDAO;
         this.avistamientoDAO = avistamientoDAO;
     }

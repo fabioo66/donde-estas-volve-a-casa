@@ -3,7 +3,7 @@
   justify-content: center;
   align-items: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: white;
   padding: 40px 20px;
 }
 
@@ -104,7 +104,7 @@ select.form-control {
   opacity: 0.6;
   cursor: not-allowed;
 }
-
+ng
 .success-message {
   background-color: #d4edda;
   color: #155724;
@@ -166,4 +166,3 @@ select.form-control {
 .login-link a:hover {
   text-decoration: underline;
 }
-

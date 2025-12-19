@@ -30,10 +30,17 @@ public class AvistamientoDAOHibernateJPA extends GenericDAOHibernateJPA<Avistami
 
     @Override
     public int contarAvistamientosPendientes() {
-        // Contamos todos los avistamientos activos (asumimos que no hay campo de estado en avistamiento)
-        // Si hay un campo activo, usaríamos: WHERE a.activo = true
+        // Contamos avistamientos activos
         return Math.toIntExact((Long) entityManager.createQuery(
-                "SELECT COUNT(a) FROM Avistamiento a")
+                "SELECT COUNT(a) FROM Avistamiento a WHERE a.activo = true")
                 .getSingleResult());
+    }
+
+    @Override
+    public List<Avistamiento> findAvistamientosActivos() {
+        return entityManager.createQuery(
+                "SELECT a FROM Avistamiento a WHERE a.activo = true ORDER BY a.fecha DESC",
+                Avistamiento.class)
+                .getResultList();
     }
 }

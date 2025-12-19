@@ -36,6 +36,10 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
   error: string | null = null;
   isViewInitialized = false;
 
+  // Propiedades para mensajes de éxito y error
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
   constructor(
     private mascotaService: MascotaService,
     private route: ActivatedRoute,
@@ -75,11 +79,61 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
     this.mascotaService.obtenerMascota(this.mascotaId).subscribe({
       next: (mascota) => {
         console.log('✅ Mascota cargada exitosamente:', mascota);
-        this.mascota = { ...mascota };
+        console.log('🔍 Tamaño recibido (crudo):', mascota.tamanio, 'Tipo:', typeof mascota.tamanio);
+        console.log('🔍 Mascota completa:', JSON.stringify(mascota, null, 2));
+
+        // Asignar campos uno por uno para evitar problemas de binding
+        this.mascota.id = mascota.id;
+        this.mascota.nombre = mascota.nombre || '';
+        this.mascota.color = mascota.color || '';
+        this.mascota.fecha = mascota.fecha || '';
+        this.mascota.descripcion = mascota.descripcion || '';
+        this.mascota.estado = mascota.estado || '';
+        this.mascota.tipo = mascota.tipo || '';
+        this.mascota.raza = mascota.raza || '';
+        this.mascota.coordenadas = mascota.coordenadas || '';
+        this.mascota.fotos = mascota.fotos || '';
+        this.mascota.activo = mascota.activo !== undefined ? mascota.activo : true;
+
+        // Manejar el tamaño de forma especial - buscar tanto en 'tamanio' como en 'tamaño'
+        const tamanioBackend = mascota.tamanio || (mascota as any)['tamaño'] || '';
+        console.log('🔍 Tamaño encontrado:', tamanioBackend, 'desde campo:', mascota.tamanio ? 'tamanio' : 'tamaño');
+
+        this.mascota.tamanio = tamanioBackend;
+
+        if (tamanioBackend) {
+          console.log('🔍 Tamaño antes de validar:', tamanioBackend);
+          console.log('🔍 Tamaño asignado al modelo:', this.mascota.tamanio);
+
+          // Solo normalizar si es necesario, pero usar el valor original si ya es válido
+          const valoresValidos = ['PEQUENIO', 'MEDIANO', 'GRANDE'];
+          if (valoresValidos.includes(tamanioBackend)) {
+            console.log('🔧 Tamaño ya es válido, usando directamente:', tamanioBackend);
+            this.mascota.tamanio = tamanioBackend;
+          } else {
+            const tamanioNormalizado = this.normalizarTamanio(tamanioBackend);
+            this.mascota.tamanio = tamanioNormalizado;
+            console.log('🔄 Tamaño normalizado:', this.mascota.tamanio);
+          }
+        } else {
+          console.log('⚠️ No hay tamaño para normalizar - valor encontrado:', tamanioBackend);
+          this.mascota.tamanio = '';
+        }
+
         this.cargarFotosExistentes();
         this.loading = false;
+
         // Forzar detección de cambios para resolver problemas de hidratación
         this.cdr.detectChanges();
+
+        // Debug final: verificar el estado después de la detección de cambios
+        console.log('🏁 Estado final del tamaño después de detectChanges:', this.mascota.tamanio);
+
+        // Forzar otra actualización después de un tick para asegurar el binding
+        setTimeout(() => {
+          console.log('⏰ Estado del tamaño después de setTimeout:', this.mascota.tamanio);
+          this.cdr.detectChanges();
+        }, 0);
       },
       error: (error) => {
         console.error('❌ Error detallado al cargar mascota:', error);
@@ -114,13 +168,15 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
     files.forEach(file => {
       // Validar tipo
       if (!file.type.startsWith('image/')) {
-        alert(`${file.name} no es una imagen válida`);
+        this.errorMessage = `${file.name} no es una imagen válida. Solo se permiten JPG, PNG y GIF.`;
+        this.autoHideMessage('error');
         return;
       }
 
       // Validar tamaño (10MB)
       if (file.size > 10 * 1024 * 1024) {
-        alert(`${file.name} es demasiado grande. Máximo 10MB`);
+        this.errorMessage = `${file.name} es demasiado grande. El tamaño máximo es 10MB.`;
+        this.autoHideMessage('error');
         return;
       }
 
@@ -146,7 +202,87 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
     return campo?.invalid && campo?.touched;
   }
 
+  // Método para ocultar automáticamente los mensajes
+  private autoHideMessage(type: 'success' | 'error'): void {
+    setTimeout(() => {
+      if (type === 'success') this.successMessage = null;
+      else this.errorMessage = null;
+    }, 5000);
+  }
+
+  // Método para cerrar mensajes manualmente
+  closeMessages(): void {
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  // Método para verificar si el formulario está válido
+  isFormValid(): boolean {
+    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'estado'];
+
+    return camposObligatorios.every(campo => {
+      const valor = this.mascota[campo as keyof Mascota];
+      return valor && (typeof valor !== 'string' || valor.trim() !== '');
+    });
+  }
+
+  // Método para normalizar el tamaño para que coincida con las opciones del select
+  private normalizarTamanio(tamanio: string): string {
+    console.log('🔧 Normalizando tamaño:', tamanio, 'Tipo:', typeof tamanio);
+
+    if (!tamanio) {
+      console.log('🔧 Tamaño vacío, retornando vacío');
+      return '';
+    }
+
+    // Convertir a string si viene como número u otro tipo
+    const tamanioStr = String(tamanio).trim();
+    const tamanioUpper = tamanioStr.toUpperCase();
+
+    console.log('🔧 Tamaño en mayúsculas:', tamanioUpper);
+
+    // Mapear variaciones comunes
+    if (tamanioUpper.includes('PEQUE') || tamanioUpper === 'SMALL' || tamanioUpper === 'S' || tamanioUpper === 'PEQUENIO') {
+      console.log('🔧 Mapeando a PEQUENIO');
+      return 'PEQUENIO';
+    } else if (tamanioUpper.includes('MEDIAN') || tamanioUpper === 'MEDIUM' || tamanioUpper === 'M' || tamanioUpper === 'MEDIANO') {
+      console.log('🔧 Mapeando a MEDIANO');
+      return 'MEDIANO';
+    } else if (tamanioUpper.includes('GRAND') || tamanioUpper === 'LARGE' || tamanioUpper === 'L' || tamanioUpper === 'GRANDE') {
+      console.log('🔧 Mapeando a GRANDE');
+      return 'GRANDE';
+    }
+
+    // Si ya está en el formato correcto, devolverlo
+    if (['PEQUENIO', 'MEDIANO', 'GRANDE'].includes(tamanioUpper)) {
+      console.log('🔧 Ya está en formato correcto:', tamanioUpper);
+      return tamanioUpper;
+    }
+
+    // Si no coincide con nada, devolver vacío para forzar selección
+    console.warn('⚠️ Tamaño no reconocido:', tamanio, 'Retornando vacío');
+    return '';
+  }
+
   onSubmit(): void {
+    // Limpiar mensajes previos
+    this.successMessage = null;
+    this.errorMessage = null;
+
+    // Verificar manualmente los campos obligatorios
+    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'estado'];
+    const tieneAlgunCampoVacio = camposObligatorios.some(campo => {
+      const valor = this.mascota[campo as keyof Mascota];
+      return !valor || (typeof valor === 'string' && valor.trim() === '');
+    });
+
+    // Si hay campos vacíos, mostrar error
+    if (tieneAlgunCampoVacio) {
+      this.errorMessage = 'Por favor completá todos los campos obligatorios marcados con *.';
+      this.autoHideMessage('error');
+      return;
+    }
+
     this.loadingSubmit = true;
     console.log('🔄 Enviando datos actualizados:', this.mascota);
 
@@ -166,21 +302,27 @@ export class MascotaEditComponent implements OnInit, AfterViewInit {
     this.mascotaService.actualizarMascota(this.mascotaId, mascotaData).subscribe({
       next: (response) => {
         console.log('✅ Mascota actualizada:', response);
-        alert('Mascota actualizada exitosamente');
-        this.router.navigate(['/mis-publicaciones']);
+        this.successMessage = '¡Información actualizada exitosamente! 🐾';
+        this.autoHideMessage('success');
+
+        // Redirigir después de un breve delay
+        setTimeout(() => {
+          this.router.navigate(['/mis-publicaciones']);
+        }, 2000);
         this.loadingSubmit = false;
       },
       error: (error) => {
         console.error('❌ Error al actualizar mascota:', error);
-        alert('Error al actualizar la mascota. Inténtalo nuevamente.');
+        this.errorMessage = 'Ocurrió un error al actualizar la información. Por favor, intentá nuevamente.';
+        this.autoHideMessage('error');
         this.loadingSubmit = false;
       }
     });
   }
 
   cancelar(): void {
-    console.log('🔙 Cancelando edición, volviendo al dashboard...');
-    this.router.navigate(['/dashboard']);
+    console.log('🔙 Cancelando edición, volviendo al home...');
+    this.router.navigate(['/home']);
   }
 }
 

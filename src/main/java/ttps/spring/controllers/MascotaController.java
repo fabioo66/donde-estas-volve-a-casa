@@ -14,10 +14,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.MascotaRequest;
+import ttps.spring.models.Avistamiento;
 import ttps.spring.models.Estado;
 import ttps.spring.models.Mascota;
 import ttps.spring.models.Tamanio;
 import ttps.spring.models.Usuario;
+import ttps.spring.services.AvistamientoService;
 import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
@@ -32,14 +34,17 @@ public class MascotaController {
 
     private final MascotaService mascotaService;
     private final UsuarioService usuarioService;
+    private final AvistamientoService avistamientoService;
     private final FileStorageService fileStorageService;
     private final ObjectMapper objectMapper;
 
     @Autowired
     public MascotaController(MascotaService mascotaService, UsuarioService usuarioService,
-                            FileStorageService fileStorageService, ObjectMapper objectMapper) {
+                            AvistamientoService avistamientoService, FileStorageService fileStorageService,
+                            ObjectMapper objectMapper) {
         this.mascotaService = mascotaService;
         this.usuarioService = usuarioService;
+        this.avistamientoService = avistamientoService;
         this.fileStorageService = fileStorageService;
         this.objectMapper = objectMapper;
     }

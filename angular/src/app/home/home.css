@@ -46,6 +46,26 @@ section > div > div {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
+/* Estilos específicos para las estadísticas del dashboard */
+.text-primary {
+  color: #13a4ec;
+}
+
+.bg-primary {
+  background-color: #13a4ec;
+}
+
+.hover\:text-primary:hover {
+  color: #13a4ec;
+}
+
+/* Transitions para estadísticas */
+.transition-colors {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
 /* Optimización para pantallas pequeñas */
 @media (max-width: 640px) {
   .scrollbar-custom {

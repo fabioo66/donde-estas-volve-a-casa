@@ -51,12 +51,12 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.error = null;
     this.avistamientos = [];
-    
+
     // Cancelar suscripción anterior si existe
     if (this.subscription) {
       this.subscription.unsubscribe();
     }
-    
+
     this.subscription = this.avistamientoService.obtenerTodosLosAvistamientos().subscribe({
       next: (avistamientos) => {
         this.avistamientos = avistamientos;
@@ -79,6 +79,7 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
   }
 
   obtenerImagenAvistamiento(avistamiento: Avistamiento): string {
+    // Intentar obtener la foto del avistamiento primero
     if (avistamiento.fotos) {
       try {
         const fotosArray = JSON.parse(avistamiento.fotos);
@@ -90,10 +91,13 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
         console.error('Error parseando fotos del avistamiento', avistamiento.id, ':', e);
       }
     }
-    return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
+
+    // Si no hay fotos del avistamiento, usar imagen por defecto
+    return '/assets/images/mascota-default.svg';
   }
 
   obtenerTodasLasFotos(avistamiento: Avistamiento): string[] {
+    // Obtener las fotos del avistamiento
     if (avistamiento.fotos) {
       try {
         const fotosArray = JSON.parse(avistamiento.fotos);
@@ -101,7 +105,7 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
           return fotosArray.map((url: string) => `http://localhost:8080${url}`);
         }
       } catch (e) {
-        console.error('Error parseando fotos:', e);
+        console.error('Error parseando fotos del avistamiento:', e);
       }
     }
     return [];
@@ -242,4 +246,3 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     }, 100);
   }
 }
-

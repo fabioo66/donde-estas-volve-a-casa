@@ -33,6 +33,10 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   Estados = Estado;
   Tamanios = Tamanio;
 
+  // Propiedades para mensajes de éxito y error
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
   // Propiedades para el mapa
   mostrarMapa = false;
   map: any;
@@ -54,11 +58,13 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     const tiposPermitidos = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
     const archivosValidos = files.filter(file => {
       if (!tiposPermitidos.includes(file.type)) {
-        alert(`El archivo ${file.name} no es una imagen válida. Solo se permiten JPG, PNG y GIF.`);
+        this.errorMessage = `El archivo ${file.name} no es una imagen válida. Solo se permiten JPG, PNG y GIF.`;
+        this.autoHideMessage('error');
         return false;
       }
       if (file.size > 10 * 1024 * 1024) { // 10MB
-        alert(`El archivo ${file.name} es demasiado grande. El tamaño máximo es 10MB.`);
+        this.errorMessage = `El archivo ${file.name} es demasiado grande. El tamaño máximo es 10MB.`;
+        this.autoHideMessage('error');
         return false;
       }
       return true;
@@ -72,6 +78,8 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       const reader = new FileReader();
       reader.onload = (e) => {
         this.previsualizaciones.push(e.target?.result as string);
+        // Forzar detección de cambios para actualizar la vista inmediatamente
+        this.cdr.detectChanges();
       };
       reader.readAsDataURL(file);
     });
@@ -83,11 +91,36 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   }
 
   async onSubmit(form: any): Promise<void> {
-    if (form.invalid) {
+    // Limpiar mensajes previos
+    this.successMessage = null;
+    this.errorMessage = null;
+
+    // Verificar manualmente los campos obligatorios
+    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'descripcion', 'estado'];
+    const tieneAgunCampoVacio = camposObligatorios.some(campo => {
+      const valor = this.mascota[campo as keyof MascotaRequest];
+      return !valor || (typeof valor === 'string' && valor.trim() === '');
+    });
+
+    // Si hay campos vacíos, mostrar error
+    if (tieneAgunCampoVacio) {
       // Marcar todos los campos como touched para mostrar errores
       Object.keys(form.controls).forEach(key => {
         form.controls[key].markAsTouched();
       });
+
+      this.errorMessage = 'Por favor completá todos los campos obligatorios marcados con *.';
+      this.autoHideMessage('error');
+      return;
+    }
+
+    // Validar también el formulario de Angular
+    if (form.invalid) {
+      Object.keys(form.controls).forEach(key => {
+        form.controls[key].markAsTouched();
+      });
+      this.errorMessage = 'Por favor verificá que todos los campos obligatorios estén correctamente completados.';
+      this.autoHideMessage('error');
       return;
     }
 
@@ -97,7 +130,8 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       // Obtener el usuario autenticado actual
       const currentUser = this.authService.getCurrentUser();
       if (!currentUser) {
-        alert('Debe estar autenticado para publicar una mascota');
+        this.errorMessage = 'Debe estar autenticado para publicar una mascota.';
+        this.autoHideMessage('error');
         this.router.navigate(['/login']);
         return;
       }
@@ -119,11 +153,18 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
 
       await this.mascotaService.crearMascota(usuarioId, mascotaData).toPromise();
 
-      alert('Mascota reportada exitosamente');
-      this.router.navigate(['/dashboard']);
+      this.successMessage = '¡Mascota reportada exitosamente! Gracias por ayudar a reunir familias. 🐾';
+      this.resetForm(form);
+      this.autoHideMessage('success');
+
+      // Redirigir después de un breve delay para que el usuario vea el mensaje
+      setTimeout(() => {
+        this.router.navigate(['/mis-publicaciones']);
+      }, 3000);
     } catch (error) {
       console.error('Error al crear mascota:', error);
-      alert('Error al reportar la mascota. Inténtalo nuevamente.');
+      this.errorMessage = 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
+      this.autoHideMessage('error');
     } finally {
       this.loading = false;
     }
@@ -138,6 +179,48 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       return 'Este campo es requerido';
     }
     return '';
+  }
+
+  // Método para verificar si el formulario está válido
+  isFormValid(): boolean {
+    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'descripcion', 'estado'];
+
+    return camposObligatorios.every(campo => {
+      const valor = this.mascota[campo as keyof MascotaRequest];
+      return valor && (typeof valor !== 'string' || valor.trim() !== '');
+    });
+  }
+
+  // Método para ocultar automáticamente los mensajes
+  private autoHideMessage(type: 'success' | 'error'): void {
+    setTimeout(() => {
+      if (type === 'success') this.successMessage = null;
+      else this.errorMessage = null;
+    }, 5000);
+  }
+
+  // Método para cerrar mensajes manualmente
+  closeMessages(): void {
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  // Método para resetear el formulario
+  private resetForm(form: any): void {
+    this.previsualizaciones = [];
+    this.archivosSeleccionados = [];
+    this.mascota = {
+      nombre: '',
+      tamanio: '',
+      color: '',
+      fecha: new Date().toISOString().split('T')[0],
+      descripcion: '',
+      estado: Estado.PERDIDO_PROPIO,
+      tipo: '',
+      raza: '',
+      coordenadas: ''
+    };
+    form.resetForm();
   }
 
   ngAfterViewInit(): void {
