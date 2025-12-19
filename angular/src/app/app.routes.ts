@@ -28,7 +28,8 @@ export const routes: Routes = [
   },
   {
     path: 'mascota/nuevo',
-    component: MascotaFormComponent
+    component: MascotaFormComponent,
+    canActivate: [authGuard]
   },
   {
     path: 'mascota/:id/editar',

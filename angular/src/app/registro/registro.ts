@@ -1,7 +1,7 @@
-import { Component, ChangeDetectorRef } from '@angular/core';
+import { Component, ChangeDetectorRef, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { GeolocalizacionService } from '../services/geolocalizacion.service';
 import { Usuario } from '../models/usuario.model';
@@ -13,7 +13,7 @@ import { Usuario } from '../models/usuario.model';
   templateUrl: './registro.html',
   styleUrls: ['./registro.css']
 })
-export class RegistroComponent {
+export class RegistroComponent implements OnInit {
   usuario: Usuario = {
     nombreUsuario: '',
     nombre: '',
@@ -33,12 +33,21 @@ export class RegistroComponent {
   loading: boolean = false;
   loadingUbicacion: boolean = false;
 
+  private route = inject(ActivatedRoute);
+  private returnUrl: string | null = null;
+
   constructor(
     private authService: AuthService,
     private geoService: GeolocalizacionService,
     private router: Router,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    // Obtener URL de retorno de los query parameters
+    this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || null;
+    console.log('🔗 URL de retorno configurada:', this.returnUrl);
+  }
 
   obtenerUbicacionActual(): void {
     this.loadingUbicacion = true;
@@ -203,7 +212,12 @@ export class RegistroComponent {
         this.loading = false;
         this.cdr.detectChanges();
         setTimeout(() => {
-          this.router.navigate(['/login']);
+          // Pasar el returnUrl al login si existe
+          if (this.returnUrl) {
+            this.router.navigate(['/login'], { queryParams: { returnUrl: this.returnUrl } });
+          } else {
+            this.router.navigate(['/login']);
+          }
         }, 2000);
       },
       error: (error) => {
