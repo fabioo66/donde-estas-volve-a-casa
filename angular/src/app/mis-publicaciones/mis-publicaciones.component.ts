@@ -20,6 +20,15 @@ export class MisPublicacionesComponent implements OnInit {
   currentUser: LoginResponse | null = null;
   mascotaSeleccionada: Mascota | null = null;
   mostrarModal = false;
+
+  // Propiedades para mensajes de éxito y error
+  successMessage: string | null = null;
+  errorMessage: string | null = null;
+
+  // Propiedades para modal de confirmación de eliminación
+  mostrarModalEliminacion = false;
+  mascotaAEliminar: Mascota | null = null;
+
   private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
 
@@ -120,52 +129,67 @@ export class MisPublicacionesComponent implements OnInit {
     this.router.navigate(['/mascota', id, 'editar']);
   }
 
-  eliminarMascota(id: number): void {
-    if (confirm('¿Estás seguro de que quieres eliminar esta publicación?')) {
+  eliminarMascota(mascota: Mascota): void {
+    // Mostrar modal de confirmación personalizado
+    this.mascotaAEliminar = mascota;
+    this.mostrarModalEliminacion = true;
+  }
 
-      this.mascotaService.eliminarMascota(id).subscribe({
-        next: (mascotaActualizada) => {
-          console.log('✅ Mascota eliminada (borrado lógico):', mascotaActualizada);
+  confirmarEliminacion(): void {
+    if (!this.mascotaAEliminar) return;
 
-          // Actualizar la mascota en la lista local con los nuevos datos
-          const index = this.misPublicaciones.findIndex(m => m.id === id);
-          if (index !== -1) {
-            this.misPublicaciones[index] = mascotaActualizada;
-            console.log('📝 Mascota actualizada en la lista local');
-          }
+    const id = this.mascotaAEliminar.id;
+    this.cerrarModalEliminacion();
 
-          // Actualizar también en el modal si está abierto
-          if (this.mascotaSeleccionada && this.mascotaSeleccionada.id === id) {
-            this.mascotaSeleccionada = mascotaActualizada;
-            console.log('📝 Mascota actualizada en el modal');
-          }
+    this.mascotaService.eliminarMascota(id).subscribe({
+      next: (mascotaActualizada) => {
+        console.log('✅ Mascota eliminada (borrado lógico):', mascotaActualizada);
 
-          // Forzar detección de cambios
-          this.cdr.detectChanges();
-
-          // Mostrar mensaje de éxito
-          alert('Publicación eliminada exitosamente. Ahora aparecerá como eliminada.');
-
-          console.log('🔄 Lista actualizada. Estado activo de la mascota:', mascotaActualizada.activo);
-        },
-        error: (error) => {
-          console.error('❌ Error al eliminar mascota:', error);
-          console.error('❌ Error status:', error.status);
-          console.error('❌ Error message:', error.message);
-
-          let mensajeError = 'Error al eliminar la publicación';
-          if (error.status === 404) {
-            mensajeError = 'La publicación no fue encontrada';
-          } else if (error.status === 403 || error.status === 401) {
-            mensajeError = 'No tienes permisos para eliminar esta publicación';
-          } else if (error.status === 500) {
-            mensajeError = 'Error interno del servidor al eliminar la publicación';
-          }
-
-          alert(mensajeError);
+        // Actualizar la mascota en la lista local con los nuevos datos
+        const index = this.misPublicaciones.findIndex(m => m.id === id);
+        if (index !== -1) {
+          this.misPublicaciones[index] = mascotaActualizada;
+          console.log('📝 Mascota actualizada en la lista local');
         }
-      });
-    }
+
+        // Actualizar también en el modal si está abierto
+        if (this.mascotaSeleccionada && this.mascotaSeleccionada.id === id) {
+          this.mascotaSeleccionada = mascotaActualizada;
+          console.log('📝 Mascota actualizada en el modal');
+        }
+
+        // Forzar detección de cambios
+        this.cdr.detectChanges();
+
+        // Mostrar mensaje de éxito bonito
+        this.successMessage = '✅ Publicación eliminada exitosamente. La mascota ahora aparecerá como eliminada.';
+        this.autoHideMessage('success');
+
+        console.log('🔄 Lista actualizada. Estado activo de la mascota:', mascotaActualizada.activo);
+      },
+      error: (error) => {
+        console.error('❌ Error al eliminar mascota:', error);
+        console.error('❌ Error status:', error.status);
+        console.error('❌ Error message:', error.message);
+
+        let mensajeError = 'Error al eliminar la publicación';
+        if (error.status === 404) {
+          mensajeError = 'La publicación no fue encontrada';
+        } else if (error.status === 403 || error.status === 401) {
+          mensajeError = 'No tienes permisos para eliminar esta publicación';
+        } else if (error.status === 500) {
+          mensajeError = 'Error interno del servidor al eliminar la publicación';
+        }
+
+        this.errorMessage = mensajeError;
+        this.autoHideMessage('error');
+      }
+    });
+  }
+
+  cerrarModalEliminacion(): void {
+    this.mostrarModalEliminacion = false;
+    this.mascotaAEliminar = null;
   }
 
   abrirModal(mascota: Mascota): void {
@@ -242,6 +266,21 @@ export class MisPublicacionesComponent implements OnInit {
     });
   }
 
+  // Método para ocultar automáticamente los mensajes
+  private autoHideMessage(type: 'success' | 'error'): void {
+    setTimeout(() => {
+      if (type === 'success') this.successMessage = null;
+      else this.errorMessage = null;
+    }, 5000);
+  }
+
+  // Método para cerrar mensajes manualmente
+  closeMessages(): void {
+    this.successMessage = null;
+    this.errorMessage = null;
+  }
+
+  // Método para reintentar la carga (para el botón de error)
   reintentar(): void {
     this.cargarMisPublicaciones();
   }
