@@ -49,7 +49,7 @@ public class AvistamientoResponse {
                 avistamiento.getMascota().getTipo(),
                 avistamiento.getMascota().getRaza(),
                 avistamiento.getMascota().getColor(),
-                avistamiento.getMascota().getTamaño() != null ? avistamiento.getMascota().getTamaño().name() : null,
+                avistamiento.getMascota().getTamanio() != null ? avistamiento.getMascota().getTamanio().name() : null,
                 avistamiento.getMascota().getFotos()
             );
         }
