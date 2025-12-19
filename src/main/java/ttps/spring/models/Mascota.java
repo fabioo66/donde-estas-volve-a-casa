@@ -20,6 +20,7 @@ public class Mascota {
     private String nombre;
 
     @Enumerated(EnumType.STRING)
+    @Column(name = "tamaño")
     private Tamanio tamanio;
 
     private String color;
