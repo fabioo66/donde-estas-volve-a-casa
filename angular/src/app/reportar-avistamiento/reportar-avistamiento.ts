@@ -225,7 +225,7 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
       next: (response: any) => {
         this.successMessage = '¡Avistamiento reportado exitosamente!';
         this.enviandoAvistamiento = false;
-        
+
         // Redirigir después de 2 segundos
         setTimeout(() => {
           this.router.navigate(['/']);
@@ -245,7 +245,7 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
 
   obtenerImagenMascota(): string {
     if (!this.mascota || !this.mascota.fotos) {
-      return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
+      return '/assets/images/mascota-default.svg';
     }
 
     try {
@@ -256,7 +256,7 @@ export class ReportarAvistamientoComponent implements OnInit, AfterViewInit, OnD
     } catch (e) {
       console.error('Error parseando fotos:', e);
     }
-    
-    return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
+
+    return '/assets/images/mascota-default.svg';
   }
 }

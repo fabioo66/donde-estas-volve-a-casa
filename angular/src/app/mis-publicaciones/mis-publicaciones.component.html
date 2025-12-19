@@ -73,14 +73,11 @@
         [ngClass]="{ 'filter grayscale': !mascota.activo }"
         (click)="abrirModal(mascota)"
       >
-        <div *ngIf="!mascota.fotos" class="text-gray-400">
-          <span class="material-symbols-outlined text-4xl">pets</span>
-        </div>
         <img
-          *ngIf="mascota.fotos"
           [src]="obtenerFotoPrincipal(mascota)"
           [alt]="mascota.nombre"
           class="w-full h-full object-cover hover:opacity-90 transition-opacity"
+          (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
         />
       </div>
 
@@ -176,13 +173,21 @@
     <!-- Modal content -->
     <div class="p-6">
       <!-- Images -->
-      <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="mb-6">
-        <div class="grid grid-cols-1 gap-4">
+      <div class="mb-6">
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="grid grid-cols-1 gap-4">
           <img
             *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada)"
             [src]="foto"
             [alt]="mascotaSeleccionada.nombre"
             class="w-full h-64 object-cover rounded-lg"
+            (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+          />
+        </div>
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0" class="grid grid-cols-1 gap-4">
+          <img
+            [src]="'/assets/images/mascota-default.svg'"
+            [alt]="mascotaSeleccionada.nombre"
+            class="w-full h-64 object-contain rounded-lg bg-gray-100"
           />
         </div>
       </div>

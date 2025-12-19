@@ -93,7 +93,7 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
     }
 
     // Si no hay fotos del avistamiento, usar imagen por defecto
-    return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
+    return '/assets/images/mascota-default.svg';
   }
 
   obtenerTodasLasFotos(avistamiento: Avistamiento): string[] {

@@ -113,7 +113,7 @@ export class Home implements OnInit, OnDestroy {
         console.error('Error parseando fotos:', e);
       }
     }
-    return 'https://images.unsplash.com/photo-1548199973-03cce0bbc87b?w=400';
+    return '/assets/images/mascota-default.svg';
   }
 
   obtenerTodasLasFotos(mascota: Mascota): string[] {
