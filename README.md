@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://raw.githubusercontent.com/fabioo66/donde-estas-volve-a-casa/main/angular/public/assets/images/mascota-default.svg" alt="Dónde Estás, Volvé a Casa" width="200"/>
+  <img src="https://i.postimg.cc/nH9jWh0K/logo-mascota.jpg" alt="Dónde Estás, Volvé a Casa" width="200"/>
   
   # 🐾 Dónde Estás, Volvé a Casa
   
