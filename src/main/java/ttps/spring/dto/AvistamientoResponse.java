@@ -1,7 +1,7 @@
 package ttps.spring.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import ttps.spring.models.Avistamiento;
+import ttps.spring.models.avistamiento.Avistamiento;
 
 import java.time.LocalDate;
 

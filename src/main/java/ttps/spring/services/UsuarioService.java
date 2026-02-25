@@ -1,23 +1,19 @@
 package ttps.spring.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ttps.spring.models.Usuario;
-import ttps.spring.persistence.dao.interfaces.UsuarioDAO;
+import ttps.spring.models.usuario.Usuario;
+import ttps.spring.models.usuario.UsuarioRepository;
 
 import java.util.List;
 
+@RequiredArgsConstructor
 @Service
 @Transactional
 public class UsuarioService {
 
-    private final UsuarioDAO usuarioDAO;
-
-    @Autowired
-    public UsuarioService(UsuarioDAO usuarioDAO) {
-        this.usuarioDAO = usuarioDAO;
-    }
+    private final UsuarioRepository usuarioRepository;
 
     public Usuario crearUsuario(Usuario usuario) {
         return usuarioDAO.persist(usuario);

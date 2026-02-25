@@ -15,9 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.AvistamientoRequest;
 import ttps.spring.dto.AvistamientoResponse;
-import ttps.spring.models.Avistamiento;
-import ttps.spring.models.Mascota;
-import ttps.spring.models.Usuario;
+import ttps.spring.models.avistamiento.Avistamiento;
+import ttps.spring.models.mascota.Mascota;
+import ttps.spring.models.usuario.Usuario;
 import ttps.spring.services.AvistamientoService;
 import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
@@ -25,7 +25,6 @@ import ttps.spring.services.UsuarioService;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/avistamientos")

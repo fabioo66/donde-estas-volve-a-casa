@@ -1,16 +1,19 @@
-package ttps.spring.models;
+package ttps.spring.models.usuario;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import ttps.spring.models.usuario.dto.RegistroUsuarioRequest;
+import ttps.spring.models.avistamiento.Avistamiento;
+import ttps.spring.models.mascota.Mascota;
 import ttps.utils.PasswordUtils;
 
 import java.util.LinkedList;
 import java.util.List;
 
-
+@NoArgsConstructor
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo_usuario", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "usuario")
 public class Usuario {
     @Id
@@ -37,34 +40,17 @@ public class Usuario {
     private String municipio;
     private String departamento;
 
+    @Setter
     private boolean activo = true;
 
     @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
     @JsonManagedReference("usuario-mascotas")
     private List<Mascota> mascotas;
 
+    @Setter
     @OneToMany(mappedBy = "usuario", fetch = FetchType.EAGER)
     @JsonManagedReference("usuario-avistamientos")
     private List<Avistamiento> avistamientos;
-
-    // Constructor vacío
-    public Usuario() {
-        this.mascotas = new LinkedList<>();
-        this.avistamientos = new LinkedList<>();
-    }
-
-    public Usuario(String nombre, String apellido, String email, String contrasenia, String telefono, String provincia, String municipio, String departamento) {
-        this.nombre = nombre;
-        this.apellido = apellido;
-        this.email = email;
-        this.contrasenia = PasswordUtils.hashPassword(contrasenia);
-        this.telefono = telefono;
-        this.provincia = provincia;
-        this.municipio = municipio;
-        this.departamento = departamento;
-        this.mascotas = new LinkedList<>();
-        this.avistamientos = new LinkedList<>();
-    }
 
     public Usuario(String nombreUsuario, String nombre, String apellido, String email, String contrasenia,
                    String telefono, String genero, Integer edad, String provincia, String municipio, String departamento) {
@@ -148,75 +134,6 @@ public class Usuario {
         mascota.setUsuario(this);
     }
 
-    public String getTelefono() {
-        return telefono;
-    }
-
-    public void setTelefono(String telefono) {
-        this.telefono = telefono;
-    }
-
-    public String getNombreUsuario() {
-        return nombreUsuario;
-    }
-
-    public void setNombreUsuario(String nombreUsuario) {
-        this.nombreUsuario = nombreUsuario;
-    }
-
-    public String getGenero() {
-        return genero;
-    }
-
-    public void setGenero(String genero) {
-        this.genero = genero;
-    }
-
-    public Integer getEdad() {
-        return edad;
-    }
-
-    public void setEdad(Integer edad) {
-        this.edad = edad;
-    }
-
-    public String getProvincia() {
-        return provincia;
-    }
-
-    public void setProvincia(String provincia) {
-        this.provincia = provincia;
-    }
-
-    public String getMunicipio() {
-        return municipio;
-    }
-
-    public void setMunicipio(String municipio) {
-        this.municipio = municipio;
-    }
-
-    public String getDepartamento() {
-        return departamento;
-    }
-
-    public void setDepartamento(String departamento) {
-        this.departamento = departamento;
-    }
-
-    public List<Mascota> getMascotas() {
-        return mascotas;
-    }
-
-    public void setMascotas(List<Mascota> mascotas) {
-        this.mascotas = mascotas;
-    }
-
-    public List<Avistamiento> getAvistamientos() {
-        return avistamientos;
-    }
-
-
     public boolean isActivo() {
         return activo;
     }
@@ -226,5 +143,19 @@ public class Usuario {
     }
     public void setAvistamientos(List<Avistamiento> avistamientos) {
         this.avistamientos = avistamientos;
+    }
+
+    public Usuario(RegistroUsuarioRequest request) {
+        this.nombreUsuario = request.nombreUsuario();
+        this.nombre = request.nombre();
+        this.apellido = request.apellido();
+        this.email = request.email();
+        this.contrasenia = PasswordUtils.hashPassword(request.password());
+        this.telefono = request.telefono();
+        this.genero = request.genero();
+        this.edad = request.edad();
+        this.provincia = request.provincia();
+        this.municipio = request.municipio();
+        this.departamento = request.departamento();
     }
 }

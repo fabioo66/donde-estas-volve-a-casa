@@ -14,9 +14,8 @@ import org.springframework.web.bind.annotation.*;
 import ttps.spring.dto.ActualizarPerfilRequest;
 import ttps.spring.dto.LoginRequest;
 import ttps.spring.dto.LoginResponse;
-import ttps.spring.dto.RegistroUsuarioRequest;
-import ttps.spring.models.Usuario;
-import ttps.spring.models.UsuarioRegistrado;
+import ttps.spring.models.usuario.dto.RegistroUsuarioRequest;
+import ttps.spring.models.usuario.Usuario;
 import ttps.spring.services.UsuarioService;
 import ttps.utils.PasswordUtils;
 import ttps.utils.JwtUtils;
@@ -61,18 +60,7 @@ public class UsuarioController {
                         .body("El nombre de usuario ya esta registrado");
             }
 
-            UsuarioRegistrado usuario = new UsuarioRegistrado();
-            usuario.setNombreUsuario(request.getNombreUsuario());
-            usuario.setNombre(request.getNombre());
-            usuario.setApellido(request.getApellido());
-            usuario.setEmail(request.getEmail());
-            usuario.setContrasenia(request.getPassword());
-            usuario.setTelefono(request.getTelefono());
-            usuario.setGenero(request.getGenero());
-            usuario.setEdad(request.getEdad());
-            usuario.setProvincia(request.getProvincia());
-            usuario.setMunicipio(request.getMunicipio());
-            usuario.setDepartamento(request.getDepartamento());
+            Usuario usuario = new Usuario(request);
 
             Usuario usuarioCreado = usuarioService.crearUsuario(usuario);
 

@@ -3,7 +3,7 @@ package ttps.spring.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ttps.spring.models.Avistamiento;
+import ttps.spring.models.avistamiento.Avistamiento;
 import ttps.spring.persistence.dao.interfaces.AvistamientoDAO;
 
 import java.util.List;

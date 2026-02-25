@@ -1,4 +1,4 @@
-package ttps.spring.models;
+package ttps.spring.models.mascota;
 
 public enum Estado {
     PERDIDO_PROPIO,
