@@ -19,7 +19,7 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name="usuario_id")
-    private long id;
+    private Long id;
     private String nombre;
     private String apellido;
 
@@ -69,11 +69,11 @@ public class Usuario {
         this.avistamientos = new LinkedList<>();
     }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -124,8 +124,6 @@ public class Usuario {
 
     public void agregarAvistamiento(Avistamiento avistamiento, Mascota mascota) {
         this.avistamientos.add(avistamiento);
-        avistamiento.setUsuario(this);
-        avistamiento.setMascota(mascota);
         mascota.agregarAvistamiento(avistamiento);
     }
 
