@@ -25,21 +25,32 @@ public class Mascota {
     @Column(name="mascota_id")
     private Long id;
 
+    @Setter
     private String nombre;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     @Column(name = "tamaño")
     private Tamanio tamanio;
 
+    @Setter
     private String color;
+
+    @Setter
     private LocalDate fecha;
 
+    @Setter
     @Enumerated(EnumType.STRING)
     private Estado estado;
 
+    @Setter
     @Column(columnDefinition = "TEXT")
     private String fotos; // JSON array de URLs
+
+    @Setter
     private String coordenadas;
+
+    @Setter
     private String descripcion;
 
     @Setter
@@ -48,9 +59,13 @@ public class Mascota {
     @JsonBackReference("usuario-mascotas")
     private Usuario usuario;
 
+    @Setter
     private String tipo;
+
+    @Setter
     private String raza;
 
+    @Setter
     private boolean activo = true;
 
     @OneToMany(mappedBy = "mascota", fetch = FetchType.EAGER)

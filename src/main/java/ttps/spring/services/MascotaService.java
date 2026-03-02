@@ -32,11 +32,11 @@ public class MascotaService {
 
     public Mascota actualizarMascota(Mascota mascota) {
         // Obtener el estado anterior antes de actualizar
-        Mascota mascotaAnterior = mascotaRepository.getById(Long.valueOf(mascota.getId());
+        Mascota mascotaAnterior = mascotaRepository.getById(Long.valueOf(mascota.getId()));
         Estado estadoAnterior = mascotaAnterior != null ? mascotaAnterior.getEstado() : null;
 
         // Actualizar la mascota
-        Mascota mascotaActualizada = mascotaRepository.update(mascota);
+        Mascota mascotaActualizada = mascotaRepository.save(mascota);
 
         // Si cambió el estado a RECUPERADO, eliminar todos los avistamientos activos
         if (mascota.getEstado() == Estado.RECUPERADO &&
@@ -56,7 +56,7 @@ public class MascotaService {
     }
 
     public List<Mascota> obtenerMascotasPorUsuario(Long usuarioId) {
-        return mascotaRepository.findById(usuarioId);
+        return mascotaRepository.findByUsuarioId(usuarioId);
     }
 
     public List<Mascota> obtenerMascotasPerdidas() {
@@ -65,6 +65,6 @@ public class MascotaService {
     }
 
     public List<Mascota> obtenerTodasLasMascotas() {
-        return mascotaRepository.getAll("nombre");
+        return mascotaRepository.findAll();
     }
 }

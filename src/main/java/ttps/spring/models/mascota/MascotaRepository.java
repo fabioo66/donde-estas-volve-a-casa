@@ -2,7 +2,11 @@ package ttps.spring.models.mascota;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface MascotaRepository extends JpaRepository<Mascota, Long> {
+import java.util.List;
 
-    //crear metodo para obtener las mascotas perdidas del usuario findMascotasPerdidas
+public interface MascotaRepository extends JpaRepository<Mascota, Long> {
+    List<Mascota> findMascotasPerdidas();
+
+    List<Mascota> findByUsuarioId(Long usuarioId);
+
 }

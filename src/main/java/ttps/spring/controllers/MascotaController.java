@@ -136,7 +136,7 @@ public class MascotaController {
         @ApiResponse(responseCode = "200", description = "Lista de mascotas obtenida exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<List<Mascota>> obtenerMascotasUsuario(
+    public ResponseEntity<?> obtenerMascotasUsuario(
             @Parameter(description = "ID del usuario") @PathVariable int usuarioId) {
         try {
             List<Mascota> mascotas = mascotaService.obtenerMascotasPorUsuario((long) usuarioId);
@@ -154,7 +154,7 @@ public class MascotaController {
         @ApiResponse(responseCode = "200", description = "Lista de mascotas perdidas obtenida exitosamente"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<List<Mascota>> obtenerMascotasPerdidas() {
+    public ResponseEntity<?> obtenerMascotasPerdidas() {
         try {
             List<Mascota> perdidas = mascotaService.obtenerMascotasPerdidas();
             return ResponseEntity.ok(perdidas);
