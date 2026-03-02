@@ -76,14 +76,14 @@ public class MascotaController {
             mascota.setDescripcion(request.getDescripcion());
             mascota.setEstado(request.getEstado() != null
                     ? Estado.valueOf(request.getEstado().toUpperCase())
-                    : Estado.RECUPERADO);
+                    : Estado.PERDIDO_PROPIO);
             mascota.setCoordenadas(request.getCoordenadas());
             mascota.setTipo(request.getTipo());
             mascota.setRaza(request.getRaza());
             mascota.setUsuario(usuario);
             mascota.setActivo(true);
 
-            // Guardar fotos como archivos y almacenar las URLs
+            // Guardar fotos como archivos y almacenar las URLs como Strings
             if (request.getFotosBase64() != null && !request.getFotosBase64().isEmpty()) {
                 List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
                     request.getFotosBase64(),
@@ -110,39 +110,58 @@ public class MascotaController {
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Mascota encontrada",
                      content = @Content(schema = @Schema(implementation = Mascota.class))),
-        @ApiResponse(responseCode = "404", description = "Mascota no encontrada")
+        @ApiResponse(responseCode = "404", description = "Mascota no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+
     })
     public ResponseEntity<?> obtenerMascota(
             @Parameter(description = "ID de la mascota") @PathVariable int id) {
-        Mascota mascota = mascotaService.obtenerMascota((long) id);
-        if (mascota == null || !mascota.isActivo()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                    .body("Mascota no encontrada");
+        try {
+            Mascota mascota = mascotaService.obtenerMascota((long) id);
+            if (mascota == null || !mascota.isActivo()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                        .body("Mascota no encontrada");
+            }
+            return ResponseEntity.ok(mascota);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener la mascota requerida: " + e.getMessage());
         }
-        return ResponseEntity.ok(mascota);
     }
 
     @GetMapping("/usuario/{usuarioId}")
     @Operation(summary = "Obtener mascotas de un usuario",
                description = "Retorna todas las mascotas registradas por un usuario específico")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de mascotas obtenida exitosamente")
+        @ApiResponse(responseCode = "200", description = "Lista de mascotas obtenida exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<Mascota>> obtenerMascotasUsuario(
             @Parameter(description = "ID del usuario") @PathVariable int usuarioId) {
-        List<Mascota> mascotas = mascotaService.obtenerMascotasPorUsuario((long) usuarioId);
-        return ResponseEntity.ok(mascotas);
+        try {
+            List<Mascota> mascotas = mascotaService.obtenerMascotasPorUsuario((long) usuarioId);
+            return ResponseEntity.ok(mascotas);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener las mascotas del usuario: " + e.getMessage());
+        }
     }
 
     @GetMapping("/perdidas")
     @Operation(summary = "Obtener mascotas perdidas",
                description = "Retorna todas las mascotas con estado PERDIDO")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Lista de mascotas perdidas obtenida exitosamente")
+        @ApiResponse(responseCode = "200", description = "Lista de mascotas perdidas obtenida exitosamente"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<Mascota>> obtenerMascotasPerdidas() {
-        List<Mascota> perdidas = mascotaService.obtenerMascotasPerdidas();
-        return ResponseEntity.ok(perdidas);
+        try {
+            List<Mascota> perdidas = mascotaService.obtenerMascotasPerdidas();
+            return ResponseEntity.ok(perdidas);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error al obtener mascotas perdidas del usuario: " + e.getMessage());
+        }
     }
 
     @PutMapping("/{id}")

@@ -3,7 +3,7 @@ package ttps.spring.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ttps.spring.persistence.dao.interfaces.MascotaDAO;
+import ttps.spring.models.mascota.MascotaRepository;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
 
@@ -13,30 +13,30 @@ import java.util.List;
 @Transactional
 public class MascotaService {
 
-    private final MascotaDAO mascotaDAO;
+    private final MascotaRepository mascotaRepository;
     private final AvistamientoService avistamientoService;
 
     @Autowired
-    public MascotaService(MascotaDAO mascotaDAO, AvistamientoService avistamientoService) {
-        this.mascotaDAO = mascotaDAO;
+    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService) {
+        this.mascotaRepository = mascotaRepository;
         this.avistamientoService = avistamientoService;
     }
 
     public Mascota crearMascota(Mascota mascota) {
-        return mascotaDAO.persist(mascota);
+        return mascotaRepository.save(mascota);
     }
 
     public Mascota obtenerMascota(Long id) {
-        return mascotaDAO.get(id);
+        return mascotaRepository.getReferenceById(id);
     }
 
     public Mascota actualizarMascota(Mascota mascota) {
         // Obtener el estado anterior antes de actualizar
-        Mascota mascotaAnterior = mascotaDAO.get(Long.valueOf(mascota.getId()));
+        Mascota mascotaAnterior = mascotaRepository.getById(Long.valueOf(mascota.getId());
         Estado estadoAnterior = mascotaAnterior != null ? mascotaAnterior.getEstado() : null;
 
         // Actualizar la mascota
-        Mascota mascotaActualizada = mascotaDAO.update(mascota);
+        Mascota mascotaActualizada = mascotaRepository.update(mascota);
 
         // Si cambió el estado a RECUPERADO, eliminar todos los avistamientos activos
         if (mascota.getEstado() == Estado.RECUPERADO &&
@@ -48,23 +48,23 @@ public class MascotaService {
     }
 
     public void eliminarMascota(Long id) {
-        mascotaDAO.delete(id);
+        mascotaRepository.deleteById(id);
     }
 
     public void eliminarMascota(Mascota mascota) {
-        mascotaDAO.delete(mascota);
+        mascotaRepository.delete(mascota);
     }
 
     public List<Mascota> obtenerMascotasPorUsuario(Long usuarioId) {
-        return mascotaDAO.findByUsuario(usuarioId);
+        return mascotaRepository.findById(usuarioId);
     }
 
     public List<Mascota> obtenerMascotasPerdidas() {
         // Retorna mascotas con estado PERDIDO_PROPIO o PERDIDO_AJENO
-        return mascotaDAO.findMascotasPerdidas();
+        return mascotaRepository.findMascotasPerdidas();
     }
 
     public List<Mascota> obtenerTodasLasMascotas() {
-        return mascotaDAO.getAll("nombre");
+        return mascotaRepository.getAll("nombre");
     }
 }
