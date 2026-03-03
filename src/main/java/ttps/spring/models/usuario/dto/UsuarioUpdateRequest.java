@@ -6,33 +6,26 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
-public record RegistroUsuarioRequest(
+public record UsuarioUpdateRequest(
         @Schema(description = "Apodo del usuario para login", example = "Luis1980", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String nombreUsuario,
 
         @Schema(description = "Nombre del usuario", example = "Luis", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String nombre,
 
         @Schema(description = "Apellido del usuario", example = "Gomez", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String apellido,
 
-        @Schema(description = "Correo electrónico del usuario", example = "alan123@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
-        @Email @NotBlank
+        @Email @Schema(description = "Correo electrónico del usuario", example = "alan123@gmail.com", requiredMode = Schema.RequiredMode.REQUIRED)
         String email,
 
         @Schema(description = "Contraseña del usuario", example = "password123", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String password,
 
         @Schema(description = "Telefono del usuario", example = "3512345678", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String telefono,
 
         @Schema(description = "Genero del usuario", example = "Masculino", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull
         String genero,
 
         @Schema(description = "Edad del usuario", example = "30", requiredMode = Schema.RequiredMode.REQUIRED)
@@ -40,14 +33,11 @@ public record RegistroUsuarioRequest(
         Integer edad,
 
         @Schema(description = "Provincia del usuario", example = "Cordoba", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String provincia,
 
         @Schema(description = "Municipio del usuario", example = "Cordoba Capital", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String municipio,
 
         @Schema(description = "Departamento del usuario", example = "Capital", requiredMode = Schema.RequiredMode.REQUIRED)
-        @NotNull @NotBlank
         String departamento
 ) {}
