@@ -127,4 +127,13 @@ public class AvistamientoService {
         return usuarioRepository.findByIdAndActivoTrue(id)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Usuario no encontrado con id: " + id));
     }
+
+    @Transactional
+    public void eliminarTodosLosAvistamientosDeMascota(Long id) {
+        Pageable pageable = Pageable.unpaged();
+        Page<Avistamiento> avistamientos = avistamientoRepository.findByMascotaIdAndActivoTrue(id, pageable);
+        for (Avistamiento avistamiento : avistamientos) {
+            eliminarAvistamiento(avistamiento.getId());
+        }
+    }
 }
