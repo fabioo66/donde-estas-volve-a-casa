@@ -9,10 +9,10 @@
 
         <!-- Entidades -->
         <class>ttps.spring.models.Mascota</class>
-        <class>ttps.spring.models.Usuario</class>
+        <class>ttps.spring.models.usuario.Usuario</class>
         <class>ttps.spring.models.UsuarioRegistrado</class>
-        <class>ttps.spring.models.Administrador</class>
-        <class>ttps.spring.models.Avistamiento</class>
+        <class>ttps.spring.models.administrador.Administrador</class>
+        <class>ttps.spring.models.avistamiento.Avistamiento</class>
 
         <properties>
             <!-- Datos de conexión -->

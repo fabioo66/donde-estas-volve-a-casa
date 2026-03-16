@@ -4,8 +4,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.persistence.dao.interfaces.MascotaDAO;
-import ttps.spring.models.Estado;
-import ttps.spring.models.Mascota;
+import ttps.spring.models.mascota.Estado;
+import ttps.spring.models.mascota.Mascota;
 
 import java.util.List;
 
