@@ -4,7 +4,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ttps.spring.Application;
-import ttps.spring.models.usuario.Usuario;
+import ttps.spring.models.Usuario;
 import ttps.spring.services.UsuarioService;
 
 import java.util.List;
