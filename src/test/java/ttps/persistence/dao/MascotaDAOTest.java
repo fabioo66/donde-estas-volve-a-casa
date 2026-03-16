@@ -4,10 +4,7 @@ import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ttps.spring.Application;
-import ttps.spring.models.mascota.Estado;
-import ttps.spring.models.mascota.Mascota;
-import ttps.spring.models.mascota.Tamanio;
-import ttps.spring.models.usuario.Usuario;
+import ttps.spring.models.*;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
 
