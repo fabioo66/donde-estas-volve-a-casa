@@ -14,7 +14,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> crearErrorResponse(HttpStatus status, String error, String mensaje, String uri) {
-        ErrorResponse err = new ErrorResponse(status.value(), error, mensaje, uri);
+        ErrorResponse err = new ErrorResponse((Integer) status.value(), error, mensaje, uri);
         return ResponseEntity.status(status).body(err);
     }
 

@@ -10,6 +10,8 @@ public record MascotaInfo(
         @Schema(description = "Raza de la mascota") String raza,
         @Schema(description = "Color de la mascota") String color,
         @Schema(description = "Tamaño de la mascota") String tamanio,
-        @Schema(description = "Fotos de la mascota en formato JSON") String fotos
+        @Schema(description = "Fotos de la mascota en formato JSON") String fotos,
+        @Schema(description = "Ciudad correspondiente a la coordenada") String ciudad,
+        @Schema(description = "Provincia correspondiente a la coordenada") String provincia
 ) {}
 

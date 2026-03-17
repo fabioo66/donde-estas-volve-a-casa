@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.util.UriComponentsBuilder;
+import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.mascota.dto.MascotaRequest;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
@@ -72,7 +73,7 @@ public class MascotaController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
 
     })
-    public ResponseEntity<MascotaResponse> obtenerMascota(
+    public ResponseEntity<MascotaInfo> obtenerMascota(
             @Parameter(description = "ID de la mascota") @PathVariable Long id) {
         return ResponseEntity.ok(mascotaService.obtenerMascotaResponse(id));
     }

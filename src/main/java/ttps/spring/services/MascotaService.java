@@ -3,21 +3,21 @@ package ttps.spring.services;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.infra.ArchivoException;
 import ttps.spring.models.mascota.MascotaRepository;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
+import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.mascota.dto.MascotaRequest;
 import ttps.spring.models.mascota.dto.MascotaResponse;
 import ttps.spring.models.usuario.Usuario;
-import ttps.spring.services.UsuarioService;
+import ttps.utils.Georef_ar;
 
-import java.awt.print.Pageable;
+
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -28,20 +28,22 @@ public class MascotaService {
     private final UsuarioService usuarioService;
     private final ObjectMapper objectMapper;
     private final FileStorageService fileStorageService;
+    private final Georef_ar georef_ar;
 
     @Autowired
-    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService) {
+    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService, Georef_ar georef_ar) {
         this.mascotaRepository = mascotaRepository;
         this.avistamientoService = avistamientoService;
         this.usuarioService = usuarioService;
         this.objectMapper = objectMapper;
         this.fileStorageService = fileStorageService;
+        this.georef_ar = georef_ar;
     }
 
     @Transactional
     public MascotaResponse crearMascota(MascotaRequest request, Long usuarioId) {
 
-        Usuario usuario = usuarioService.obtenerUsuario((long) usuarioId);
+        Usuario usuario = usuarioService.obtenerUsuario(usuarioId);
 
         String fotosJson = "";
         if (request.fotosBase64() != null && !request.fotosBase64().isEmpty()) {
@@ -61,8 +63,31 @@ public class MascotaService {
         return MascotaResponse.from(mascotaRepository.save(mascota));
     }
 
-    public MascotaResponse obtenerMascotaResponse(Long id) {
-       return MascotaResponse.from(mascotaRepository.getReferenceById(id));
+    public MascotaInfo obtenerMascotaResponse(Long id) {
+        Mascota m = mascotaRepository.getReferenceById(id);
+        String municipio = null;
+        String provincia = null;
+        if (m.getCoordenadas() != null && !m.getCoordenadas().isEmpty()) {
+            try {
+                Map<String, String> datos = this.georef_ar.getDatos(m.getCoordenadas());
+                municipio = datos.get("municipio");
+                provincia = datos.get("provincia");
+            } catch (Exception e) {
+                municipio = "Desconocido";
+                provincia = "Desconocido";
+            }
+        }
+        return new MascotaInfo(
+                m.getId(),
+                m.getNombre(),
+                m.getTipo(),
+                m.getRaza(),
+                m.getColor(),
+                m.getTamanio() != null ? m.getTamanio().name() : null,
+                m.getFotos(),
+                municipio,
+                provincia
+        );
     }
 
     public Mascota obtenerMascota(Long id) {
@@ -115,7 +140,7 @@ public class MascotaService {
 
     @Transactional
     public void eliminarMascota(Long id) {
-        Mascota mascota = this.obtenerMascota((long) id);
+        Mascota mascota = this.obtenerMascota(id);
 
         // Eliminar archivos de fotos
         if (mascota.getFotos() != null && !mascota.getFotos().isEmpty()) {
