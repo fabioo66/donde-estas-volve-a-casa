@@ -9,11 +9,16 @@ import java.util.Optional;
 
 public interface AvistamientoRepository extends JpaRepository<Avistamiento, Long> {
 
-    List<Avistamiento> findByActivoTrue();
-
     Page<Avistamiento> findByActivoTrue(Pageable pageable);
 
     Page<Avistamiento> findByMascotaIdAndActivoTrue(Long mascotaId, Pageable pageable);
 
     Optional<Avistamiento> findByIdAndActivoTrue(Long id);
+
+    // Método derivado estándar
+    long countByActivoTrue();
+
+    default Long contarAvistamientosPendientes() {
+        return countByActivoTrue();
+    }
 }

@@ -7,6 +7,9 @@ import ttps.spring.Application;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
 import ttps.spring.models.mascota.Tamanio;
+import ttps.spring.models.mascota.dto.MascotaRequest;
+import ttps.spring.models.mascota.dto.MascotaResponse;
+import ttps.spring.models.usuario.dto.RegistroUsuarioRequest;
 import ttps.spring.models.usuario.Usuario;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
@@ -28,23 +31,26 @@ public class MascotaDAOTest {
     @Autowired
     private UsuarioService usuarioService;
 
-    private Mascota mascotaTest;
+    private MascotaResponse mascotaTest;
     private Usuario usuarioDuenio;
 
     @BeforeAll
     public void setUp() {
         // Crear un usuario para asociar las mascotas
-        usuarioDuenio = new Usuario(
+        RegistroUsuarioRequest req = new RegistroUsuarioRequest(
+                "maria_prop",
                 "María",
                 "González",
                 "maria.gonzalez@example.com",
                 "password456",
                 "3517777777",
+                "Femenino",
+                35,
                 "Córdoba",
                 "Alberdi",
                 "Capital"
         );
-        usuarioDuenio = usuarioService.crearUsuario(usuarioDuenio);
+        usuarioDuenio = usuarioService.crearUsuario(req);
     }
 
     @Test
@@ -52,39 +58,37 @@ public class MascotaDAOTest {
     @DisplayName("Test CREATE - Crear una nueva mascota")
     public void testCreateMascota() {
         // Arrange
-        mascotaTest = new Mascota();
-        mascotaTest.setNombre("Bobby");
-        mascotaTest.setTipo("Perro");
-        mascotaTest.setRaza("Golden Retriever");
-        mascotaTest.setTamanio(Tamanio.GRANDE);
-        mascotaTest.setColor("Dorado");
-        mascotaTest.setFecha(LocalDate.now());
-        mascotaTest.setEstado(Estado.PERDIDO_PROPIO);
-        mascotaTest.setCoordenadas("-31.4201,-64.1888");
-        mascotaTest.setDescripcion("Perro grande, muy amigable, color dorado");
-        mascotaTest.setFotos("[]"); // JSON array vacío
-
-        usuarioDuenio.agregarMascota(mascotaTest);
+        MascotaRequest mascotaReq = new MascotaRequest(
+                null,
+                "Bobby",
+                Tamanio.GRANDE,
+                "Dorado",
+                LocalDate.now(),
+                "Perro grande, muy amigable, color dorado",
+                Estado.PERDIDO_PROPIO,
+                new ArrayList<>(),
+                "-31.4201,-64.1888",
+                "Perro",
+                "Golden Retriever",
+                true,
+                usuarioDuenio.getId()
+        );
 
         // Act
-        Mascota mascotaCreada = mascotaService.crearMascota(mascotaTest);
+        MascotaResponse mascotaCreada = mascotaService.crearMascota(mascotaReq, usuarioDuenio.getId());
+        this.mascotaTest = mascotaCreada;
 
         // Assert
         assertNotNull(mascotaCreada, "La mascota creada no debe ser null");
-        assertTrue(mascotaCreada.getId() > 0, "El ID debe ser mayor a 0");
-        assertEquals("Bobby", mascotaCreada.getNombre());
-        assertEquals("Perro", mascotaCreada.getTipo());
-        assertEquals(Tamanio.GRANDE, mascotaCreada.getTamanio());
-        assertEquals(Estado.PERDIDO_PROPIO, mascotaCreada.getEstado());
-        assertNotNull(mascotaCreada.getUsuario());
-        assertEquals(usuarioDuenio.getId(), mascotaCreada.getUsuario().getId());
+        assertNotNull(mascotaCreada.id(), "El ID debe existir");
+        assertEquals("Bobby", mascotaCreada.nombre());
+        assertEquals("Perro", mascotaCreada.tipo());
+        assertEquals(Tamanio.GRANDE, mascotaCreada.tamanio());
+        assertEquals(Estado.PERDIDO_PROPIO, mascotaCreada.estado());
+        assertNotNull(mascotaCreada.usuarioId());
+        assertEquals(usuarioDuenio.getId(), mascotaCreada.usuarioId());
 
-        // Verificar bidireccionalidad
-        assertTrue(usuarioDuenio.getMascotas().contains(mascotaCreada),
-                "El usuario debe tener la mascota en su lista");
-
-        System.out.println("✓ Mascota creada con ID: " + mascotaCreada.getId());
-        System.out.println("✓ Bidireccionalidad Usuario-Mascota verificada");
+        System.out.println("✓ Mascota creada con ID: " + mascotaCreada.id());
     }
 
     @Test
@@ -92,10 +96,10 @@ public class MascotaDAOTest {
     @DisplayName("Test READ - Obtener mascota por ID")
     public void testGetMascota() {
         // Arrange
-        int mascotaId = mascotaTest.getId();
+        Long mascotaId = mascotaTest.id();
 
         // Act
-        Mascota mascotaObtenida = mascotaService.obtenerMascota((long) mascotaId);
+        Mascota mascotaObtenida = mascotaService.obtenerMascota(mascotaId);
 
         // Assert
         assertNotNull(mascotaObtenida, "La mascota obtenida no debe ser null");
@@ -117,7 +121,7 @@ public class MascotaDAOTest {
         // Assert
         assertNotNull(mascotas, "La lista de mascotas no debe ser null");
         assertFalse(mascotas.isEmpty(), "La lista debe contener al menos una mascota");
-        assertTrue(mascotas.stream().anyMatch(m -> m.getId() == mascotaTest.getId()),
+        assertTrue(mascotas.stream().anyMatch(m -> m.getId().equals(mascotaTest.id())),
                 "La lista debe contener la mascota de prueba");
 
         System.out.println("✓ Total de mascotas en la base de datos: " + mascotas.size());
@@ -128,26 +132,42 @@ public class MascotaDAOTest {
     @DisplayName("Test UPDATE - Actualizar una mascota")
     public void testUpdateMascota() {
         // Arrange
-        Mascota mascotaParaActualizar = mascotaService.obtenerMascota((long) mascotaTest.getId());
+        Long id = mascotaTest.id();
+        Mascota mascotaParaActualizar = mascotaService.obtenerMascota(id);
         String nuevaDescripcion = "Perro grande, muy amigable, fue encontrado!";
         Estado nuevoEstado = Estado.RECUPERADO;
 
         // Act
-        mascotaParaActualizar.setDescripcion(nuevaDescripcion);
-        mascotaParaActualizar.setEstado(nuevoEstado);
-        Mascota mascotaActualizada = mascotaService.actualizarMascota(mascotaParaActualizar);
+        // Para actualizar, construimos un MascotaRequest con los nuevos datos
+        MascotaRequest updateReq = new MascotaRequest(
+                id,
+                mascotaParaActualizar.getNombre(),
+                mascotaParaActualizar.getTamanio(),
+                mascotaParaActualizar.getColor(),
+                mascotaParaActualizar.getFecha(),
+                nuevaDescripcion,
+                nuevoEstado,
+                new ArrayList<>(),
+                mascotaParaActualizar.getCoordenadas(),
+                mascotaParaActualizar.getTipo(),
+                mascotaParaActualizar.getRaza(),
+                mascotaParaActualizar.isActivo(),
+                usuarioDuenio.getId()
+        );
+
+        MascotaResponse mascotaActualizada = mascotaService.actualizarMascota(updateReq, id);
 
         // Assert
         assertNotNull(mascotaActualizada, "La mascota actualizada no debe ser null");
-        assertEquals(nuevaDescripcion, mascotaActualizada.getDescripcion());
-        assertEquals(nuevoEstado, mascotaActualizada.getEstado());
+        assertEquals(nuevaDescripcion, mascotaActualizada.descripcion());
+        assertEquals(nuevoEstado, mascotaActualizada.estado());
 
         // Verificar que los cambios persisten en la base de datos
-        Mascota mascotaVerificada = mascotaService.obtenerMascota((long) mascotaTest.getId());
+        Mascota mascotaVerificada = mascotaService.obtenerMascota(id);
         assertEquals(nuevaDescripcion, mascotaVerificada.getDescripcion());
         assertEquals(Estado.RECUPERADO, mascotaVerificada.getEstado());
 
-        System.out.println("✓ Mascota actualizada - Nuevo estado: " + mascotaActualizada.getEstado());
+        System.out.println("✓ Mascota actualizada - Nuevo estado: " + mascotaActualizada.estado());
     }
 
     @Test
@@ -155,13 +175,13 @@ public class MascotaDAOTest {
     @DisplayName("Test DELETE - Borrado lógico de mascota")
     public void testDeleteMascota() {
         // Arrange
-        Mascota mascotaAEliminar = mascotaService.obtenerMascota((long) mascotaTest.getId());
+        Mascota mascotaAEliminar = mascotaService.obtenerMascota(mascotaTest.id());
 
         // Act
-        mascotaService.eliminarMascota(mascotaAEliminar);
+        mascotaService.eliminarMascota(mascotaAEliminar.getId());
 
         // Assert - El registro sigue existiendo pero está marcado como inactivo
-        Mascota mascotaBorrada = mascotaService.obtenerMascota((long) mascotaTest.getId());
+        Mascota mascotaBorrada = mascotaService.obtenerMascota(mascotaTest.id());
         assertNotNull(mascotaBorrada, "La mascota con borrado lógico no debe ser null");
         assertFalse(mascotaBorrada.isActivo(), "La mascota debe estar marcada como inactiva");
 
@@ -173,22 +193,23 @@ public class MascotaDAOTest {
     @DisplayName("Test DELETE por ID - Borrado lógico por identificador")
     public void testDeletePorId() {
         // Arrange
-        Mascota mascotaParaBorradoLogico = new Mascota();
-        mascotaParaBorradoLogico.setNombre("Max");
-        mascotaParaBorradoLogico.setTipo("Perro");
-        mascotaParaBorradoLogico.setTamanio(Tamanio.GRANDE);
-
-        usuarioDuenio.agregarMascota(mascotaParaBorradoLogico);
-
-        mascotaParaBorradoLogico.setFecha(LocalDate.now());
-        mascotaParaBorradoLogico.setEstado(Estado.ADOPTADO);
-        mascotaParaBorradoLogico.setCoordenadas("-31.4201,-64.1888");
-        mascotaParaBorradoLogico.setDescripcion("Perro adoptado");
-        mascotaParaBorradoLogico.setUsuario(usuarioDuenio);
-        mascotaParaBorradoLogico.setFotos("[]"); // JSON array vacío
-        mascotaParaBorradoLogico.setAvistamientos(new ArrayList<>());
-        mascotaParaBorradoLogico = mascotaService.crearMascota(mascotaParaBorradoLogico);
-        long idMascota = mascotaParaBorradoLogico.getId();
+        MascotaRequest mascotaReq = new MascotaRequest(
+                null,
+                "Max",
+                Tamanio.GRANDE,
+                "",
+                LocalDate.now(),
+                "Perro adoptado",
+                Estado.ADOPTADO,
+                new ArrayList<>(),
+                "-31.4201,-64.1888",
+                "Perro",
+                "",
+                true,
+                usuarioDuenio.getId()
+        );
+        MascotaResponse mascotaParaBorradoLogico = mascotaService.crearMascota(mascotaReq, usuarioDuenio.getId());
+        long idMascota = mascotaParaBorradoLogico.id();
 
         // Act - Borrado lógico por ID
         mascotaService.eliminarMascota(idMascota);
@@ -205,7 +226,7 @@ public class MascotaDAOTest {
     public void tearDown() {
         // Limpiar el usuario creado para las pruebas (borrado lógico)
         if (usuarioDuenio != null) {
-            usuarioService.eliminarUsuario(usuarioDuenio);
+            usuarioService.eliminarUsuario(usuarioDuenio.getId());
             System.out.println("✓ Usuario de prueba marcado como inactivo");
         }
     }

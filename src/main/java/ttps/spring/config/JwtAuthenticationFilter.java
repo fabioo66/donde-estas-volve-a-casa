@@ -11,7 +11,7 @@ import ttps.spring.security.JwtUtils;
 
 import java.io.IOException;
 
-@Component
+@Component("jwtAuthenticationFilterConfig")
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     @Autowired
