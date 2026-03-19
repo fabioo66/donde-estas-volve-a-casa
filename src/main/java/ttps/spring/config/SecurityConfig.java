@@ -40,6 +40,8 @@ public class SecurityConfig {
                         .hasRole("ADMINISTRADOR")
                         .requestMatchers("/usuarios/**")
                         .hasAnyRole("USUARIO", "ADMINISTRADOR")
+                        .requestMatchers("/mascotas/perdidas").permitAll()
+                        .requestMatchers("/avistamientos").permitAll()
                         .anyRequest()
                         .authenticated()
                 )
