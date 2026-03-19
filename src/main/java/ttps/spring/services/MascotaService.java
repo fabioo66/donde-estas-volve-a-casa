@@ -16,7 +16,6 @@ import ttps.spring.models.usuario.Usuario;
 import ttps.utils.Georef_ar;
 
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
@@ -92,7 +91,7 @@ public class MascotaService {
     }
 
     public Mascota obtenerMascota(Long id) {
-        return mascotaRepository.getReferenceById(id);
+        return mascotaRepository.getReferenceById();
     }
 
     @Transactional
@@ -163,16 +162,12 @@ public class MascotaService {
     }
 
     public List<MascotaResponse> obtenerMascotasPorUsuario(Long usuarioId) {
-        List<Mascota> mascotas = mascotaRepository.findByUsuarioIdAndActivoTrue(usuarioId);
-        return mascotas.stream().map(MascotaResponse::from).toList();
+        return mascotaRepository.findByUsuarioId(usuarioId);
     }
 
     public List<MascotaResponse> obtenerMascotasPerdidas() {
         // Retorna mascotas con estado PERDIDO_PROPIO o PERDIDO_AJENO
-        List<Mascota> mascotas = mascotaRepository.findByEstadoInAndActivoTrue(
-                java.util.Arrays.asList(Estado.PERDIDO_PROPIO, Estado.PERDIDO_AJENO)
-        );
-        return mascotas.stream().map(MascotaResponse::from).toList();
+        return mascotaRepository.findMascotasPerdidas();
     }
 
     public List<Mascota> obtenerTodasLasMascotas() {
