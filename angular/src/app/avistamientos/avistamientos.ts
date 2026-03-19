@@ -59,10 +59,22 @@ export class AvistamientosComponent implements OnInit, OnDestroy {
 
     this.subscription = this.avistamientoService.obtenerTodosLosAvistamientos().subscribe({
       next: (avistamientos) => {
-        this.avistamientos = avistamientos;
+        // Normalizar la respuesta: puede venir un Array o un objeto paginado { content: [...] }
+        const lista: Avistamiento[] = Array.isArray(avistamientos)
+          ? avistamientos
+          : (avistamientos && Array.isArray((avistamientos as any).content))
+            ? (avistamientos as any).content
+            : (avistamientos && Array.isArray((avistamientos as any).data))
+              ? (avistamientos as any).data
+              : [];
+
+        this.avistamientos = lista;
         // Inicializar el índice de foto actual para cada avistamiento
-        avistamientos.forEach(avistamiento => {
-          this.fotoActualPorAvistamiento.set(avistamiento.id, 0);
+        this.fotoActualPorAvistamiento.clear();
+        lista.forEach(avistamiento => {
+          if (avistamiento && typeof avistamiento.id !== 'undefined' && avistamiento.id !== null) {
+            this.fotoActualPorAvistamiento.set(Number(avistamiento.id), 0);
+          }
         });
         this.isLoading = false;
         // Forzar detección de cambios

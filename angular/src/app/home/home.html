@@ -9,28 +9,28 @@
       <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-6 sm:mb-8">
         <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
           <p class="text-sm font-medium text-gray-500">Mascotas Perdidas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.mascotasPerdidas }}</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats.mascotasPerdidas }}</p>
           <div class="mt-2" *ngIf="isLoadingStats">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
           </div>
         </div>
         <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
           <p class="text-sm font-medium text-gray-500">Recuperadas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.recuperadas }}</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats.recuperadas }}</p>
           <div class="mt-2" *ngIf="isLoadingStats">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
           </div>
         </div>
         <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
           <p class="text-sm font-medium text-gray-500">Adoptadas</p>
-          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.adoptadas }}</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats.adoptadas }}</p>
           <div class="mt-2" *ngIf="isLoadingStats">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
           </div>
         </div>
         <div class="bg-white p-4 sm:p-6 rounded-lg border border-gray-200 shadow-sm">
           <p class="text-sm font-medium text-gray-500">Seguimientos Pendientes</p>
-          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats?.seguimientosPendientes }}</p>
+          <p class="text-3xl sm:text-4xl font-bold text-gray-900 mt-2" *ngIf="!isLoadingStats && stats">{{ stats.seguimientosPendientes }}</p>
           <div class="mt-2" *ngIf="isLoadingStats">
             <div class="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-[#13a4ec]"></div>
           </div>

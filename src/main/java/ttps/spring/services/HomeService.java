@@ -3,8 +3,8 @@ package ttps.spring.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ttps.spring.persistence.dao.interfaces.MascotaDAO;
-import ttps.spring.persistence.dao.interfaces.AvistamientoDAO;
+import ttps.spring.models.avistamiento.AvistamientoRepository;
+import ttps.spring.models.mascota.MascotaRepository;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -13,38 +13,38 @@ import java.util.Map;
 @Transactional
 public class HomeService {
 
-    private final MascotaDAO mascotaDAO;
-    private final AvistamientoDAO avistamientoDAO;
+    private final MascotaRepository mascotaRepository;
+    private final AvistamientoRepository avistamientoRepository;
 
     @Autowired
-    public HomeService(MascotaDAO mascotaDAO, AvistamientoDAO avistamientoDAO) {
-        this.mascotaDAO = mascotaDAO;
-        this.avistamientoDAO = avistamientoDAO;
+    public HomeService(MascotaRepository mascotaRepository, AvistamientoRepository avistamientoRepository) {
+        this.mascotaRepository = mascotaRepository;
+        this.avistamientoRepository = avistamientoRepository;
     }
 
     public Map<String, Integer> obtenerEstadisticas() {
         Map<String, Integer> estadisticas = new HashMap<>();
-        estadisticas.put("mascotasPerdidas", contarMascotasPerdidas());
-        estadisticas.put("recuperadas", contarMascotasRecuperadas());
-        estadisticas.put("adoptadas", contarMascotasAdoptadas());
-        estadisticas.put("seguimientosPendientes", contarSeguimientosPendientes());
+        estadisticas.put("mascotasPerdidas", Math.toIntExact(contarMascotasPerdidas()));
+        estadisticas.put("recuperadas", Math.toIntExact(contarMascotasRecuperadas()));
+        estadisticas.put("adoptadas", Math.toIntExact(contarMascotasAdoptadas()));
+        estadisticas.put("seguimientosPendientes", Math.toIntExact(contarSeguimientosPendientes()));
         return estadisticas;
     }
 
     public int contarMascotasPerdidas() {
-        return mascotaDAO.contarMascotasPerdidas();
+        return Math.toIntExact(mascotaRepository.contarMascotasPerdidas());
     }
 
     public int contarMascotasRecuperadas() {
-        return mascotaDAO.contarMascotasRecuperadas();
+        return Math.toIntExact(mascotaRepository.contarMascotasRecuperadas());
     }
 
     public int contarMascotasAdoptadas() {
-        return mascotaDAO.contarMascotasAdoptadas();
+        return Math.toIntExact(mascotaRepository.contarMascotasAdoptadas());
     }
 
     public int contarSeguimientosPendientes() {
         // Contamos los avistamientos activos/pendientes de resolución
-        return avistamientoDAO.contarAvistamientosPendientes();
+        return Math.toIntExact(avistamientoRepository.contarAvistamientosPendientes());
     }
 }

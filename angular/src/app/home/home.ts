@@ -8,7 +8,6 @@ import { LoginResponse } from '../models/usuario.model';
 import { Subscription } from 'rxjs';
 import { HomeService, HomeStats } from '../services/home.service';
 
-
 @Component({
   selector: 'app-home',
   imports: [CommonModule, RouterModule, RouterLink],
