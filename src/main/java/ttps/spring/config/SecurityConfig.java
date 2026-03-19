@@ -30,18 +30,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        // Permitir acceso público a Swagger / OpenAPI
-                        .requestMatchers("/swagger-ui.html", "/swagger-ui/**", "/v3/api-docs/**", "/v3/api-docs", "/swagger-resources/**", "/webjars/**")
-                        .permitAll()
-                        // Rutas públicas de autenticación
                         .requestMatchers("/usuarios/login", "/usuarios/registro")
                         .permitAll()
                         .requestMatchers("/admin/**")
                         .hasRole("ADMINISTRADOR")
                         .requestMatchers("/usuarios/**")
                         .hasAnyRole("USUARIO", "ADMINISTRADOR")
-                        .requestMatchers("/mascotas/perdidas").permitAll()
-                        .requestMatchers("/avistamientos").permitAll()
                         .anyRequest()
                         .authenticated()
                 )

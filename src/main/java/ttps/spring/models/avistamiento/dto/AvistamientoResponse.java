@@ -2,12 +2,9 @@ package ttps.spring.models.avistamiento.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import ttps.spring.models.avistamiento.Avistamiento;
-import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.usuario.dto.UsuarioInfo;
-import ttps.utils.Georef_ar;
 
 import java.time.LocalDate;
-import java.util.Map;
 
 @Schema(description = "Respuesta con datos completos de un avistamiento")
 public record AvistamientoResponse(
@@ -39,19 +36,6 @@ public record AvistamientoResponse(
 
     public static AvistamientoResponse from(Avistamiento avistamiento) {
         MascotaInfo mascotaInfo = null;
-        String municipio = null;
-        String provincia = null;
-        if (avistamiento.getCoordenada() != null && !avistamiento.getCoordenada().isEmpty()) {
-            try {
-                Map<String, String> datos = ttps.utils.Georef_ar.getDatos(avistamiento.getCoordenada());
-                municipio = datos.get("municipio");
-                provincia = datos.get("provincia");
-            } catch (Exception e) {
-                municipio = "Desconocido";
-                provincia = "Desconocido";
-            }
-        }
-
         if (avistamiento.getMascota() != null) {
             var m = avistamiento.getMascota();
             mascotaInfo = new MascotaInfo(
@@ -61,9 +45,7 @@ public record AvistamientoResponse(
                     m.getRaza(),
                     m.getColor(),
                     m.getTamanio() != null ? m.getTamanio().name() : null,
-                    m.getFotos(),
-                    municipio,
-                    provincia
+                    m.getFotos()
             );
         }
 
