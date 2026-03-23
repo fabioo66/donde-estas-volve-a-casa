@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ttps.spring.models.avistamiento.Avistamiento;
 import ttps.spring.models.mascota.dto.MascotaRequest;
+import ttps.spring.models.raza.Raza;
+import ttps.spring.models.tipo_mascota.Tipo_mascota;
 import ttps.spring.models.usuario.Usuario;
 
 import java.time.LocalDate;
@@ -62,10 +64,12 @@ public class Mascota {
     private Usuario usuario;
 
     @Setter
-    private String tipo;
+    @ManyToOne
+    private Tipo_mascota tipo_mascota;
 
     @Setter
-    private String raza;
+    @ManyToOne
+    private Raza raza;
 
     @Setter
     private boolean activo = true;
@@ -86,8 +90,8 @@ public class Mascota {
         this.descripcion = request.descripcion();
         this.usuario = usuario;
         this.avistamientos = new ArrayList<>();
-        this.tipo = tipo;
-        this.raza = raza;
+        this.tipo_mascota = request.tipo_mascota();
+        this.raza = request.raza();
         this.usuario = usuario;
     }
 
