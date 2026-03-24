@@ -101,15 +101,18 @@
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="tipo">Tipo de Animal *</label>
-              <input
+              <select
                 class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                 id="tipo"
                 name="tipo"
                 [(ngModel)]="mascota.tipo"
                 #tipo="ngModel"
                 required
-                placeholder="Ej: Perro, Gato"
-              />
+                (change)="onTipoChange()"
+              >
+                <option value="">Seleccionar tipo</option>
+                <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }}</option>
+              </select>
               <div *ngIf="esCampoInvalido(tipo)" class="text-red-500 text-xs">
                 {{ getMensajeError(tipo) }}
               </div>
@@ -117,13 +120,29 @@
 
             <div class="space-y-2">
               <label class="text-sm font-medium text-slate-700" for="raza">Raza</label>
-              <input
+
+              <select
                 class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                 id="raza"
-                name="raza"
-                [(ngModel)]="mascota.raza"
-                placeholder="Ej: Mestizo, Labrador"
-              />
+                name="razaSelect"
+                [ngModel]="razaSeleccionadaId"
+                (ngModelChange)="onRazaSelectChange($event)"
+              >
+                <option value="">Seleccionar raza</option>
+                <option *ngFor="let r of razas" [value]="r.id">{{ r.nombre }}</option>
+                <option value="__MANUAL__">Ingresar raza manualmente</option>
+              </select>
+
+              <!-- Input manual que aparece solo si se eligió la opción manual -->
+              <div *ngIf="razaSeleccionadaId === '__MANUAL__'" class="mt-2">
+                <input
+                  type="text"
+                  class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                  placeholder="Ingresá la raza (ej: mestizo)"
+                  [(ngModel)]="razaManualTexto"
+                  name="razaManual"
+                />
+              </div>
             </div>
           </div>
 

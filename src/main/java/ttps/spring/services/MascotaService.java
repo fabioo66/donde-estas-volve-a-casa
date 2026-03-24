@@ -13,6 +13,7 @@ import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.mascota.dto.MascotaRequest;
 import ttps.spring.models.mascota.dto.MascotaResponse;
 import ttps.spring.models.usuario.Usuario;
+import ttps.spring.models.raza.DTO.RazaRef;
 import ttps.utils.Georef_ar;
 
 
@@ -30,21 +31,33 @@ public class MascotaService {
     private final ObjectMapper objectMapper;
     private final FileStorageService fileStorageService;
     private final Georef_ar georef_ar;
+    private final ttps.spring.models.raza.RazaRepository razaRepository;
+    private final RazaService razaService;
 
     @Autowired
-    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService, Georef_ar georef_ar) {
+    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService, Georef_ar georef_ar, ttps.spring.models.raza.RazaRepository razaRepository, RazaService razaService) {
         this.mascotaRepository = mascotaRepository;
         this.avistamientoService = avistamientoService;
         this.usuarioService = usuarioService;
         this.objectMapper = objectMapper;
         this.fileStorageService = fileStorageService;
         this.georef_ar = georef_ar;
+        this.razaRepository = razaRepository;
+        this.razaService = razaService;
     }
 
     @Transactional
     public MascotaResponse crearMascota(MascotaRequest request, Long usuarioId) {
 
         Usuario usuario = usuarioService.obtenerUsuario(usuarioId);
+        if (usuario == null) {
+            throw new IllegalArgumentException("Usuario no encontrado: " + usuarioId);
+        }
+
+        // Validar que se haya indicado el tipo de mascota (necesario para asociar/crear razas)
+        if (request.tipo_mascota() == null || request.tipo_mascota().getId() == null) {
+            throw new IllegalArgumentException("Tipo de mascota es requerido");
+        }
 
         String fotosJson = "";
         if (request.fotosBase64() != null && !request.fotosBase64().isEmpty()) {
@@ -60,7 +73,43 @@ public class MascotaService {
 
         }
 
+        // Resolver la raza según reglas:
+        // - si llega id -> usarla (validar que existe y pertenezca al tipo indicado)
+        // - si no llega id -> debe venir nombre manual y se usará findOrCreate (RazaService se encarga de normalizar y eliminar diacríticos)
+        ttps.spring.models.raza.Raza resolvedRaza = null;
+        if (request.raza() == null) {
+            throw new IllegalArgumentException("Raza es requerida");
+        }
+
+        RazaRef inputRaza = request.raza();
+        Long inputRazaId = inputRaza == null ? null : inputRaza.id();
+        String inputRazaNombre = inputRaza == null ? null : inputRaza.nombre();
+
+        // Restricción: si el cliente envía una raza con id, NO puede enviar nombre manual
+        if (inputRazaId != null && inputRazaNombre != null && !inputRazaNombre.trim().isEmpty()) {
+            throw new IllegalArgumentException("Si envía razaId no debe enviar nombre de raza manual");
+        }
+
+        Long tipoId = request.tipo_mascota().getId();
+
+        if (inputRazaId != null) {
+            // validar existencia y pertenencia a tipo
+            resolvedRaza = razaRepository.findById(inputRazaId)
+                    .orElseThrow(() -> new IllegalArgumentException("Raza no encontrada: " + inputRazaId));
+            if (resolvedRaza.getTipo_mascota() == null || !resolvedRaza.getTipo_mascota().getId().equals(tipoId)) {
+                throw new IllegalArgumentException("La raza seleccionada no pertenece al tipo de mascota indicado");
+            }
+        } else {
+            // nombre manual obligatorio cuando no hay id
+            if (inputRazaNombre == null || inputRazaNombre.trim().isEmpty()) {
+                throw new IllegalArgumentException("Debe indicar la raza: seleccionar una existente o nombre manual");
+            }
+            // Delegar a RazaService que normaliza (trim, elimina diacríticos, uppercase), valida tipo y maneja concurrencia
+            resolvedRaza = razaService.findOrCreateByNombreAndTipoId(inputRazaNombre, tipoId);
+        }
+
         Mascota mascota = new Mascota(request, usuario, fotosJson);
+        mascota.setRaza(resolvedRaza);
         return MascotaResponse.from(mascotaRepository.save(mascota));
     }
 
@@ -81,7 +130,7 @@ public class MascotaService {
         return new MascotaInfo(
                 m.getId(),
                 m.getNombre(),
-                m.getTipo(),
+                m.getTipo_mascota(),
                 m.getRaza(),
                 m.getColor(),
                 m.getTamanio() != null ? m.getTamanio().name() : null,

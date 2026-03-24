@@ -91,7 +91,7 @@ public class Mascota {
         this.usuario = usuario;
         this.avistamientos = new ArrayList<>();
         this.tipo_mascota = request.tipo_mascota();
-        this.raza = request.raza();
+        // La raza se asigna en el service (se resuelve a entidad Raza). No copiar directamente desde el request DTO.
         this.usuario = usuario;
     }
 

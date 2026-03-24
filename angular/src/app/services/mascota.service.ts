@@ -17,11 +17,28 @@ export interface MascotaRequest {
   fotosBase64?: string[];
 }
 
+// Nuevos modelos ligeros para tipos y razas y referencia de raza
+export interface TipoMascota {
+  id: number;
+  nombre: string;
+}
+
+export interface Raza {
+  id: number;
+  nombre: string;
+}
+
+export interface RazaRef {
+  id?: number;
+  nombre?: string;
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class MascotaService {
   private apiUrl = 'http://localhost:8080/mascotas';
+  private apiBase = 'http://localhost:8080';
 
   constructor(private http: HttpClient) { }
 
@@ -35,6 +52,28 @@ export class MascotaService {
       catchError(error => {
         console.error('Error en servicio de mascotas:', error);
         return throwError(() => error);
+      })
+    );
+  }
+
+  // Endpoint para obtener tipos de mascota
+  getTipos(): Observable<TipoMascota[]> {
+    return this.http.get<TipoMascota[]>(`${this.apiBase}/tipos_mascota`).pipe(
+      timeout(5000),
+      catchError(err => {
+        console.error('Error al obtener tipos de mascota', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  // Endpoint para obtener razas por tipo
+  getRazasPorTipo(tipoId: number): Observable<Raza[]> {
+    return this.http.get<Raza[]>(`${this.apiBase}/razas?tipoMascotaId=${tipoId}`).pipe(
+      timeout(5000),
+      catchError(err => {
+        console.error('Error al obtener razas por tipo', err);
+        return throwError(() => err);
       })
     );
   }
@@ -79,8 +118,9 @@ export class MascotaService {
     );
   }
 
-  crearMascota(usuarioId: number, mascota: MascotaRequest): Observable<Mascota> {
-    return this.http.post<any>(`${this.apiUrl}/usuario/${usuarioId}`, mascota).pipe(
+  // Crear mascota: el payload debe incluir tipo_mascota: {id} y raza: {id? nombre?}
+  crearMascota(usuarioId: number, mascotaPayload: any): Observable<Mascota> {
+    return this.http.post<any>(`${this.apiUrl}/usuario/${usuarioId}`, mascotaPayload).pipe(
       map(m => ({
         ...m,
         tamanio: m.tamanio || m.tamano
@@ -126,4 +166,3 @@ export class MascotaService {
     });
   }
 }
-

@@ -14,6 +14,7 @@ import lombok.Setter;
 public class Tipo_mascota {
 
     @Id
+    @Setter
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 

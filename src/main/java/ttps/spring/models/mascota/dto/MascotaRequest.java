@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotNull;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Tamanio;
-import ttps.spring.models.raza.Raza;
+import ttps.spring.models.raza.DTO.RazaRef;
 import ttps.spring.models.tipo_mascota.Tipo_mascota;
 
 import java.time.LocalDate;
@@ -50,8 +50,8 @@ public record MascotaRequest(
         @Schema(description = "Tipo de mascota", example = "PERRO")
         Tipo_mascota tipo_mascota,
 
-        @Schema(description = "Raza de la mascota", example = "Mestizo")
-        Raza raza,
+        @Schema(description = "Raza de la mascota (enviar id o nombre)", example = "{\"id\":1} or {\"nombre\":\"Mestizo\"}")
+        RazaRef raza,
 
         @Schema(description = "Mascota activa o inactiva")
         Boolean activa,
