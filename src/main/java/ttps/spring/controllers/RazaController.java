@@ -11,6 +11,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import ttps.spring.models.raza.DTO.RazaResponse;
+import ttps.spring.models.raza.DTO.RazaRequest;
 import ttps.spring.services.RazaService;
 
 import java.util.List;
@@ -42,7 +43,7 @@ public class RazaController {
     }
 
 
-    @GetMapping("/raza/{idRaza}")
+    @GetMapping("/{razaId}")
     @Operation(summary = "Retorna la raza asociada a un ID de raza",
                description = "Busca la raza asociada a un ID de raza y la retorna")
     @ApiResponses(value = {
@@ -51,11 +52,11 @@ public class RazaController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<RazaResponse> getRazas (
-            @Parameter(description = "ID de una raza") @PathVariable Long razaId){
+            @Parameter(description = "ID de una raza") @PathVariable("razaId") Long razaId){
         return ResponseEntity.ok(razaService.getById(razaId));
     }
 
-    @GetMapping("/raza/{idTipo}")
+    @GetMapping("/tipo/{tipoMascotaId}")
     @Operation(summary = "Retorna la lista de razas asociadas a un tipo de mascota",
             description = "Busca las razas asociadas a un ID de tipo de mascota")
     @ApiResponses(value = {
@@ -63,7 +64,38 @@ public class RazaController {
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<List<RazaResponse>> getRazasByTipoMascotaId (
-            @Parameter(description = "ID del tipo de mascota") @PathVariable Long tipoMascotaId){
+            @Parameter(description = "ID del tipo de mascota") @PathVariable("tipoMascotaId") Long tipoMascotaId){
         return ResponseEntity.ok(razaService.listByTipoId(tipoMascotaId));
+    }
+
+    @PutMapping("/raza/{id}")
+    @Operation(summary = "Actualizar una raza",
+            description = "Actualiza los datos de una raza existente. Endpoint pensado para administración de la API.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Raza actualizada exitosamente"),
+            @ApiResponse(responseCode = "400", description = "Datos inválidos"),
+            @ApiResponse(responseCode = "404", description = "Raza o tipo de mascota no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<RazaResponse> updateRaza(
+            @Parameter(description = "ID de la raza a actualizar") @PathVariable Long id,
+            @Valid @RequestBody RazaRequest request) {
+        // Construir un DTO intermedio para pasar al servicio (el servicio actualmente espera RazaResponse)
+        RazaResponse updated = razaService.updateRaza(id, request);
+        return ResponseEntity.ok(updated);
+    }
+
+    @DeleteMapping("/raza/{id}")
+    @Operation(summary = "Eliminar una raza",
+            description = "Elimina una raza por su ID. Usar con precaución.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "204", description = "Raza eliminada exitosamente"),
+            @ApiResponse(responseCode = "404", description = "Raza no encontrada"),
+            @ApiResponse(responseCode = "500", description = "Error interno del servidor")
+    })
+    public ResponseEntity<Void> deleteRaza(
+            @Parameter(description = "ID de la raza a eliminar") @PathVariable Long id) {
+        razaService.deleteRaza(id);
+        return ResponseEntity.noContent().build();
     }
 }

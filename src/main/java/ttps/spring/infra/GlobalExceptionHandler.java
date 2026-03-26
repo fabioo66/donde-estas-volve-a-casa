@@ -7,6 +7,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import java.util.stream.Collectors;
 
@@ -14,7 +15,7 @@ import java.util.stream.Collectors;
 public class GlobalExceptionHandler {
 
     private ResponseEntity<ErrorResponse> crearErrorResponse(HttpStatus status, String error, String mensaje, String uri) {
-        ErrorResponse err = new ErrorResponse((Integer) status.value(), error, mensaje, uri);
+        ErrorResponse err = new ErrorResponse(status.value(), error, mensaje, uri);
         return ResponseEntity.status(status).body(err);
     }
 
@@ -32,6 +33,21 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleArchivo(
             ArchivoException ex, HttpServletRequest request) {
         return crearErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handleIllegalArgument(
+            IllegalArgumentException ex, HttpServletRequest request) {
+        return crearErrorResponse(HttpStatus.BAD_REQUEST, "Bad Request", ex.getMessage(), request.getRequestURI());
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErrorResponse> handleDataIntegrity(
+            DataIntegrityViolationException ex, HttpServletRequest request) {
+        String message = ex.getMessage();
+        // Log root cause for debugging
+        System.err.println("DataIntegrityViolation: " + ex.toString());
+        return crearErrorResponse(HttpStatus.CONFLICT, "Conflict", message, request.getRequestURI());
     }
 
     @ExceptionHandler(RecursoNoEncontradoException.class)
@@ -67,6 +83,9 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BadCredentialsException.class)
     public ResponseEntity<ErrorResponse> handleBadCredentials(
             BadCredentialsException ex, HttpServletRequest request) {
+        // Log the authentication failure for troubleshooting
+        System.err.println("Bad credentials: " + ex.getMessage());
+        ex.printStackTrace();
         return crearErrorResponse(HttpStatus.UNAUTHORIZED, "Unauthorized", "Email o contraseña incorrectos", request.getRequestURI());
     }
 

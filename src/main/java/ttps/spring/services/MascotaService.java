@@ -6,12 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.infra.ArchivoException;
+import ttps.spring.infra.RecursoNoEncontradoException;
+import ttps.spring.infra.ValidacionException;
 import ttps.spring.models.mascota.MascotaRepository;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
 import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.mascota.dto.MascotaRequest;
 import ttps.spring.models.mascota.dto.MascotaResponse;
+import ttps.spring.models.raza.RazaRepository;
 import ttps.spring.models.usuario.Usuario;
 import ttps.spring.models.raza.DTO.RazaRef;
 import ttps.utils.Georef_ar;
@@ -29,18 +32,16 @@ public class MascotaService {
     private final UsuarioService usuarioService;
     private final ObjectMapper objectMapper;
     private final FileStorageService fileStorageService;
-    private final Georef_ar georef_ar;
     private final ttps.spring.models.raza.RazaRepository razaRepository;
     private final RazaService razaService;
 
     @Autowired
-    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService, Georef_ar georef_ar, ttps.spring.models.raza.RazaRepository razaRepository, RazaService razaService) {
+    public MascotaService(MascotaRepository mascotaRepository, AvistamientoService avistamientoService, UsuarioService usuarioService, ObjectMapper objectMapper, FileStorageService fileStorageService, RazaRepository razaRepository, RazaService razaService) {
         this.mascotaRepository = mascotaRepository;
         this.avistamientoService = avistamientoService;
         this.usuarioService = usuarioService;
         this.objectMapper = objectMapper;
         this.fileStorageService = fileStorageService;
-        this.georef_ar = georef_ar;
         this.razaRepository = razaRepository;
         this.razaService = razaService;
     }
@@ -50,12 +51,12 @@ public class MascotaService {
 
         Usuario usuario = usuarioService.obtenerUsuario(usuarioId);
         if (usuario == null) {
-            throw new IllegalArgumentException("Usuario no encontrado: " + usuarioId);
+            throw new RecursoNoEncontradoException("Usuario no encontrado: " + usuarioId);
         }
 
         // Validar que se haya indicado el tipo de mascota (necesario para asociar/crear razas)
         if (request.tipo_mascota() == null || request.tipo_mascota().getId() == null) {
-            throw new IllegalArgumentException("Tipo de mascota es requerido");
+            throw new ValidacionException("Tipo de mascota es requerido");
         }
 
         String fotosJson = "";
@@ -75,18 +76,18 @@ public class MascotaService {
         // Resolver la raza según reglas:
         // - si llega id -> usarla (validar que existe y pertenezca al tipo indicado)
         // - si no llega id -> debe venir nombre manual y se usará findOrCreate (RazaService se encarga de normalizar y eliminar diacríticos)
-        ttps.spring.models.raza.Raza resolvedRaza = null;
+        ttps.spring.models.raza.Raza resolvedRaza;
         if (request.raza() == null) {
-            throw new IllegalArgumentException("Raza es requerida");
+            throw new ValidacionException("Raza es requerida");
         }
 
         RazaRef inputRaza = request.raza();
-        Long inputRazaId = inputRaza == null ? null : inputRaza.id();
-        String inputRazaNombre = inputRaza == null ? null : inputRaza.nombre();
+        Long inputRazaId = inputRaza.id();
+        String inputRazaNombre = inputRaza.nombre();
 
         // Restricción: si el cliente envía una raza con id, NO puede enviar nombre manual
         if (inputRazaId != null && inputRazaNombre != null && !inputRazaNombre.trim().isEmpty()) {
-            throw new IllegalArgumentException("Si envía razaId no debe enviar nombre de raza manual");
+            throw new ValidacionException("Si envía razaId no debe enviar nombre de raza manual");
         }
 
         Long tipoId = request.tipo_mascota().getId();
@@ -94,17 +95,22 @@ public class MascotaService {
         if (inputRazaId != null) {
             // validar existencia y pertenencia a tipo
             resolvedRaza = razaRepository.findById(inputRazaId)
-                    .orElseThrow(() -> new IllegalArgumentException("Raza no encontrada: " + inputRazaId));
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Raza no encontrada: " + inputRazaId));
             if (resolvedRaza.getTipo_mascota() == null || !resolvedRaza.getTipo_mascota().getId().equals(tipoId)) {
-                throw new IllegalArgumentException("La raza seleccionada no pertenece al tipo de mascota indicado");
+                throw new ValidacionException("La raza seleccionada no pertenece al tipo de mascota indicado");
             }
         } else {
             // nombre manual obligatorio cuando no hay id
             if (inputRazaNombre == null || inputRazaNombre.trim().isEmpty()) {
-                throw new IllegalArgumentException("Debe indicar la raza: seleccionar una existente o nombre manual");
+                throw new ValidacionException("Debe indicar la raza: seleccionar una existente o nombre manual");
             }
             // Delegar a RazaService que normaliza (trim, elimina diacríticos, uppercase), valida tipo y maneja concurrencia
             resolvedRaza = razaService.findOrCreateByNombreAndTipoId(inputRazaNombre, tipoId);
+        }
+
+        // Validación adicional: la raza resultante debe tener nombre normalizado
+        if (resolvedRaza == null || resolvedRaza.getNombreNormalizado() == null || resolvedRaza.getNombreNormalizado().trim().isEmpty()) {
+            throw new ValidacionException("Raza inválida o no normalizada");
         }
 
         Mascota mascota = new Mascota(request, usuario, fotosJson);
@@ -118,7 +124,7 @@ public class MascotaService {
         String provincia = null;
         if (m.getCoordenadas() != null && !m.getCoordenadas().isEmpty()) {
             try {
-                Map<String, String> datos = this.georef_ar.getDatos(m.getCoordenadas());
+                Map<String, String> datos = Georef_ar.getDatos(m.getCoordenadas());
                 municipio = datos.get("municipio");
                 provincia = datos.get("provincia");
             } catch (Exception e) {
@@ -146,6 +152,9 @@ public class MascotaService {
     @Transactional
     public MascotaResponse actualizarMascota(MascotaRequest request, Long id) {
         Mascota mascota = this.obtenerMascota(id);
+        if (mascota == null) {
+            throw new RecursoNoEncontradoException("Mascota no encontrada: " + id);
+        }
 
         // Obtener el estado anterior antes de actualizar
         Estado estadoAnterior = mascota != null ? mascota.getEstado() : null;
@@ -155,8 +164,7 @@ public class MascotaService {
             // Eliminar fotos antiguas
             if (mascota.getFotos() != null && !mascota.getFotos().isEmpty()) {
                 try {
-                    List<String> oldUrls = objectMapper.readValue(mascota.getFotos(), new TypeReference<List<String>>() {
-                    });
+                    List<String> oldUrls = objectMapper.readValue(mascota.getFotos(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
                     fileStorageService.deleteFiles(oldUrls);
                 } catch (Exception e) {
                     // Log error pero continuar
@@ -168,10 +176,13 @@ public class MascotaService {
         //Guardar nuevas fotos
         try {
             List<String> fotosUrls = fileStorageService.saveImagesFromBase64(
-                    request.fotosBase64(),
+                    request.fotosBase64() != null ? request.fotosBase64() : java.util.Collections.emptyList(),
                     "mascota_" + System.currentTimeMillis()
             );
-            mascota.setFotos(objectMapper.writeValueAsString(fotosUrls));
+            String fotosSerialized = objectMapper.writeValueAsString(fotosUrls);
+            if (fotosSerialized != null) {
+                mascota.setFotos(fotosSerialized);
+            }
         } catch (Exception e){
             throw new ArchivoException("Error al guardar las fotos de la mascota: ", e);
         }
@@ -190,11 +201,14 @@ public class MascotaService {
     @Transactional
     public void eliminarMascota(Long id) {
         Mascota mascota = this.obtenerMascota(id);
+        if (mascota == null) {
+            throw new RecursoNoEncontradoException("Mascota no encontrada: " + id);
+        }
 
         // Eliminar archivos de fotos
         if (mascota.getFotos() != null && !mascota.getFotos().isEmpty()) {
             try {
-                List<String> fotosUrls = objectMapper.readValue(mascota.getFotos(), new TypeReference<List<String>>() {});
+                List<String> fotosUrls = objectMapper.readValue(mascota.getFotos(), new com.fasterxml.jackson.core.type.TypeReference<>() {});
                 fileStorageService.deleteFiles(fotosUrls);
             } catch (Exception e) {
                 System.err.println("Error eliminando fotos: " + e.getMessage());
