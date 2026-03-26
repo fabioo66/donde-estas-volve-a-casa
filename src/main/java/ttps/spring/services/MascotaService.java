@@ -17,7 +17,6 @@ import ttps.spring.models.raza.DTO.RazaRef;
 import ttps.utils.Georef_ar;
 
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 

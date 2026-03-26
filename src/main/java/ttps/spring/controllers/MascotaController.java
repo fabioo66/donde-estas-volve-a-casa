@@ -1,7 +1,5 @@
 package ttps.spring.controllers;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -11,27 +9,15 @@ import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.mascota.dto.MascotaRequest;
-import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
-import ttps.spring.models.mascota.Tamanio;
 import ttps.spring.models.mascota.dto.MascotaResponse;
-import ttps.spring.models.usuario.Usuario;
-import ttps.spring.services.AvistamientoService;
-import ttps.spring.services.FileStorageService;
 import ttps.spring.services.MascotaService;
-import ttps.spring.services.UsuarioService;
 
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -41,9 +27,6 @@ import java.util.List;
 public class MascotaController {
 
     private final MascotaService mascotaService;
-    private final UsuarioService usuarioService;
-    private final FileStorageService fileStorageService;
-    private final ObjectMapper objectMapper;
 
     @PostMapping("/usuario/{usuarioId}")
     @Operation(summary = "Crear una nueva mascota",
