@@ -20,4 +20,8 @@ public class Tipo_mascota {
 
     @Setter
     private String nombre;
+
+    public Tipo_mascota(String nombre) {
+        this.nombre = nombre;
+    }
 }
