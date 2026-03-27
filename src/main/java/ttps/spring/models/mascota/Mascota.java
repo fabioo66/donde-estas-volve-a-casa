@@ -98,4 +98,9 @@ public class Mascota {
     public void agregarAvistamiento(Avistamiento avistamiento) {
         this.avistamientos.add(avistamiento);
     }
+
+    // Compatibilidad: helper para acceder al tipo con el nombre corto getTipo()
+    public Tipo_mascota getTipo() {
+        return this.tipo_mascota;
+    }
 }

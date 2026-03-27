@@ -12,6 +12,7 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.text.Normalizer;
 import java.util.Locale;
+import ttps.spring.infra.RecursoNoEncontradoException;
 
 @Service
 @Transactional
@@ -45,7 +46,7 @@ public class TipoMascotaService {
     }
 
     public Tipo_mascotaResponse updateNombreById(Long id, String nuevoNombre) {
-        Tipo_mascota tipo = tipoRepo.findById(id).orElseThrow(() -> new ttps.spring.infra.RecursoNoEncontradoException("TipoMascota no encontrado: " + id));
+        Tipo_mascota tipo = tipoRepo.findById(id).orElseThrow(() -> new RecursoNoEncontradoException("TipoMascota no encontrado: " + id));
         tipo.setNombre(normalize(nuevoNombre));
         return Tipo_mascotaResponse.from(tipoRepo.save(tipo));
     }

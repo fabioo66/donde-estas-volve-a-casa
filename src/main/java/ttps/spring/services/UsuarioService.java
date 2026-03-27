@@ -47,7 +47,8 @@ public class UsuarioService {
                 request.municipio(),
                 request.departamento()
         );
-        return usuario;
+        // Persistir para que tenga ID antes de ser usado por otros servicios/tests
+        return usuarioRepository.save(usuario);
     }
 
     public Usuario obtenerUsuario(Long id) {

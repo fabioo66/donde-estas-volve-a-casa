@@ -1,6 +1,5 @@
 package ttps.spring.services;
 
-import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
@@ -91,7 +90,7 @@ public class RazaService {
                 .orElseThrow(() -> new RecursoNoEncontradoException("Raza no encontrada: " + id)));
     }
 
-    public RazaResponse updateRaza(@Valid Long razaId, RazaRequest razaRequest) {
+    public RazaResponse updateRaza(Long razaId, RazaRequest razaRequest) {
         // obtener la entidad existente
         Raza raza = razaRepository.findById(razaId)
                 .orElseThrow(() -> new RecursoNoEncontradoException("Raza no encontrada: " + razaId));

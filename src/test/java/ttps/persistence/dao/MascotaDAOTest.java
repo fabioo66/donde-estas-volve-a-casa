@@ -13,6 +13,9 @@ import ttps.spring.models.usuario.dto.RegistroUsuarioRequest;
 import ttps.spring.models.usuario.Usuario;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
+import ttps.spring.models.tipo_mascota.Tipo_mascotaRepository;
+import ttps.spring.models.tipo_mascota.Tipo_mascota;
+import ttps.spring.models.raza.DTO.RazaRef;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -31,8 +34,12 @@ public class MascotaDAOTest {
     @Autowired
     private UsuarioService usuarioService;
 
+    @Autowired
+    private Tipo_mascotaRepository tipoRepo;
+
     private MascotaResponse mascotaTest;
     private Usuario usuarioDuenio;
+    private Tipo_mascota tipoPerro;
 
     @BeforeAll
     public void setUp() {
@@ -50,7 +57,20 @@ public class MascotaDAOTest {
                 "Alberdi",
                 "Capital"
         );
-        usuarioDuenio = usuarioService.crearUsuario(req);
+        try {
+            usuarioDuenio = usuarioService.crearUsuario(req);
+        } catch (Exception e) {
+            // si ya existía el email u otra condicion, intentar recuperar por email para hacer los tests idempotentes
+            try {
+                usuarioDuenio = usuarioService.obtenerUsuarioPorEmail(req.email());
+            } catch (Exception ex) {
+                // si no podemos recuperar, rethrow original para que el error quede claro
+                throw e;
+            }
+        }
+
+        // Crear el tipo de mascota que usaremos en los tests
+        tipoPerro = tipoRepo.save(new Tipo_mascota("Perro"));
     }
 
     @Test
@@ -68,8 +88,8 @@ public class MascotaDAOTest {
                 Estado.PERDIDO_PROPIO,
                 new ArrayList<>(),
                 "-31.4201,-64.1888",
-                "Perro",
-                "Golden Retriever",
+                tipoPerro,
+                new RazaRef(null, "Golden Retriever"),
                 true,
                 usuarioDuenio.getId()
         );
@@ -82,7 +102,7 @@ public class MascotaDAOTest {
         assertNotNull(mascotaCreada, "La mascota creada no debe ser null");
         assertNotNull(mascotaCreada.id(), "El ID debe existir");
         assertEquals("Bobby", mascotaCreada.nombre());
-        assertEquals("Perro", mascotaCreada.tipo());
+        assertEquals(tipoPerro.getId(), mascotaCreada.tipo_mascota().getId());
         assertEquals(Tamanio.GRANDE, mascotaCreada.tamanio());
         assertEquals(Estado.PERDIDO_PROPIO, mascotaCreada.estado());
         assertNotNull(mascotaCreada.usuarioId());
@@ -105,7 +125,7 @@ public class MascotaDAOTest {
         assertNotNull(mascotaObtenida, "La mascota obtenida no debe ser null");
         assertEquals(mascotaId, mascotaObtenida.getId());
         assertEquals("Bobby", mascotaObtenida.getNombre());
-        assertEquals("Golden Retriever", mascotaObtenida.getRaza());
+        assertEquals("Golden Retriever", mascotaObtenida.getRaza().getNombre());
         assertEquals(Estado.PERDIDO_PROPIO, mascotaObtenida.getEstado());
 
         System.out.println("✓ Mascota obtenida: " + mascotaObtenida.getNombre() + " - " + mascotaObtenida.getRaza());
@@ -150,7 +170,7 @@ public class MascotaDAOTest {
                 new ArrayList<>(),
                 mascotaParaActualizar.getCoordenadas(),
                 mascotaParaActualizar.getTipo(),
-                mascotaParaActualizar.getRaza(),
+                new RazaRef(mascotaParaActualizar.getRaza().getId(), null),
                 mascotaParaActualizar.isActivo(),
                 usuarioDuenio.getId()
         );
@@ -203,8 +223,8 @@ public class MascotaDAOTest {
                 Estado.ADOPTADO,
                 new ArrayList<>(),
                 "-31.4201,-64.1888",
-                "Perro",
-                "",
+                tipoPerro,
+                new RazaRef(null, "Mestizo"),
                 true,
                 usuarioDuenio.getId()
         );

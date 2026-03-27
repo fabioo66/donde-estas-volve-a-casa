@@ -29,15 +29,14 @@ public class RazaController {
     @Operation(summary = "Crear o encontrar una raza por nombre y tipo de mascota",
                description = "Busca una raza existente por nombre (normalizado) y tipo de mascota. Si no existe, la crea. Este endpoint es principalmente para uso interno por MascotaService.")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "Raza encontrada o creada exitosamente"),
+        @ApiResponse(responseCode = "201", description = "Raza encontrada o creada exitosamente"),
         @ApiResponse(responseCode = "400", description = "Datos inválidos"),
         @ApiResponse(responseCode = "404", description = "Tipo de mascota no encontrado"),
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<RazaResponse> findOrCreateRaza(
-            @Valid
-            @Parameter(description = "Nombre de la raza") @PathVariable String nombre,
-            @Parameter(description = "ID del tipo de mascota") @RequestBody Long tipoMascotaId) {
+            @Parameter(description = "Nombre de la raza") @PathVariable("nombre") String nombre,
+            @Parameter(description = "ID del tipo de mascota") @PathVariable("tipoId") Long tipoMascotaId) {
         RazaResponse response = RazaResponse.from(razaService.findOrCreateByNombreAndTipoId(nombre, tipoMascotaId));
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

@@ -16,6 +16,9 @@ import ttps.spring.models.usuario.Usuario;
 import ttps.spring.services.AvistamientoService;
 import ttps.spring.services.MascotaService;
 import ttps.spring.services.UsuarioService;
+import ttps.spring.models.tipo_mascota.Tipo_mascotaRepository;
+import ttps.spring.models.tipo_mascota.Tipo_mascota;
+import ttps.spring.models.raza.DTO.RazaRef;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -36,9 +39,13 @@ public class AvistamientoDAOTest {
     @Autowired
     private MascotaService mascotaService;
 
+    @Autowired
+    private Tipo_mascotaRepository tipoRepo;
+
     private AvistamientoResponse avistamientoTest;
     private Usuario usuarioReportador;
     private MascotaResponse mascotaAvistada;
+    private Tipo_mascota tipoGato;
 
     @BeforeAll
     public void setUp() {
@@ -59,6 +66,7 @@ public class AvistamientoDAOTest {
         usuarioReportador = usuarioService.crearUsuario(usuarioReq);
 
         // Crear una mascota para avistar
+        tipoGato = tipoRepo.save(new Tipo_mascota("Gato"));
         MascotaRequest mascotaReq = new MascotaRequest(
                 null,
                 "Luna",
@@ -69,8 +77,8 @@ public class AvistamientoDAOTest {
                 Estado.PERDIDO_AJENO,
                 List.of(),
                 "-31.4167,-64.1833",
-                "Gato",
-                "Siamés",
+                tipoGato,
+                new RazaRef(null, "Siamés"),
                 true,
                 usuarioReportador.getId()
         );

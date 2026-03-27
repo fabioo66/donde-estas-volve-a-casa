@@ -1,6 +1,5 @@
 package ttps.spring.services;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -8,6 +7,7 @@ import org.springframework.transaction.annotation.Transactional;
 import ttps.spring.infra.ArchivoException;
 import ttps.spring.infra.RecursoNoEncontradoException;
 import ttps.spring.infra.ValidacionException;
+import org.springframework.dao.DataIntegrityViolationException;
 import ttps.spring.models.mascota.MascotaRepository;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
@@ -115,7 +115,12 @@ public class MascotaService {
 
         Mascota mascota = new Mascota(request, usuario, fotosJson);
         mascota.setRaza(resolvedRaza);
-        return MascotaResponse.from(mascotaRepository.save(mascota));
+        try {
+            return MascotaResponse.from(mascotaRepository.save(mascota));
+        } catch (DataIntegrityViolationException ex) {
+            // Normalizar error para el cliente: conflicto en integridad (por ejemplo constraint unique)
+            throw new ValidacionException("No se pudo guardar la mascota: datos inconsistentes o duplicados");
+        }
     }
 
     public MascotaInfo obtenerMascotaResponse(Long id) {
@@ -146,7 +151,8 @@ public class MascotaService {
     }
 
     public Mascota obtenerMascota(Long id) {
-        return mascotaRepository.getReferenceById(id);
+        return mascotaRepository.findById(id)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Mascota no encontrada: " + id));
     }
 
     @Transactional
@@ -157,7 +163,7 @@ public class MascotaService {
         }
 
         // Obtener el estado anterior antes de actualizar
-        Estado estadoAnterior = mascota != null ? mascota.getEstado() : null;
+        Estado estadoAnterior = mascota.getEstado();
 
 
         if (request.fotosBase64() != null && !request.fotosBase64().isEmpty()) {
@@ -187,8 +193,61 @@ public class MascotaService {
             throw new ArchivoException("Error al guardar las fotos de la mascota: ", e);
         }
 
-        // Actualizar la mascota
-        MascotaResponse mascotaActualizada = MascotaResponse.from(mascotaRepository.save(mascota));
+        // Aplicar campos del request sobre la entidad (permitir actualizaciones parciales)
+        if (request.nombre() != null) mascota.setNombre(request.nombre());
+        if (request.tamanio() != null) mascota.setTamanio(request.tamanio());
+        if (request.color() != null) mascota.setColor(request.color());
+        if (request.fecha() != null) mascota.setFecha(request.fecha());
+        if (request.descripcion() != null) mascota.setDescripcion(request.descripcion());
+        if (request.estado() != null) mascota.setEstado(request.estado());
+        if (request.coordenadas() != null) mascota.setCoordenadas(request.coordenadas());
+        if (request.tipo_mascota() != null) mascota.setTipo_mascota(request.tipo_mascota());
+
+        // Resolver/validar raza similar a crearMascota
+        if (request.raza() == null) {
+            throw new ValidacionException("Raza es requerida");
+        }
+        RazaRef inputRaza = request.raza();
+        Long inputRazaId = inputRaza.id();
+        String inputRazaNombre = inputRaza.nombre();
+
+        // Restricción: si el cliente envía una raza con id, NO puede enviar nombre manual
+        if (inputRazaId != null && inputRazaNombre != null && !inputRazaNombre.trim().isEmpty()) {
+            throw new ValidacionException("Si envía razaId no debe enviar nombre de raza manual");
+        }
+
+        Long tipoId = (request.tipo_mascota() != null && request.tipo_mascota().getId() != null)
+                ? request.tipo_mascota().getId() : mascota.getTipo_mascota().getId();
+
+        ttps.spring.models.raza.Raza resolvedRaza;
+        if (inputRazaId != null) {
+            // validar existencia y pertenencia a tipo
+            resolvedRaza = razaRepository.findById(inputRazaId)
+                    .orElseThrow(() -> new RecursoNoEncontradoException("Raza no encontrada: " + inputRazaId));
+            if (resolvedRaza.getTipo_mascota() == null || !resolvedRaza.getTipo_mascota().getId().equals(tipoId)) {
+                throw new ValidacionException("La raza seleccionada no pertenece al tipo de mascota indicado");
+            }
+        } else {
+            // nombre manual obligatorio cuando no hay id
+            if (inputRazaNombre == null || inputRazaNombre.trim().isEmpty()) {
+                throw new ValidacionException("Debe indicar la raza: seleccionar una existente o nombre manual");
+            }
+            // Delegar a RazaService que normaliza y crea si hace falta
+            resolvedRaza = razaService.findOrCreateByNombreAndTipoId(inputRazaNombre, tipoId);
+        }
+
+        mascota.setRaza(resolvedRaza);
+
+        // Debug: mostrar valores antes de persistir
+        System.out.println("[DEBUG] actualizarMascota - request.descripcion='" + request.descripcion() + "'");
+        System.out.println("[DEBUG] actualizarMascota - antes save: id=" + mascota.getId() + ", descripcion='" + mascota.getDescripcion() + "', estado='" + mascota.getEstado() + "'");
+
+        // Guardar cambios
+        Mascota saved = mascotaRepository.save(mascota);
+        MascotaResponse mascotaActualizada = MascotaResponse.from(saved);
+
+        // Debug: mostrar valores después de persistir
+        System.out.println("[DEBUG] actualizarMascota - despues save: id=" + saved.getId() + ", descripcion='" + saved.getDescripcion() + "', estado='" + saved.getEstado() + "'");
 
         // Si cambió el estado a RECUPERADO, eliminar todos los avistamientos activos
         if (mascotaActualizada.estado() == Estado.RECUPERADO &&
@@ -216,13 +275,12 @@ public class MascotaService {
         }
 
         // Borrado logico
+        System.out.println("[DEBUG] eliminarMascota(Long) - marcando inactivo id=" + id);
         mascota.setActivo(false);
-        mascotaRepository.deleteById(id);
+        // Persistir el cambio de estado (borrado lógico)
+        mascotaRepository.save(mascota);
     }
 
-    public void eliminarMascota(Mascota mascota) {
-        mascotaRepository.delete(mascota);
-    }
 
     public List<MascotaResponse> obtenerMascotasPorUsuario(Long usuarioId) {
         List<Mascota> mascotas = mascotaRepository.findByUsuarioIdAndActivoTrue(usuarioId);
