@@ -51,17 +51,17 @@ public class AvistamientoDAOTest {
     public void setUp() {
         // Crear un usuario reportador
         RegistroUsuarioRequest usuarioReq = new RegistroUsuarioRequest(
-                "pedro_rep",
-                "Pedro",
-                "Martínez",
-                "pedro.martinez@example.com",
-                "password789",
-                "3518888888",
+                "Valen_rep",
+                "Valentin",
+                "Aruanno",
+                "valen.aruanno@example.com",
+                "password123",
+                "2284520125",
                 "Masculino",
                 28,
-                "Córdoba",
-                "Nueva Córdoba",
-                "Capital"
+                "Buenos Aires",
+                "La Plata",
+                "La Plata"
         );
         usuarioReportador = usuarioService.crearUsuario(usuarioReq);
 
