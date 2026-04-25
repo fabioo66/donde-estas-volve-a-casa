@@ -19,6 +19,7 @@ import ttps.spring.services.UsuarioService;
 import ttps.spring.models.tipo_mascota.Tipo_mascotaRepository;
 import ttps.spring.models.tipo_mascota.Tipo_mascota;
 import ttps.spring.models.raza.DTO.RazaRef;
+import ttps.spring.infra.RecursoNoEncontradoException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -46,6 +47,10 @@ public class AvistamientoDAOTest {
     private Usuario usuarioReportador;
     private MascotaResponse mascotaAvistada;
     private Tipo_mascota tipoGato;
+
+    // Imagen 1x1 PNG en data URI para pruebas de guardado base64.
+    private static final String TEST_IMAGE_BASE64 =
+            "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO5W0GQAAAAASUVORK5CYII=";
 
     @BeforeAll
     public void setUp() {
@@ -95,7 +100,7 @@ public class AvistamientoDAOTest {
                 usuarioReportador.getId(),
                 "Vi a la mascota cerca del parque",
                 "-31.4200,-64.1885",
-                List.of("/uploads/avistamiento_1.jpg")
+                List.of(TEST_IMAGE_BASE64)
         );
 
         // Act
@@ -168,10 +173,12 @@ public class AvistamientoDAOTest {
         // Act
         avistamientoService.eliminarAvistamiento(avistamientoTest.id());
 
-        // Assert - El registro sigue existiendo pero está marcado como inactivo
-        var avistamientoBorrado = avistamientoService.obtenerAvistamiento(avistamientoTest.id());
-        assertNotNull(avistamientoBorrado, "El avistamiento con borrado lógico no debe ser null");
-        assertFalse(avistamientoBorrado.activo(), "El avistamiento debe estar marcado como inactivo");
+        // Assert - La API de lectura solo devuelve avistamientos activos.
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> avistamientoService.obtenerAvistamiento(avistamientoTest.id()),
+                "Un avistamiento eliminado no debería poder obtenerse por el endpoint de activos"
+        );
 
         System.out.println("✓ Avistamiento marcado como inactivo (borrado lógico) correctamente");
     }
@@ -186,7 +193,7 @@ public class AvistamientoDAOTest {
                 usuarioReportador.getId(),
                 "Vi a la mascota cerca del parque",
                 "-31.4300,-64.1900",
-                List.of("/uploads/avistamiento_2.jpg")
+                List.of(TEST_IMAGE_BASE64)
         );
         var creado = avistamientoService.crearAvistamiento(request);
         Long idAvistamiento = creado.id();
@@ -195,9 +202,11 @@ public class AvistamientoDAOTest {
         avistamientoService.eliminarAvistamiento(idAvistamiento);
 
         // Assert
-        var avistamientoBorradoLogico = avistamientoService.obtenerAvistamiento(idAvistamiento);
-        assertNotNull(avistamientoBorradoLogico, "El avistamiento con borrado lógico no debe ser null");
-        assertFalse(avistamientoBorradoLogico.activo(), "El avistamiento debe estar marcado como inactivo");
+        assertThrows(
+                RecursoNoEncontradoException.class,
+                () -> avistamientoService.obtenerAvistamiento(idAvistamiento),
+                "Un avistamiento eliminado no debería poder obtenerse por el endpoint de activos"
+        );
 
         System.out.println("✓ Avistamiento marcado como inactivo mediante delete(id) correctamente");
     }
