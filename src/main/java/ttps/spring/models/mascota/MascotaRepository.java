@@ -18,4 +18,6 @@ public interface MascotaRepository extends JpaRepository<Mascota, Long> {
     MascotaResponse findByMascotaId(Long id);
 
     Mascota getReferenceById();
+
+    int countByEstado(Estado estado);
 }

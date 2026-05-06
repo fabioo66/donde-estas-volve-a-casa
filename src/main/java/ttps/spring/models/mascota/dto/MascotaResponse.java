@@ -4,6 +4,8 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import ttps.spring.models.mascota.Estado;
 import ttps.spring.models.mascota.Mascota;
 import ttps.spring.models.mascota.Tamanio;
+import ttps.spring.models.raza.Raza;
+import ttps.spring.models.tipo_mascota.Tipo_mascota;
 
 @Schema(description = "Respuesta que contiene los datos de una mascota")
 public record MascotaResponse(
@@ -36,10 +38,10 @@ public record MascotaResponse(
         String coordenadas,
 
         @Schema(description = "Tipo de mascota", example = "PERRO")
-        String tipo,
+        Tipo_mascota tipo_mascota,
 
         @Schema(description = "Raza de la mascota", example = "Labrador")
-        String raza,
+        Raza raza,
 
         @Schema(description = "Mascota activa o inactiva")
         Boolean activa,
@@ -59,7 +61,7 @@ public record MascotaResponse(
                 mascota.getEstado(),
                 mascota.getFotos(), // Convertir la lista de fotos a JSON
                 mascota.getCoordenadas(),
-                mascota.getTipo(),
+                mascota.getTipo_mascota(),
                 mascota.getRaza(),
                 mascota.isActivo(),
                 mascota.getUsuario().getId()

@@ -2,6 +2,7 @@ package ttps.spring.models.avistamiento.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import ttps.spring.models.avistamiento.Avistamiento;
+import ttps.spring.models.mascota.dto.MascotaInfo;
 import ttps.spring.models.usuario.dto.UsuarioInfo;
 
 import java.time.LocalDate;

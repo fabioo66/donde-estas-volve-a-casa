@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import ttps.spring.models.avistamiento.Avistamiento;
 import ttps.spring.models.mascota.dto.MascotaRequest;
+import ttps.spring.models.raza.Raza;
+import ttps.spring.models.tipo_mascota.Tipo_mascota;
 import ttps.spring.models.usuario.Usuario;
 
 import java.time.LocalDate;
@@ -62,10 +64,12 @@ public class Mascota {
     private Usuario usuario;
 
     @Setter
-    private String tipo;
+    @ManyToOne
+    private Tipo_mascota tipo_mascota;
 
     @Setter
-    private String raza;
+    @ManyToOne
+    private Raza raza;
 
     @Setter
     private boolean activo = true;
@@ -86,12 +90,17 @@ public class Mascota {
         this.descripcion = request.descripcion();
         this.usuario = usuario;
         this.avistamientos = new ArrayList<>();
-        this.tipo = tipo;
-        this.raza = raza;
+        this.tipo_mascota = request.tipo_mascota();
+        // La raza se asigna en el service (se resuelve a entidad Raza). No copiar directamente desde el request DTO.
         this.usuario = usuario;
     }
 
     public void agregarAvistamiento(Avistamiento avistamiento) {
         this.avistamientos.add(avistamiento);
+    }
+
+    // Compatibilidad: helper para acceder al tipo con el nombre corto getTipo()
+    public Tipo_mascota getTipo() {
+        return this.tipo_mascota;
     }
 }

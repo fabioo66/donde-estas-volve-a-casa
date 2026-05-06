@@ -33,6 +33,8 @@ public class UsuarioDAOTest {
                 "juan.perez@example.com",
                 "password123",
                 "3515555555",
+                "Femenino",
+                21,
                 "Córdoba",
                 "Córdoba Capital",
                 "Centro"
@@ -102,7 +104,7 @@ public class UsuarioDAOTest {
         usuarioParaActualizar.setProvincia(nuevaProvincia);
         usuarioParaActualizar.setMunicipio(nuevoMunicipio);
         usuarioParaActualizar.setDepartamento(nuevoDepartamento);
-        Usuario usuarioActualizado = usuarioService.actualizarUsuario(usuarioParaActualizar);
+        Usuario usuarioActualizado = usuarioService.actualizarUsuario(usuarioParaActualizar, usuarioParaActualizar.getId());
 
         // Assert
         assertNotNull(usuarioActualizado, "El usuario actualizado no debe ser null");

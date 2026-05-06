@@ -2,7 +2,7 @@ import { Component, OnDestroy, AfterViewInit, Inject, PLATFORM_ID, ChangeDetecto
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { MascotaService, MascotaRequest } from '../../services/mascota.service';
+import { MascotaService, MascotaRequest, TipoMascota, Raza } from '../../services/mascota.service';
 import { AuthService } from '../../services/auth.service';
 import { Estado, Tamanio } from '../../models/mascota.model';
 
@@ -27,6 +27,12 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     coordenadas: ''
   };
 
+  // Nuevas propiedades para tipos y razas
+  tipos: TipoMascota[] = [];
+  razas: Raza[] = [];
+  razaSeleccionadaId: number | '__MANUAL__' | null = null;
+  razaManualTexto: string = '';
+
   archivosSeleccionados: File[] = [];
   previsualizaciones: string[] = [];
   loading = false;
@@ -49,7 +55,13 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     private router: Router,
     private cdr: ChangeDetectorRef,
     @Inject(PLATFORM_ID) private platformId: Object
-  ) {}
+  ) {
+    // Cargar tipos al construir el componente
+    this.mascotaService.getTipos().subscribe({
+      next: tipos => this.tipos = tipos,
+      error: err => console.error('No se pudieron cargar tipos:', err)
+    });
+  }
 
   onFileSelect(event: any): void {
     const files = Array.from(event.target.files) as File[];
@@ -90,38 +102,63 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     this.previsualizaciones.splice(index, 1);
   }
 
+  onTipoChange(): void {
+    const tipoId = Number(this.mascota.tipo);
+    if (!tipoId) {
+      this.razas = [];
+      this.razaSeleccionadaId = null;
+      return;
+    }
+    this.mascotaService.getRazasPorTipo(tipoId).subscribe({
+      next: razas => {
+        this.razas = razas;
+        // resetear selección de raza
+        this.razaSeleccionadaId = null;
+      },
+      error: err => {
+        console.error('Error al cargar razas:', err);
+        this.razas = [];
+      }
+    });
+  }
+
+  onRazaSelectChange(value: any): void {
+    if (value === '__MANUAL__') {
+      this.razaSeleccionadaId = '__MANUAL__';
+    } else if (value) {
+      this.razaSeleccionadaId = Number(value);
+      this.razaManualTexto = '';
+    } else {
+      this.razaSeleccionadaId = null;
+      this.razaManualTexto = '';
+    }
+  }
+
   async onSubmit(form: any): Promise<void> {
     // Limpiar mensajes previos
     this.successMessage = null;
     this.errorMessage = null;
 
-    // Verificar manualmente los campos obligatorios
-    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'descripcion', 'estado'];
-    const tieneAgunCampoVacio = camposObligatorios.some(campo => {
-      const valor = this.mascota[campo as keyof MascotaRequest];
-      return !valor || (typeof valor === 'string' && valor.trim() === '');
-    });
-
-    // Si hay campos vacíos, mostrar error
-    if (tieneAgunCampoVacio) {
-      // Marcar todos los campos como touched para mostrar errores
-      Object.keys(form.controls).forEach(key => {
-        form.controls[key].markAsTouched();
-      });
-
-      this.errorMessage = 'Por favor completá todos los campos obligatorios marcados con *.';
+    // Validaciones básicas
+    if (!this.mascota.tipo || !this.mascota.tipo.toString().trim()) {
+      this.errorMessage = 'Por favor seleccioná el tipo de mascota.';
       this.autoHideMessage('error');
       return;
     }
 
-    // Validar también el formulario de Angular
-    if (form.invalid) {
-      Object.keys(form.controls).forEach(key => {
-        form.controls[key].markAsTouched();
-      });
-      this.errorMessage = 'Por favor verificá que todos los campos obligatorios estén correctamente completados.';
+    // Validar raza: debe haber una seleccion o texto manual
+    if (this.razaSeleccionadaId === null) {
+      this.errorMessage = 'Por favor seleccioná una raza o ingresá una manualmente.';
       this.autoHideMessage('error');
       return;
+    }
+
+    if (this.razaSeleccionadaId === '__MANUAL__') {
+      if (!this.razaManualTexto || !this.razaManualTexto.trim()) {
+        this.errorMessage = 'Por favor ingresá el nombre de la raza manualmente.';
+        this.autoHideMessage('error');
+        return;
+      }
     }
 
     this.loading = true;
@@ -143,17 +180,36 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
         fotosBase64.push(base64);
       }
 
-      const mascotaData: MascotaRequest = {
-        ...this.mascota,
-        fotosBase64: fotosBase64
+      // Construir referencia de raza según selección
+      let razaRef: any = {};
+      if (this.razaSeleccionadaId === '__MANUAL__') {
+        razaRef = { nombre: this.razaManualTexto.trim() };
+      } else {
+        razaRef = { id: this.razaSeleccionadaId };
+      }
+
+      // Construir payload conforme al backend
+      const tipoId = Number(this.mascota.tipo);
+      const payload = {
+        nombre: this.mascota.nombre,
+        tamanio: this.mascota.tamanio,
+        color: this.mascota.color,
+        fecha: this.mascota.fecha,
+        descripcion: this.mascota.descripcion,
+        estado: this.mascota.estado,
+        coordenadas: this.mascota.coordenadas,
+        fotosBase64: fotosBase64,
+        tipo_mascota: { id: tipoId },
+        raza: razaRef
       };
 
       // Usar el ID del usuario autenticado
       const usuarioId = currentUser.id;
 
-      await this.mascotaService.crearMascota(usuarioId, mascotaData).toPromise();
+      await this.mascotaService.crearMascota(usuarioId, payload).toPromise();
 
       this.successMessage = '¡Mascota reportada exitosamente! Gracias por ayudar a reunir familias. 🐾';
+      // reset del formulario
       this.resetForm(form);
       this.autoHideMessage('success');
 
@@ -161,9 +217,17 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       setTimeout(() => {
         this.router.navigate(['/mis-publicaciones']);
       }, 3000);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error al crear mascota:', error);
-      this.errorMessage = 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
+      // Intentar mostrar mensaje del backend si existe
+      if (error?.error && typeof error.error === 'object') {
+        // si viene { error: 'mensaje' } o { message: '...' }
+        this.errorMessage = error.error.error || error.error.message || JSON.stringify(error.error);
+      } else if (typeof error === 'string') {
+        this.errorMessage = error;
+      } else {
+        this.errorMessage = 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
+      }
       this.autoHideMessage('error');
     } finally {
       this.loading = false;
@@ -183,7 +247,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
 
   // Método para verificar si el formulario está válido
   isFormValid(): boolean {
-    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'tipo', 'descripcion', 'estado'];
+    const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'descripcion', 'estado'];
 
     return camposObligatorios.every(campo => {
       const valor = this.mascota[campo as keyof MascotaRequest];
@@ -220,6 +284,9 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       raza: '',
       coordenadas: ''
     };
+    this.razas = [];
+    this.razaSeleccionadaId = null;
+    this.razaManualTexto = '';
     form.resetForm();
   }
 

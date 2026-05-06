@@ -26,7 +26,7 @@ public class HomeController {
 
     @GetMapping("/estadisticas")
     @Operation(summary = "Obtener estadísticas del home",
-               description = "Retorna las estadísticas principales: mascotas perdidas, recuperadas, adoptadas y seguimientos pendientes")
+               description = "Retorna las estadísticas principales: mascotas perdidas, recuperadas, adoptadas y avistamientos pendientes")
     @ApiResponses(value = {
         @ApiResponse(responseCode = "200", description = "Estadísticas obtenidas exitosamente")
     })
@@ -59,11 +59,11 @@ public class HomeController {
         return ResponseEntity.ok(count);
     }
 
-    @GetMapping("/estadisticas/seguimientos-pendientes")
-    @Operation(summary = "Obtener cantidad de seguimientos pendientes",
+    @GetMapping("/estadisticas/avistamientos-pendientes")
+    @Operation(summary = "Obtener cantidad de avistamientos pendientes",
                description = "Retorna el número total de avistamientos activos sin resolver")
     public ResponseEntity<Integer> obtenerSeguimientosPendientes() {
-        int count = homeService.contarSeguimientosPendientes();
+        int count = homeService.contarAvistamientosPendientes();
         return ResponseEntity.ok(count);
     }
 }
