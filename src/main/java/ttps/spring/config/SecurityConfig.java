@@ -14,6 +14,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import ttps.spring.security.JwtAuthenticationFilter;
 import ttps.spring.security.UsuarioDetailsService;
 
 @Configuration
@@ -30,14 +31,12 @@ public class SecurityConfig {
         http
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/usuarios/login", "/usuarios/registro")
-                        .permitAll()
-                        .requestMatchers("/admin/**")
-                        .hasRole("ADMINISTRADOR")
-                        .requestMatchers("/usuarios/**")
-                        .hasAnyRole("USUARIO", "ADMINISTRADOR")
-                        .anyRequest()
-                        .authenticated()
+                        .requestMatchers("/usuarios/login", "/usuarios/registro").permitAll()
+                        .requestMatchers("/admin/**").hasRole("ADMINISTRADOR")
+                        .requestMatchers("/usuarios/**").hasAnyRole("USUARIO", "ADMINISTRADOR")
+                        .requestMatchers("/mascotas/perdidas").permitAll()
+                        .requestMatchers("/avistamientos").permitAll()
+                        .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
