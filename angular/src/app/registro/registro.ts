@@ -22,7 +22,7 @@ export class RegistroComponent implements OnInit {
     password: '',
     telefono: '',
     genero: '',
-    edad: 18,
+    fechaNacimiento: null,
     provincia: '',
     municipio: '',
     departamento: ''
@@ -35,6 +35,7 @@ export class RegistroComponent implements OnInit {
 
   private route = inject(ActivatedRoute);
   private returnUrl: string | null = null;
+  public maxBirthDateFor18: string = '';
 
   constructor(
     private authService: AuthService,
@@ -47,6 +48,8 @@ export class RegistroComponent implements OnInit {
     // Obtener URL de retorno de los query parameters
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || null;
     console.log('🔗 URL de retorno configurada:', this.returnUrl);
+    // Calcular la fecha máxima permitida en el input date (hoy - 18 años)
+    this.maxBirthDateFor18 = this.computeMaxBirthDateFor18();
   }
 
   obtenerUbicacionActual(): void {
@@ -83,6 +86,24 @@ export class RegistroComponent implements OnInit {
         this.loadingUbicacion = false;
         this.cdr.detectChanges();
       });
+  }
+
+  private parseToDate(value: Date | string | undefined | null): Date | null {
+    if (!value) return null;
+    const d = value instanceof Date ? value : new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  private calculateAge(birth: Date | string | undefined | null): number {
+    const b = this.parseToDate(birth);
+    if (!b) return -1; // indicador de fecha inválida
+    const today = new Date();
+    let age = today.getFullYear() - b.getFullYear();
+    const monthDiff = today.getMonth() - b.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) {
+      age--;
+    }
+    return age;
   }
 
   validarFormulario(): boolean {
@@ -125,6 +146,12 @@ export class RegistroComponent implements OnInit {
       this.cdr.detectChanges();
       return false;
     }
+    if (edad < 18) {
+      this.errorMessage = '❌ Debe ser mayor de 18 años para registrarse';
+      this.cdr.detectChanges();
+      return false;
+    }
+    }
 
     // Validar contraseña
     if (!this.usuario.password || this.usuario.password.length === 0) {
@@ -153,21 +180,24 @@ export class RegistroComponent implements OnInit {
     }
 
     // Validar edad
-    if (!this.usuario.edad) {
-      this.errorMessage = '❌ La edad es obligatoria';
+    if (!this.usuario.fechaNacimiento) {
+      this.errorMessage = '❌ La fecha de nacimiento es obligatoria';
       this.cdr.detectChanges();
       return false;
     }
-    if (this.usuario.edad < 18) {
+
+    const edad = this.calculateAge(this.usuario.fechaNacimiento);
+    if (edad < 0) {
+      this.errorMessage = '❌ Fecha de nacimiento inválida';
+      this.cdr.detectChanges();
+      return false;
+    }
+    if (edad < 18) {
       this.errorMessage = '❌ Debe ser mayor de 18 años para registrarse';
       this.cdr.detectChanges();
       return false;
     }
-    if (this.usuario.edad > 120) {
-      this.errorMessage = '❌ Por favor ingrese una edad válida';
-      this.cdr.detectChanges();
-      return false;
-    }
+
 
     // Validar ubicación
     if (!this.usuario.provincia || this.usuario.provincia.trim().length === 0) {
@@ -262,3 +292,29 @@ export class RegistroComponent implements OnInit {
     });
   }
 }
+
+  // --- Utilidades para manejo de fecha / edad ---
+  private parseToDate(value: Date | string | null | undefined): Date | null {
+    if (!value) return null;
+    const d = value instanceof Date ? value : new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  private calculateAge(birth: Date | string | null | undefined): number {
+    const b = this.parseToDate(birth);
+    if (!b) return -1;
+    const today = new Date();
+    let age = today.getFullYear() - b.getFullYear();
+    const monthDiff = today.getMonth() - b.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) {
+      age--;
+    }
+    return age;
+  }
+
+  private computeMaxBirthDateFor18(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().split('T')[0];
+  }
+

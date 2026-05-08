@@ -7,7 +7,7 @@ export interface Usuario {
   password?: string;
   telefono: string;
   genero: string;
-  edad: number;
+  fechaNacimiento: Date;
   provincia: string;
   municipio: string;
   departamento: string;
