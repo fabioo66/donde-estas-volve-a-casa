@@ -15,8 +15,6 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
 
     Optional<Usuario> findByNombreUsuario(String nombreUsuario);
 
-    void deleteByNombreUsuario(String nombreUsuario);
-
     boolean existsByTelefono(String telefono);
 
     List<Usuario> findAllByActivoTrue();

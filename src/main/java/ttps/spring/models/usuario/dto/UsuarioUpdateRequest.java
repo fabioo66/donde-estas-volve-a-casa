@@ -6,6 +6,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
 
+import java.util.Date;
+
 public record UsuarioUpdateRequest(
         @Schema(description = "Apodo del usuario para login", example = "Luis1980", requiredMode = Schema.RequiredMode.REQUIRED)
         String nombreUsuario,
@@ -28,9 +30,8 @@ public record UsuarioUpdateRequest(
         @Schema(description = "Genero del usuario", example = "Masculino", requiredMode = Schema.RequiredMode.REQUIRED)
         String genero,
 
-        @Schema(description = "Edad del usuario", example = "30", requiredMode = Schema.RequiredMode.REQUIRED)
-        @Positive
-        Integer edad,
+        @Schema(description = "Fecha de nacimiento del usuario", example = "8/5/2026", requiredMode = Schema.RequiredMode.REQUIRED)
+        Date fechaNacimiento,
 
         @Schema(description = "Provincia del usuario", example = "Cordoba", requiredMode = Schema.RequiredMode.REQUIRED)
         String provincia,

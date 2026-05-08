@@ -14,6 +14,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import java.util.Collection;
+import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -53,7 +54,7 @@ public class Usuario implements UserDetails {
     private String genero;
 
     @Setter
-    private Integer edad;
+    private Date fechaNacimiento;
 
     @Setter
     private String provincia;
@@ -114,7 +115,7 @@ public class Usuario implements UserDetails {
     }
 
     public Usuario(String nombre, String apellido, String email, String nombreUsuario, String contraseniaHasheada,
-                   String telefono, String genero, Integer edad, String provincia, String municipio, String departamento) {
+                   String telefono, String genero, Date fechaNacimiento, String provincia, String municipio, String departamento) {
         this.rol = Rol.USUARIO;
         this.nombre = nombre;
         this.apellido = apellido;
@@ -123,7 +124,7 @@ public class Usuario implements UserDetails {
         this.contrasenia = contraseniaHasheada;
         this.telefono = telefono;
         this.genero = genero;
-        this.edad = edad;
+        this.fechaNacimiento = fechaNacimiento;
         this.provincia = provincia;
         this.municipio = municipio;
         this.departamento = departamento;

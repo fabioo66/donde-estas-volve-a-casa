@@ -42,7 +42,7 @@ public class UsuarioService {
                 passwordHasheada,
                 request.telefono(),
                 request.genero(),
-                request.edad(),
+                request.fechaNacimiento(),
                 request.provincia(),
                 request.municipio(),
                 request.departamento()
@@ -120,8 +120,8 @@ public class UsuarioService {
             usuario.setGenero(request.genero());
         }
 
-        if (request.edad() != null) {
-            usuario.setEdad(request.edad());
+        if (request.fechaNacimiento() != null) {
+            usuario.setFechaNacimiento(request.fechaNacimiento());
         }
 
         if (request.provincia() != null) {
