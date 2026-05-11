@@ -104,15 +104,25 @@
               <select
                 class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
                 id="tipo"
-                name="tipo"
-                [(ngModel)]="mascota.tipo"
+                name="tipoSeleccionadoId"
+                [(ngModel)]="tipoSeleccionadoId"
                 #tipo="ngModel"
-                required
                 (change)="onTipoChange()"
               >
-                <option value="">Seleccionar tipo</option>
-                <option *ngFor="let t of tipos" [value]="t.id">{{ t.nombre }}</option>
+                <option [ngValue]="null">Seleccionar tipo</option>
+                <option *ngFor="let t of tipos" [ngValue]="t.id">{{ t.nombre }}</option>
+                <option [ngValue]="'__MANUAL__'">Ingresar tipo de animal manualmente</option>
               </select>
+              <!-- Input manual que aparece solo si se eligió la opción manual -->
+              <div *ngIf="tipoSeleccionadoId === '__MANUAL__'" class="mt-2">
+                <input
+                  type="text"
+                  class="block w-full rounded-lg border-slate-300 bg-white p-3 text-sm text-slate-900 focus:border-primary focus:ring-primary"
+                  placeholder="Ingresá el tipo de animal (ej: Perro, Gato, Ave)"
+                  [(ngModel)]="tipoManualTexto"
+                  name="tipoManual"
+                />
+              </div>
               <div *ngIf="esCampoInvalido(tipo)" class="text-red-500 text-xs">
                 {{ getMensajeError(tipo) }}
               </div>

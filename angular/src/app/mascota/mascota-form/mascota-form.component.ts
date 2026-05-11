@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MascotaService, MascotaRequest, TipoMascota, Raza } from '../../services/mascota.service';
 import { AuthService } from '../../services/auth.service';
-import { Estado, Tamanio } from '../../models/mascota.model';
+import { Estado } from '../../models/mascota.model';
 
 @Component({
   selector: 'app-mascota-form',
@@ -29,6 +29,8 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
 
   // Nuevas propiedades para tipos y razas
   tipos: TipoMascota[] = [];
+  tipoSeleccionadoId: number | '__MANUAL__' | null = null;
+  tipoManualTexto: string = '';
   razas: Raza[] = [];
   razaSeleccionadaId: number | '__MANUAL__' | null = null;
   razaManualTexto: string = '';
@@ -36,8 +38,6 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   archivosSeleccionados: File[] = [];
   previsualizaciones: string[] = [];
   loading = false;
-  Estados = Estado;
-  Tamanios = Tamanio;
 
   // Propiedades para mensajes de éxito y error
   successMessage: string | null = null;
@@ -103,12 +103,26 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   }
 
   onTipoChange(): void {
-    const tipoId = Number(this.mascota.tipo);
+    // Manejo de selección de tipo que puede ser numérico o ingreso manual
+    if (this.tipoSeleccionadoId === '__MANUAL__') {
+      // Si el usuario elige ingresar tipo manualmente, no cargamos razas
+      this.razas = [];
+      this.razaSeleccionadaId = null;
+      this.mascota.tipo = '';
+      return;
+    }
+
+    // Determinar id de tipo (puede venir de tipoSeleccionadoId o del campo mascota.tipo por compatibilidad)
+    const tipoId = typeof this.tipoSeleccionadoId === 'number' ? this.tipoSeleccionadoId : Number(this.mascota.tipo);
     if (!tipoId) {
       this.razas = [];
       this.razaSeleccionadaId = null;
       return;
     }
+
+    // Guardar el id en el campo mascota.tipo para mantener compatibilidad con el payload existente
+    this.mascota.tipo = tipoId.toString();
+
     this.mascotaService.getRazasPorTipo(tipoId).subscribe({
       next: razas => {
         this.razas = razas;
@@ -140,10 +154,18 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     this.errorMessage = null;
 
     // Validaciones básicas
-    if (!this.mascota.tipo || !this.mascota.tipo.toString().trim()) {
+    // Validación de tipo: puede seleccionarse de la lista o ingresarse manualmente
+    if (this.tipoSeleccionadoId === null) {
       this.errorMessage = 'Por favor seleccioná el tipo de mascota.';
       this.autoHideMessage('error');
       return;
+    }
+    if (this.tipoSeleccionadoId === '__MANUAL__') {
+      if (!this.tipoManualTexto || !this.tipoManualTexto.trim()) {
+        this.errorMessage = 'Por favor ingresá el tipo de mascota manualmente.';
+        this.autoHideMessage('error');
+        return;
+      }
     }
 
     // Validar raza: debe haber una seleccion o texto manual
@@ -181,7 +203,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       }
 
       // Construir referencia de raza según selección
-      let razaRef: any = {};
+      let razaRef: any;
       if (this.razaSeleccionadaId === '__MANUAL__') {
         razaRef = { nombre: this.razaManualTexto.trim() };
       } else {
@@ -189,7 +211,15 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       }
 
       // Construir payload conforme al backend
-      const tipoId = Number(this.mascota.tipo);
+      let tipoRef: any;
+      if (this.tipoSeleccionadoId === '__MANUAL__') {
+        tipoRef = { nombre: this.tipoManualTexto.trim() };
+      } else {
+        // aquí, por validación previa, tipoSeleccionadoId será un número
+        const tipoId = this.tipoSeleccionadoId as number;
+        tipoRef = { id: tipoId };
+      }
+
       const payload = {
         nombre: this.mascota.nombre,
         tamanio: this.mascota.tamanio,
@@ -199,7 +229,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
         estado: this.mascota.estado,
         coordenadas: this.mascota.coordenadas,
         fotosBase64: fotosBase64,
-        tipo_mascota: { id: tipoId },
+        tipo_mascota: tipoRef,
         raza: razaRef
       };
 
@@ -249,10 +279,17 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
   isFormValid(): boolean {
     const camposObligatorios = ['nombre', 'fecha', 'tamanio', 'color', 'descripcion', 'estado'];
 
-    return camposObligatorios.every(campo => {
+    const baseValid = camposObligatorios.every(campo => {
       const valor = this.mascota[campo as keyof MascotaRequest];
-      return valor && (typeof valor !== 'string' || valor.trim() !== '');
+      return !!(valor && (typeof valor !== 'string' || valor.trim() !== ''));
     });
+
+    // Validación de tipo: puede venir seleccionado o ingresado manualmente
+    const tipoOk = this.tipoSeleccionadoId === '__MANUAL__'
+      ? !!(this.tipoManualTexto && this.tipoManualTexto.trim() !== '')
+      : (typeof this.tipoSeleccionadoId === 'number' || (!!this.mascota.tipo && this.mascota.tipo.toString().trim() !== ''));
+
+    return baseValid && tipoOk;
   }
 
   // Método para ocultar automáticamente los mensajes
@@ -287,6 +324,8 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     this.razas = [];
     this.razaSeleccionadaId = null;
     this.razaManualTexto = '';
+    this.tipoSeleccionadoId = null;
+    this.tipoManualTexto = '';
     form.resetForm();
   }
 
