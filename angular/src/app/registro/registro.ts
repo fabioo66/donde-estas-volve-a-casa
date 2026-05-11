@@ -22,7 +22,7 @@ export class RegistroComponent implements OnInit {
     password: '',
     telefono: '',
     genero: '',
-    fechaNacimiento: null,
+    fechaNacimiento: undefined,
     provincia: '',
     municipio: '',
     departamento: ''
@@ -45,10 +45,8 @@ export class RegistroComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    // Obtener URL de retorno de los query parameters
     this.returnUrl = this.route.snapshot.queryParams['returnUrl'] || null;
     console.log('🔗 URL de retorno configurada:', this.returnUrl);
-    // Calcular la fecha máxima permitida en el input date (hoy - 18 años)
     this.maxBirthDateFor18 = this.computeMaxBirthDateFor18();
   }
 
@@ -96,90 +94,65 @@ export class RegistroComponent implements OnInit {
 
   private calculateAge(birth: Date | string | undefined | null): number {
     const b = this.parseToDate(birth);
-    if (!b) return -1; // indicador de fecha inválida
+    if (!b) return -1;
+
     const today = new Date();
     let age = today.getFullYear() - b.getFullYear();
     const monthDiff = today.getMonth() - b.getMonth();
+
     if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) {
       age--;
     }
+
     return age;
   }
 
+  private computeMaxBirthDateFor18(): string {
+    const d = new Date();
+    d.setFullYear(d.getFullYear() - 18);
+    return d.toISOString().split('T')[0];
+  }
+
   validarFormulario(): boolean {
-    // Limpiar mensaje de error previo
     this.errorMessage = '';
 
-    // Validar nombre de usuario
     if (!this.usuario.nombreUsuario || this.usuario.nombreUsuario.trim().length === 0) {
       this.errorMessage = '❌ El nombre de usuario es obligatorio';
       this.cdr.detectChanges();
       return false;
     }
+
     if (this.usuario.nombreUsuario.length < 3) {
       this.errorMessage = '❌ El nombre de usuario debe tener al menos 3 caracteres';
       this.cdr.detectChanges();
       return false;
     }
 
-    // Validar nombre y apellido
     if (!this.usuario.nombre || this.usuario.nombre.trim().length === 0) {
       this.errorMessage = '❌ El nombre es obligatorio';
       this.cdr.detectChanges();
       return false;
     }
+
     if (!this.usuario.apellido || this.usuario.apellido.trim().length === 0) {
       this.errorMessage = '❌ El apellido es obligatorio';
       this.cdr.detectChanges();
       return false;
     }
 
-    // Validar email
     if (!this.usuario.email || this.usuario.email.trim().length === 0) {
       this.errorMessage = '❌ El correo electrónico es obligatorio';
       this.cdr.detectChanges();
       return false;
     }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(this.usuario.email)) {
       this.errorMessage = '❌ Por favor ingrese un correo electrónico válido';
       this.cdr.detectChanges();
       return false;
     }
-    if (edad < 18) {
-      this.errorMessage = '❌ Debe ser mayor de 18 años para registrarse';
-      this.cdr.detectChanges();
-      return false;
-    }
-    }
 
-    // Validar contraseña
-    if (!this.usuario.password || this.usuario.password.length === 0) {
-      this.errorMessage = '❌ La contraseña es obligatoria';
-      this.cdr.detectChanges();
-      return false;
-    }
-    if (this.usuario.password.length < 6) {
-      this.errorMessage = '❌ La contraseña debe tener al menos 6 caracteres';
-      this.cdr.detectChanges();
-      return false;
-    }
-
-    // Validar teléfono
-    if (!this.usuario.telefono || this.usuario.telefono.trim().length === 0) {
-      this.errorMessage = '❌ El número de teléfono es obligatorio';
-      this.cdr.detectChanges();
-      return false;
-    }
-
-    // Validar género
-    if (!this.usuario.genero || this.usuario.genero === '') {
-      this.errorMessage = '❌ Por favor seleccione un género';
-      this.cdr.detectChanges();
-      return false;
-    }
-
-    // Validar edad
     if (!this.usuario.fechaNacimiento) {
       this.errorMessage = '❌ La fecha de nacimiento es obligatoria';
       this.cdr.detectChanges();
@@ -192,24 +165,49 @@ export class RegistroComponent implements OnInit {
       this.cdr.detectChanges();
       return false;
     }
+
     if (edad < 18) {
       this.errorMessage = '❌ Debe ser mayor de 18 años para registrarse';
       this.cdr.detectChanges();
       return false;
     }
 
+    if (!this.usuario.password || this.usuario.password.length === 0) {
+      this.errorMessage = '❌ La contraseña es obligatoria';
+      this.cdr.detectChanges();
+      return false;
+    }
 
-    // Validar ubicación
+    if (this.usuario.password.length < 6) {
+      this.errorMessage = '❌ La contraseña debe tener al menos 6 caracteres';
+      this.cdr.detectChanges();
+      return false;
+    }
+
+    if (!this.usuario.telefono || this.usuario.telefono.trim().length === 0) {
+      this.errorMessage = '❌ El número de teléfono es obligatorio';
+      this.cdr.detectChanges();
+      return false;
+    }
+
+    if (!this.usuario.genero || this.usuario.genero === '') {
+      this.errorMessage = '❌ Por favor seleccione un género';
+      this.cdr.detectChanges();
+      return false;
+    }
+
     if (!this.usuario.provincia || this.usuario.provincia.trim().length === 0) {
       this.errorMessage = '❌ La provincia es obligatoria. Use el botón "Ubicación Actual" o ingrese manualmente';
       this.cdr.detectChanges();
       return false;
     }
+
     if (!this.usuario.municipio || this.usuario.municipio.trim().length === 0) {
       this.errorMessage = '❌ El municipio es obligatorio. Use el botón "Ubicación Actual" o ingrese manualmente';
       this.cdr.detectChanges();
       return false;
     }
+
     if (!this.usuario.departamento || this.usuario.departamento.trim().length === 0) {
       this.errorMessage = '❌ El departamento es obligatorio. Use el botón "Ubicación Actual" o ingrese manualmente';
       this.cdr.detectChanges();
@@ -220,12 +218,10 @@ export class RegistroComponent implements OnInit {
   }
 
   onSubmit(): void {
-    // Limpiar mensajes previos
     this.errorMessage = '';
     this.successMessage = '';
     this.cdr.detectChanges();
 
-    // Validar formulario
     if (!this.validarFormulario()) {
       return;
     }
@@ -242,7 +238,6 @@ export class RegistroComponent implements OnInit {
         this.loading = false;
         this.cdr.detectChanges();
         setTimeout(() => {
-          // Pasar el returnUrl al login si existe
           if (this.returnUrl) {
             this.router.navigate(['/login'], { queryParams: { returnUrl: this.returnUrl } });
           } else {
@@ -255,10 +250,8 @@ export class RegistroComponent implements OnInit {
         console.error('Error status:', error.status);
         console.error('Error.error:', error.error);
 
-        // PRIMERO: SIEMPRE desbloquear el formulario INMEDIATAMENTE
         this.loading = false;
 
-        // SEGUNDO: Determinar el mensaje de error apropiado
         if (error.status === 0) {
           this.errorMessage = '⚠️ No se puede conectar con el servidor. Verifica que el backend esté ejecutándose en http://localhost:8080';
         } else if (error.status === 409) {
@@ -277,12 +270,9 @@ export class RegistroComponent implements OnInit {
         }
 
         console.log('Mensaje de error establecido:', this.errorMessage);
-
-        // FORZAR detección de cambios
         this.cdr.detectChanges();
       },
       complete: () => {
-        // Fallback de seguridad adicional
         if (this.loading) {
           console.warn('Formulario todavía en loading en complete(), desbloqueando...');
           this.loading = false;
@@ -292,29 +282,4 @@ export class RegistroComponent implements OnInit {
     });
   }
 }
-
-  // --- Utilidades para manejo de fecha / edad ---
-  private parseToDate(value: Date | string | null | undefined): Date | null {
-    if (!value) return null;
-    const d = value instanceof Date ? value : new Date(value);
-    return isNaN(d.getTime()) ? null : d;
-  }
-
-  private calculateAge(birth: Date | string | null | undefined): number {
-    const b = this.parseToDate(birth);
-    if (!b) return -1;
-    const today = new Date();
-    let age = today.getFullYear() - b.getFullYear();
-    const monthDiff = today.getMonth() - b.getMonth();
-    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) {
-      age--;
-    }
-    return age;
-  }
-
-  private computeMaxBirthDateFor18(): string {
-    const d = new Date();
-    d.setFullYear(d.getFullYear() - 18);
-    return d.toISOString().split('T')[0];
-  }
 

@@ -84,13 +84,11 @@
       <div class="form-group">
         <label for="edad">Edad *</label>
         <input
-          type="number"
+          type="Date"
           id="edad"
           name="edad"
-          [(ngModel)]="usuario.edad"
+          [(ngModel)]="usuario.fechaNacimiento"
           required
-          min="18"
-          max="120"
           class="form-control">
       </div>
 

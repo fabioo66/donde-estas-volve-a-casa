@@ -24,7 +24,7 @@ export class PerfilComponent implements OnInit {
     email: '',
     telefono: '',
     genero: '',
-    edad: 18,
+    fechaNacimiento: undefined,
     provincia: '',
     municipio: '',
     departamento: ''
@@ -162,18 +162,13 @@ export class PerfilComponent implements OnInit {
       return false;
     }
 
-    if (!this.usuario.edad) {
-      this.errorMessage = '❌ La edad es obligatoria';
+    if (!this.usuario.fechaNacimiento) {
+      this.errorMessage = '❌ La fecha de nacimiento es obligatoria';
       this.cdr.detectChanges();
       return false;
     }
-    if (this.usuario.edad < 18) {
+    if (this.calculateAge(this.usuario.fechaNacimiento) < 18) {
       this.errorMessage = '❌ Debe ser mayor de 18 años';
-      this.cdr.detectChanges();
-      return false;
-    }
-    if (this.usuario.edad > 120) {
-      this.errorMessage = '❌ Por favor ingrese una edad válida';
       this.cdr.detectChanges();
       return false;
     }
@@ -268,7 +263,7 @@ export class PerfilComponent implements OnInit {
       email: this.usuario.email,
       telefono: this.usuario.telefono,
       genero: this.usuario.genero,
-      edad: this.usuario.edad,
+      fechaNacimiento: this.usuario.fechaNacimiento,
       provincia: this.usuario.provincia,
       municipio: this.usuario.municipio,
       departamento: this.usuario.departamento
@@ -343,6 +338,27 @@ export class PerfilComponent implements OnInit {
   cerrarSesion(): void {
     this.authService.logout();
     this.router.navigate(['/home']);
+  }
+
+  private parseToDate(value: Date | string | undefined | null): Date | null {
+    if (!value) return null;
+    const d = value instanceof Date ? value : new Date(value);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  private calculateAge(birth: Date | string | undefined | null): number {
+    const b = this.parseToDate(birth);
+    if (!b) return -1;
+
+    const today = new Date();
+    let age = today.getFullYear() - b.getFullYear();
+    const monthDiff = today.getMonth() - b.getMonth();
+
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < b.getDate())) {
+      age--;
+    }
+
+    return age;
   }
 }
 
