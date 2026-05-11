@@ -74,10 +74,10 @@ public class UsuarioController {
             @Parameter(description = "Credenciales de login") @RequestBody LoginRequest request) {
         Authentication authentication =
                 authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                request.email(),
-                                request.contrasenia()
-                        )
+                    new UsernamePasswordAuthenticationToken(
+                            request.email(),
+                            request.password()
+                    )
                 );
 
         Usuario usuario = (Usuario) authentication.getPrincipal();

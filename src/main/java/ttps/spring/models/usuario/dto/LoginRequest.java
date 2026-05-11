@@ -6,5 +6,5 @@ public record LoginRequest (
     @Schema(description = "Email del usuario", example = "diego410@gmail.com", required = true)
     String email,
     @Schema(description = "Contraseña del usuario", example = "password123", required = true)
-    String contrasenia
+    String password
 ) {}

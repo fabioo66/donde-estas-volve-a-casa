@@ -107,7 +107,9 @@ export class AuthService {
   }
 
   login(credentials: LoginRequest): Observable<LoginResponse> {
-    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, credentials).pipe(
+    // El backend espera el campo 'contrasenia' en lugar de 'password'. Mapear aquí para mantener la interfaz del frontend.
+    const payload = { email: credentials.email, password: credentials.password };
+    return this.http.post<LoginResponse>(`${this.apiUrl}/login`, payload).pipe(
       tap(response => {
         if (response && response.token) {
           // Verificar que el token recibido no esté expirado
