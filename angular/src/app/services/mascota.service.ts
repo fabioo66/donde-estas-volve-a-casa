@@ -69,10 +69,20 @@ export class MascotaService {
 
   // Endpoint para obtener razas por tipo
   getRazasPorTipo(tipoId: number): Observable<Raza[]> {
-    return this.http.get<Raza[]>(`${this.apiBase}/razas?tipoMascotaId=${tipoId}`).pipe(
+    return this.http.get<Raza[]>(`${this.apiBase}/razas/tipo/${tipoId}`).pipe(
       timeout(5000),
       catchError(err => {
         console.error('Error al obtener razas por tipo', err);
+        return throwError(() => err);
+      })
+    );
+  }
+
+  crearTipoMascota(nombre: string): Observable<TipoMascota> {
+    return this.http.post<TipoMascota>(`${this.apiBase}/tipos_mascota/tipo/${encodeURIComponent(nombre.trim())}`, {}).pipe(
+      timeout(5000),
+      catchError(err => {
+        console.error('Error al crear tipo de mascota', err);
         return throwError(() => err);
       })
     );

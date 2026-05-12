@@ -3,6 +3,7 @@ package ttps.spring.services;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ttps.spring.infra.ValidacionException;
 import ttps.spring.models.tipo_mascota.DTO.Tipo_mascotaResponse;
 import ttps.spring.models.tipo_mascota.Tipo_mascota;
 import ttps.spring.models.tipo_mascota.Tipo_mascotaRepository;
@@ -29,8 +30,18 @@ public class TipoMascotaService {
 
     public Tipo_mascotaResponse createTipoMascota(String nombre) {
         String nombreNorm = normalize(nombre);
+        if (nombreNorm == null || nombreNorm.isBlank()) {
+            throw new ValidacionException("Nombre de tipo de mascota es requerido");
+        }
+
+        return tipoRepo.findAll().stream()
+                .filter(tipo -> normalize(tipo.getNombre()) != null && normalize(tipo.getNombre()).equals(nombreNorm))
+                .findFirst()
+                .map(Tipo_mascotaResponse::from)
+                .orElseGet(() -> {
         Tipo_mascota tipo_mascota = new Tipo_mascota(nombreNorm);
-        return Tipo_mascotaResponse.from(tipoRepo.save(tipo_mascota));
+                    return Tipo_mascotaResponse.from(tipoRepo.save(tipo_mascota));
+                });
     }
 
 

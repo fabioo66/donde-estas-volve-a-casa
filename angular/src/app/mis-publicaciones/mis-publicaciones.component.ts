@@ -52,20 +52,6 @@ export class MisPublicacionesComponent implements OnInit {
     this.currentUser = this.authService.getCurrentUser();
     console.log('👤 Usuario desde servicio:', this.currentUser);
 
-    // Si no hay usuario en el servicio, verificar localStorage directamente (solo en browser)
-    if (!this.currentUser && this.isBrowser) {
-      console.log('🔍 Verificando localStorage...');
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        try {
-          this.currentUser = JSON.parse(storedUser);
-          console.log('👤 Usuario desde localStorage:', this.currentUser);
-        } catch (error) {
-          console.error('❌ Error al parsear usuario de localStorage:', error);
-        }
-      }
-    }
-
     if (this.currentUser && this.currentUser.id) {
       console.log('✅ Usuario encontrado, cargando publicaciones...');
       this.cargarMisPublicaciones();
@@ -75,11 +61,59 @@ export class MisPublicacionesComponent implements OnInit {
     }
   }
 
+  private getCurrentUserOrNull(): LoginResponse | null {
+    const currentUser = this.authService.getCurrentUser();
+    return currentUser?.id ? currentUser : null;
+  }
+
+  private finalizarCarga(): void {
+    this.isLoading = false;
+    this.cdr.detectChanges();
+  }
+
+  private obtenerMensajeErrorHttp(error: any, fallback: string): string {
+    if (error?.status === 0) {
+      return 'No se puede conectar con el servidor. Verifica que el backend esté funcionando.';
+    }
+
+    if (error?.status === 401) {
+      return 'No tienes autorización. Inicia sesión nuevamente.';
+    }
+
+    if (error?.status === 403) {
+      return 'No tienes permisos para realizar esta acción.';
+    }
+
+    if (error?.status === 404) {
+      return 'No se encontraron publicaciones para este usuario.';
+    }
+
+    if (error?.status === 500) {
+      return 'Error interno del servidor.';
+    }
+
+    if (typeof error?.error === 'string' && error.error.trim()) {
+      return error.error;
+    }
+
+    if (typeof error?.error?.message === 'string' && error.error.message.trim()) {
+      return error.error.message;
+    }
+
+    if (typeof error?.message === 'string' && error.message.trim()) {
+      return error.message;
+    }
+
+    return fallback;
+  }
+
   cargarMisPublicaciones(): void {
-    if (!this.currentUser || !this.currentUser.id) {
+    this.currentUser = this.getCurrentUserOrNull();
+
+    if (!this.currentUser) {
       console.log('❌ No hay usuario o ID para cargar publicaciones');
       this.error = 'Usuario no válido';
-      this.isLoading = false;
+      this.finalizarCarga();
       return;
     }
 
@@ -94,11 +128,10 @@ export class MisPublicacionesComponent implements OnInit {
         console.log('✅ Publicaciones recibidas:', mascotas);
         console.log('📊 Número de publicaciones:', mascotas ? mascotas.length : 0);
         this.misPublicaciones = mascotas || [];
-        this.isLoading = false;
         console.log('🔄 Estado actualizado: isLoading =', this.isLoading, ', misPublicaciones =', this.misPublicaciones);
 
         // Forzar detección de cambios
-        this.cdr.detectChanges();
+        this.finalizarCarga();
         console.log('🔄 Detectando cambios forzadamente...');
       },
       error: (error) => {
@@ -107,20 +140,8 @@ export class MisPublicacionesComponent implements OnInit {
         console.error('❌ Error message:', error.message);
         console.error('❌ Error completo:', JSON.stringify(error, null, 2));
 
-        let mensajeError = 'Error al cargar las publicaciones';
-        if (error.status === 0) {
-          mensajeError = 'No se puede conectar con el servidor. Verifica que el backend esté funcionando.';
-        } else if (error.status === 404) {
-          mensajeError = 'No se encontraron publicaciones para este usuario.';
-        } else if (error.status === 401) {
-          mensajeError = 'No tienes autorización. Inicia sesión nuevamente.';
-        } else if (error.status === 500) {
-          mensajeError = 'Error interno del servidor.';
-        }
-
-        this.error = mensajeError;
-        this.isLoading = false;
-        this.cdr.detectChanges();
+        this.error = this.obtenerMensajeErrorHttp(error, 'Error al cargar las publicaciones');
+        this.finalizarCarga();
       }
     });
   }
@@ -163,6 +184,7 @@ export class MisPublicacionesComponent implements OnInit {
 
         // Mostrar mensaje de éxito bonito
         this.successMessage = '✅ Publicación eliminada exitosamente. La mascota ahora aparecerá como eliminada.';
+        this.cdr.detectChanges();
         this.autoHideMessage('success');
 
         console.log('🔄 Lista actualizada. Estado activo de la mascota:', mascotaActualizada.activo);
@@ -172,16 +194,17 @@ export class MisPublicacionesComponent implements OnInit {
         console.error('❌ Error status:', error.status);
         console.error('❌ Error message:', error.message);
 
-        let mensajeError = 'Error al eliminar la publicación';
-        if (error.status === 404) {
-          mensajeError = 'La publicación no fue encontrada';
-        } else if (error.status === 403 || error.status === 401) {
-          mensajeError = 'No tienes permisos para eliminar esta publicación';
-        } else if (error.status === 500) {
-          mensajeError = 'Error interno del servidor al eliminar la publicación';
+        if (error?.status === 404) {
+          this.errorMessage = 'La publicación no fue encontrada';
+        } else if (error?.status === 403 || error?.status === 401) {
+          this.errorMessage = 'No tienes permisos para eliminar esta publicación';
+        } else if (error?.status === 500) {
+          this.errorMessage = 'Error interno del servidor al eliminar la publicación';
+        } else {
+          this.errorMessage = this.obtenerMensajeErrorHttp(error, 'Error al eliminar la publicación');
         }
 
-        this.errorMessage = mensajeError;
+        this.cdr.detectChanges();
         this.autoHideMessage('error');
       }
     });
@@ -204,10 +227,6 @@ export class MisPublicacionesComponent implements OnInit {
 
   reportarAvistamiento(id: number): void {
     this.router.navigate(['/reportar-avistamiento', id]);
-  }
-
-  volverAlDashboard(): void {
-    this.router.navigate(['/home']);
   }
 
   crearNuevaPublicacion(): void {
@@ -271,6 +290,7 @@ export class MisPublicacionesComponent implements OnInit {
     setTimeout(() => {
       if (type === 'success') this.successMessage = null;
       else this.errorMessage = null;
+      this.cdr.detectChanges();
     }, 5000);
   }
 

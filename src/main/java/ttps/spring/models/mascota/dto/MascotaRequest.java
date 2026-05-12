@@ -12,7 +12,6 @@ import java.util.List;
 
 @Schema(description = "DTO para la creación o actualización de una mascota")
 public record MascotaRequest(
-        @NotNull
         @Schema(description = "Identificador único de la mascota")
         Long id,
 
@@ -56,7 +55,6 @@ public record MascotaRequest(
         @Schema(description = "Mascota activa o inactiva")
         Boolean activa,
 
-        @NotNull
         @Schema(description = "Identificador del usuario propietario de la mascota", example = "1")
         Long usuarioId
 ) {

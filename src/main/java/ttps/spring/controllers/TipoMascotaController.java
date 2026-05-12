@@ -28,7 +28,7 @@ public class TipoMascotaController {
             @ApiResponse(responseCode = "400", description = "Datos inválidos"),
             @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
-    public ResponseEntity<Tipo_mascotaResponse> createTipoMascota(String nombre) {
+    public ResponseEntity<Tipo_mascotaResponse> createTipoMascota(@PathVariable("nombre") String nombre) {
         Tipo_mascotaResponse response = tipoMascotaService.createTipoMascota(nombre);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

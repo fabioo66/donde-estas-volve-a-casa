@@ -61,6 +61,41 @@ export class AuthService {
   }
 
   /**
+   * Obtiene el usuario autenticado desde memoria o, si hace falta, desde localStorage.
+   * Mantiene sincronizado el BehaviorSubject para que el resto de la app vea el mismo usuario.
+   */
+  private getStoredUser(): LoginResponse | null {
+    if (!this.isBrowser) {
+      return this.currentUserSubject.value;
+    }
+
+    const currentUser = this.currentUserSubject.value;
+    if (currentUser && currentUser.token && !JwtHelper.isTokenExpired(currentUser.token)) {
+      return currentUser;
+    }
+
+    const storedUser = localStorage.getItem('currentUser');
+    if (!storedUser) {
+      return currentUser;
+    }
+
+    try {
+      const parsedUser = JSON.parse(storedUser);
+      if (this.isValidStoredUser(parsedUser)) {
+        this.currentUserSubject.next(parsedUser);
+        return parsedUser;
+      }
+
+      this.clearExpiredSession();
+      return null;
+    } catch (error) {
+      console.error('❌ Error al parsear usuario de localStorage:', error);
+      this.clearExpiredSession();
+      return null;
+    }
+  }
+
+  /**
    * Inicia el chequeo periódico de expiración del token
    */
   private startTokenExpirationCheck(): void {
@@ -149,11 +184,11 @@ export class AuthService {
   }
 
   getCurrentUser(): LoginResponse | null {
-    return this.currentUserSubject.value;
+    return this.getStoredUser();
   }
 
   getToken(): string | null {
-    const currentUser = this.getCurrentUser();
+    const currentUser = this.getStoredUser();
     if (currentUser && currentUser.token && !JwtHelper.isTokenExpired(currentUser.token)) {
       return currentUser.token;
     }
@@ -170,38 +205,9 @@ export class AuthService {
    * Método unificado y robusto para verificar autenticación
    */
   isLoggedIn(): boolean {
-    // 1. Verificar el usuario en memoria
-    const currentUser = this.currentUserSubject.value;
-    if (currentUser && currentUser.token && !JwtHelper.isTokenExpired(currentUser.token)) {
-      return true;
-    }
-
-    // 2. Si no hay usuario en memoria o el token está expirado, verificar localStorage
-    if (this.isBrowser) {
-      const storedUser = localStorage.getItem('currentUser');
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          if (parsedUser && parsedUser.token) {
-            // Verificar expiración
-            if (!JwtHelper.isTokenExpired(parsedUser.token)) {
-              // Token válido, sincronizar con memoria
-              this.currentUserSubject.next(parsedUser);
-              return true;
-            } else {
-              // Token expirado, limpiar
-              console.log('🔒 Token expirado encontrado, limpiando...');
-              this.clearExpiredSession();
-            }
-          }
-        } catch (error) {
-          console.error('❌ Error al parsear usuario almacenado:', error);
-          this.clearExpiredSession();
-        }
-      }
-    }
-
-    return false;
+    // 1. Verificar el usuario en memoria o en localStorage
+    const currentUser = this.getStoredUser();
+    return !!(currentUser?.token && !JwtHelper.isTokenExpired(currentUser.token));
   }
 
   /**
@@ -225,9 +231,4 @@ export class AuthService {
     };
   }
 
-  ngOnDestroy(): void {
-    if (this.tokenCheckInterval) {
-      this.tokenCheckInterval.unsubscribe();
-    }
-  }
 }

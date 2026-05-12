@@ -39,9 +39,8 @@ public class MascotaController {
         @ApiResponse(responseCode = "500", description = "Error interno del servidor")
     })
     public ResponseEntity<MascotaResponse> crearMascota(
-            @Valid
             @Parameter(description = "ID del usuario propietario") @PathVariable Long usuarioId,
-            @Parameter(description = "Datos de la mascota a crear") @RequestBody MascotaRequest request) {
+            @Valid @Parameter(description = "Datos de la mascota a crear") @RequestBody MascotaRequest request) {
             MascotaResponse response = mascotaService.crearMascota(request, usuarioId);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }

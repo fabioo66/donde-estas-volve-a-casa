@@ -148,6 +148,68 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
     }
   }
 
+  private normalizarTexto(texto: string): string {
+    return texto
+      .trim()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toUpperCase();
+  }
+
+  private async resolverTipoMascotaId(): Promise<number> {
+    if (typeof this.tipoSeleccionadoId === 'number') {
+      return this.tipoSeleccionadoId;
+    }
+
+    const nombreManual = this.tipoManualTexto.trim();
+    const nombreNormalizado = this.normalizarTexto(nombreManual);
+    const tipoExistente = this.tipos.find(t => this.normalizarTexto(t.nombre) === nombreNormalizado);
+
+    if (tipoExistente) {
+      return tipoExistente.id;
+    }
+
+    const creado = await this.mascotaService.crearTipoMascota(nombreManual).toPromise();
+    if (!creado?.id) {
+      throw new Error('No se pudo resolver el tipo de mascota');
+    }
+
+    this.tipos = [...this.tipos, creado];
+    return creado.id;
+  }
+
+  private extraerMensajeError(error: any): string {
+    if (!error) {
+      return 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
+    }
+
+    if (typeof error === 'string') {
+      return error;
+    }
+
+    if (error.status === 0) {
+      return 'No se puede conectar con el servidor. Verificá que el backend esté ejecutándose en http://localhost:8080';
+    }
+
+    if (typeof error.error === 'string' && error.error.trim()) {
+      return error.error;
+    }
+
+    if (error.error?.message) {
+      return error.error.message;
+    }
+
+    if (error.error?.error) {
+      return error.error.error;
+    }
+
+    if (error.message) {
+      return error.message;
+    }
+
+    return 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
+  }
+
   async onSubmit(form: any): Promise<void> {
     // Limpiar mensajes previos
     this.successMessage = null;
@@ -183,18 +245,17 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       }
     }
 
+    const currentUser = this.authService.getCurrentUser();
+    if (!currentUser) {
+      this.errorMessage = 'Debe estar autenticado para publicar una mascota.';
+      this.autoHideMessage('error');
+      this.router.navigate(['/login']);
+      return;
+    }
+
     this.loading = true;
 
     try {
-      // Obtener el usuario autenticado actual
-      const currentUser = this.authService.getCurrentUser();
-      if (!currentUser) {
-        this.errorMessage = 'Debe estar autenticado para publicar una mascota.';
-        this.autoHideMessage('error');
-        this.router.navigate(['/login']);
-        return;
-      }
-
       // Convertir archivos a base64
       const fotosBase64: string[] = [];
       for (const archivo of this.archivosSeleccionados) {
@@ -210,15 +271,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
         razaRef = { id: this.razaSeleccionadaId };
       }
 
-      // Construir payload conforme al backend
-      let tipoRef: any;
-      if (this.tipoSeleccionadoId === '__MANUAL__') {
-        tipoRef = { nombre: this.tipoManualTexto.trim() };
-      } else {
-        // aquí, por validación previa, tipoSeleccionadoId será un número
-        const tipoId = this.tipoSeleccionadoId as number;
-        tipoRef = { id: tipoId };
-      }
+      const tipoId = await this.resolverTipoMascotaId();
 
       const payload = {
         nombre: this.mascota.nombre,
@@ -229,7 +282,7 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
         estado: this.mascota.estado,
         coordenadas: this.mascota.coordenadas,
         fotosBase64: fotosBase64,
-        tipo_mascota: tipoRef,
+        tipo_mascota: { id: tipoId },
         raza: razaRef
       };
 
@@ -249,18 +302,10 @@ export class MascotaFormComponent implements AfterViewInit, OnDestroy {
       }, 3000);
     } catch (error: any) {
       console.error('Error al crear mascota:', error);
-      // Intentar mostrar mensaje del backend si existe
-      if (error?.error && typeof error.error === 'object') {
-        // si viene { error: 'mensaje' } o { message: '...' }
-        this.errorMessage = error.error.error || error.error.message || JSON.stringify(error.error);
-      } else if (typeof error === 'string') {
-        this.errorMessage = error;
-      } else {
-        this.errorMessage = 'Ocurrió un error al reportar la mascota. Por favor, intentá nuevamente.';
-      }
-      this.autoHideMessage('error');
+      this.errorMessage = this.extraerMensajeError(error);
     } finally {
       this.loading = false;
+      this.cdr.detectChanges();
     }
   }
 
