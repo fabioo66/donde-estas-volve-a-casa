@@ -76,84 +76,16 @@
 
   <!-- Publications grid -->
   <div *ngIf="!isLoading && !error && misPublicaciones.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-    <div
-      *ngFor="let mascota of misPublicaciones"
-      class="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow relative"
-      [ngClass]="{ 'opacity-75': !mascota.activo }"
-    >
-      <!-- Overlay para publicaciones eliminadas -->
-      <div
-        *ngIf="!mascota.activo"
-        class="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded-full z-10"
-      >
-        Eliminada
-      </div>
-
-      <!-- Image -->
-      <div
-        class="h-48 bg-gray-200 flex items-center justify-center cursor-pointer relative"
-        [ngClass]="{ 'filter grayscale': !mascota.activo }"
-        (click)="abrirModal(mascota)"
-      >
-        <img
-          [src]="obtenerFotoPrincipal(mascota)"
-          [alt]="mascota.nombre"
-          class="w-full h-full object-cover hover:opacity-90 transition-opacity"
-          (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
-        />
-        <!-- Badge de estado -->
-        <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-          {{ mapearEstado(mascota.estado) }}
-        </div>
-      </div>
-
-      <!-- Content -->
-      <div class="p-4">
-        <h3
-          class="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors mb-2"
-          (click)="abrirModal(mascota)"
-        >
-          {{ mascota.nombre }}
-        </h3>
-
-        <div class="space-y-2 mb-4">
-          <div class="flex flex-wrap gap-2 text-xs text-gray-600">
-            <span class="rounded-full bg-gray-100 px-2 py-1 font-medium">Color: {{ mascota.color }}</span>
-            <span class="rounded-full bg-gray-100 px-2 py-1 font-medium">Tamaño: {{ mascota.tamanio }}</span>
-          </div>
-        </div>
-        <!-- Action buttons -->
-        <div class="flex gap-2">
-          <button
-            (click)="editarMascota(mascota.id)"
-            [disabled]="!mascota.activo"
-            class="flex-1 text-white px-3 py-2 rounded text-sm transition-colors"
-            [ngClass]="{
-              'bg-blue-500 hover:bg-blue-600': mascota.activo,
-              'bg-gray-400 cursor-not-allowed': !mascota.activo
-            }"
-          >
-            {{ mascota.activo ? 'Editar' : 'No editable' }}
-          </button>
-
-          <!-- Botón eliminar / estado eliminado -->
-          <button
-            *ngIf="mascota.activo"
-            (click)="eliminarMascota(mascota)"
-            class="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm hover:bg-red-600 transition-colors"
-          >
-            Eliminar
-          </button>
-
-          <!-- Estado eliminado -->
-          <div
-            *ngIf="!mascota.activo"
-            class="flex-1 bg-gray-300 text-gray-600 px-3 py-2 rounded text-sm text-center font-medium"
-          >
-            Publicación eliminada
-          </div>
-        </div>
-      </div>
+    <div *ngFor="let mascota of misPublicaciones">
+      <app-mascota-card
+        [mascota]="mascota"
+        [viewType]="'mis-publicaciones'"
+        [fotoActual]="getFotoActual(mascota.id)"
+        (cambiarFotoEvent)="onCambiarFoto($event)"
+        (abrirModalEvent)="onAbrirModal($event)"
+        (editarEvent)="onEditar($event)"
+        (eliminarEvent)="onEliminar($event)">
+      </app-mascota-card>
     </div>
   </div>
 </div>
@@ -178,37 +110,95 @@
       </div>
     </div>
 
-    <!-- Modal content -->
-    <div class="p-6">
-      <!-- Images -->
-      <div class="mb-6">
-        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0">
-          <!-- Primera imagen más grande -->
-          <img
-            [src]="obtenerTodasLasFotos(mascotaSeleccionada)[0]"
-            [alt]="mascotaSeleccionada.nombre"
-            class="w-full h-96 object-cover rounded-lg mb-3"
-            (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
-          />
-          <!-- Resto de imágenes en galería -->
-          <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 1" class="grid grid-cols-3 gap-2">
-            <img
-              *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada) | slice:1"
-              [src]="foto"
-              [alt]="mascotaSeleccionada.nombre"
-              class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
-              (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
-            />
-          </div>
-        </div>
-        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0">
-          <img
-            [src]="'/assets/images/mascota-default.svg'"
-            [alt]="mascotaSeleccionada.nombre"
-            class="w-full h-96 object-contain rounded-lg bg-gray-100"
-          />
-        </div>
-      </div>
+     <!-- Modal content -->
+     <div class="p-6">
+       <!-- Images -->
+       <div class="mb-6">
+         <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="relative">
+           <!-- Carrusel - Foto actual -->
+           <div class="relative w-full bg-gray-200 rounded-lg overflow-hidden group">
+             <ng-container *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada); let i = $index">
+               <img
+                 [src]="foto"
+                 [alt]="mascotaSeleccionada.nombre + ' - Foto ' + (i + 1)"
+                 [class.opacity-100]="i === getFotoActual(mascotaSeleccionada.id)"
+                 [class.opacity-0]="i !== getFotoActual(mascotaSeleccionada.id)"
+                 class="w-full h-96 object-cover transition-opacity duration-500"
+                 (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+               />
+             </ng-container>
+
+             <!-- Botones de navegación (solo si hay más de una foto) -->
+             <ng-container *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 1">
+               <button
+                 (click)="cambiarFoto(mascotaSeleccionada, 'prev', $event)"
+                 class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                 aria-label="Foto anterior">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                 </svg>
+               </button>
+
+               <button
+                 (click)="cambiarFoto(mascotaSeleccionada, 'next', $event)"
+                 class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                 aria-label="Foto siguiente">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                 </svg>
+               </button>
+
+               <!-- Indicador de foto actual / total -->
+               <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
+                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
+                   <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
+                 </svg>
+                 <span>{{ getFotoActual(mascotaSeleccionada.id) + 1 }}/{{ getCantidadFotos(mascotaSeleccionada) }}</span>
+               </div>
+
+               <!-- Indicadores de puntos -->
+               <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
+                 <ng-container *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada); let i = $index">
+                   <div
+                     [ngClass]="{
+                       'bg-white w-2': i === getFotoActual(mascotaSeleccionada.id),
+                       'bg-white/50 w-1.5': i !== getFotoActual(mascotaSeleccionada.id)
+                     }"
+                     class="h-1.5 rounded-full transition-all duration-300">
+                   </div>
+                 </ng-container>
+               </div>
+             </ng-container>
+           </div>
+
+           <!-- Galería de miniaturas (solo si hay más de una foto) -->
+           <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 1" class="grid grid-cols-4 gap-2 mt-3">
+             <ng-container *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada); let i = $index">
+               <button
+                 (click)="fotoActualPorMascota.set(mascotaSeleccionada.id, i)"
+                 [ngClass]="{
+                   'ring-2 ring-primary': i === getFotoActual(mascotaSeleccionada.id)
+                 }"
+                 class="rounded-lg overflow-hidden border-2 border-gray-200 hover:border-primary transition-all"
+                 [attr.aria-label]="'Ver foto ' + (i + 1)">
+                 <img
+                   [src]="foto"
+                   [alt]="mascotaSeleccionada.nombre + ' - Miniatura ' + (i + 1)"
+                   class="w-full h-16 object-cover"
+                   (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+                 />
+               </button>
+             </ng-container>
+           </div>
+         </div>
+         <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0">
+           <img
+             [src]="'/assets/images/mascota-default.svg'"
+             [alt]="mascotaSeleccionada.nombre"
+             class="w-full h-96 object-contain rounded-lg bg-gray-100"
+           />
+         </div>
+       </div>
 
       <!-- Details -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">

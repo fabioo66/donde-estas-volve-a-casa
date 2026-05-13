@@ -67,141 +67,15 @@
         } @else {
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
             @for (mascota of mascotas; track mascota.id) {
-              <div class="bg-white dark:bg-[#1a2632] rounded-lg overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 group flex flex-col">
-                <!-- Imagen de la mascota con carrusel -->
-                <div class="relative aspect-square overflow-hidden bg-stone-200 dark:bg-stone-700">
-                  <!-- Carousel de fotos -->
-                  @if (tieneMasDe1Foto(mascota)) {
-                    <!-- Múltiples fotos - mostrar carousel -->
-                    <div class="relative w-full h-full">
-                      @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
-                        <img
-                          [src]="fotoUrl"
-                          [alt]="mascota.nombre + ' - Foto ' + (i + 1)"
-                          [class.opacity-100]="i === getFotoActual(mascota.id)"
-                          [class.opacity-0]="i !== getFotoActual(mascota.id)"
-                          class="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-                          (error)="$any($event.target).src='/assets/images/mascota-default.svg'">
-                      }
-
-                      <!-- Botones de navegación -->
-                      <button
-                        (click)="cambiarFoto(mascota, 'prev', $event)"
-                        class="absolute left-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
-                        aria-label="Foto anterior">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
-                        </svg>
-                      </button>
-
-                      <button
-                        (click)="cambiarFoto(mascota, 'next', $event)"
-                        class="absolute right-2 top-1/2 -translate-y-1/2 bg-black/60 hover:bg-black/80 text-white rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-10"
-                        aria-label="Foto siguiente">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-
-                      <!-- Indicador de múltiples fotos -->
-                      <div class="absolute bottom-2 right-2 bg-black/60 text-white text-xs font-medium px-2 py-1 rounded-full flex items-center gap-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd" />
-                        </svg>
-                        <span>{{ getFotoActual(mascota.id) + 1 }}/{{ getCantidadFotos(mascota) }}</span>
-                      </div>
-
-                      <!-- Indicadores de puntos -->
-                      <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1.5">
-                        @for (fotoUrl of obtenerTodasLasFotos(mascota); track fotoUrl; let i = $index) {
-                          <div
-                            [ngClass]="{
-                              'bg-white w-4': i === getFotoActual(mascota.id),
-                              'bg-white/50 w-1.5': i !== getFotoActual(mascota.id)
-                            }"
-                            class="h-1.5 rounded-full transition-all duration-300"></div>
-                        }
-                      </div>
-                    </div>
-                  } @else {
-                    <!-- Una sola foto -->
-                    <img
-                      [src]="obtenerImagenMascota(mascota)"
-                      [alt]="mascota.nombre"
-                      class="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                      (error)="$any($event.target).src='/assets/images/mascota-default.svg'">
-                  }
-
-                  <!-- Badge de estado -->
-                  <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
-                    {{ mapearEstado(mascota.estado)  }}
-                  </div>
-                </div>
-
-                <!-- Información de la mascota -->
-                <div class="p-4 flex flex-col flex-1">
-                  <h3 class="text-lg font-bold text-stone-800 dark:text-stone-200 truncate mb-1">
-                    {{ mascota.nombre }}
-                  </h3>
-                  <div class="space-y-2 flex-1 flex flex-col">
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-stone-600 dark:text-stone-400">
-                      @if (mascota.color) {
-                        <span class="inline-flex items-center rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-1 font-medium">Color: {{ mascota.color }}</span>
-                      }
-                      @if (mascota.tamanio) {
-                        <span class="inline-flex items-center rounded-full bg-stone-100 dark:bg-stone-700 px-2 py-1 font-medium">Tamaño: {{ formatearTamanio(mascota.tamanio) }}</span>
-                      }
-                    </div>
-
-
-                  </div>
-
-                  <!-- Botones de acción siempre al final -->
-                  <div class="space-y-2 mt-3 pt-3 border-t border-stone-200 dark:border-stone-700">
-                    <!-- Botón ver ubicación en mapa -->
-                    @if (mascota.coordenadas) {
-                      <button
-                        (click)="abrirMapaUbicacion(mascota)"
-                        class="w-full bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 flex items-center justify-center gap-2"
-                        title="Ver última ubicación conocida">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                          <path fill-rule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd" />
-                        </svg>
-                        Ver Ubicación
-                      </button>
-                    }
-
-                    <!-- Botón reportar avistamiento -->
-                    @if (isLoggedIn()) {
-                      <!-- Usuario autenticado - botón activo -->
-                      <a
-                        [routerLink]="['/reportar-avistamiento', mascota.id]"
-                        class="block w-full bg-[#13a4ec] hover:bg-[#0f8acc] text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 text-center cursor-pointer">
-                        <span class="flex items-center justify-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                            <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd" />
-                          </svg>
-                          Reportar Avistamiento
-                        </span>
-                      </a>
-                    } @else {
-                      <!-- Usuario no autenticado - botón deshabilitado con mensaje -->
-                      <button
-                        (click)="irALogin()"
-                        class="w-full bg-stone-400 hover:bg-stone-500 text-white text-xs font-semibold py-2 px-3 rounded-lg transition-colors duration-200 cursor-pointer relative group"
-                        title="Inicia sesión para reportar avistamientos">
-                        <span class="flex items-center justify-center gap-2">
-                          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd" />
-                          </svg>
-                          Inicia sesión para reportar avistamiento
-                        </span>
-                      </button>
-                    }
-                  </div>
-                </div>
-              </div>
+              <app-mascota-card
+                [mascota]="mascota"
+                [viewType]="'home'"
+                [fotoActual]="getFotoActual(mascota.id)"
+                [isLoggedIn]="isLoggedIn()"
+                (cambiarFotoEvent)="onCambiarFoto($event)"
+                (verUbicacionEvent)="onVerUbicacion($event)"
+                (irALoginEvent)="irALogin()">
+              </app-mascota-card>
             }
           </div>
         }

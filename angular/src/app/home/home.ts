@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
 import { CommonModule, isPlatformBrowser } from '@angular/common';
-import { RouterModule, Router, RouterLink } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
 import { GeolocalizacionService } from '../services/geolocalizacion.service';
 import { AuthService } from '../services/auth.service';
@@ -8,11 +8,12 @@ import { Mascota } from '../models/mascota.model';
 import { LoginResponse } from '../models/usuario.model';
 import { Subscription } from 'rxjs';
 import { HomeService, HomeStats } from '../services/home.service';
+import { MascotaCardComponent } from '../shared/mascota-card/mascota-card.component';
 
 
 @Component({
   selector: 'app-home',
-  imports: [CommonModule, RouterModule, RouterLink],
+  imports: [CommonModule, RouterModule],
   templateUrl: './home.html',
   styleUrl: './home.css',
 })
@@ -106,19 +107,15 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  obtenerImagenMascota(mascota: Mascota): string {
-    if (mascota.fotos) {
-      try {
-        const fotosArray = JSON.parse(mascota.fotos);
-        if (fotosArray && fotosArray.length > 0) {
-          const fotoUrl = fotosArray[0];
-          return `http://localhost:8080${fotoUrl}`;
-        }
-      } catch (e) {
-        console.error('Error parseando fotos:', e);
-      }
-    }
-    return '/assets/images/mascota-default.svg';
+  obtenerUbicacionTexto(mascota: Mascota | null): string {
+    if (!mascota) return 'Ubicación no disponible';
+    if (!mascota.coordenadas) return 'Ubicación no disponible';
+    return this.ubicacionPorMascota.get(mascota.id)
+      ?? (this.ubicacionCargando.has(mascota.id) ? 'Buscando ubicación...' : 'Ubicación no disponible');
+  }
+
+  getFotoActual(mascotaId: number): number {
+    return this.fotoActualPorMascota.get(mascotaId) || 0;
   }
 
   private cargarUbicacionMascota(mascota: Mascota): void {
@@ -141,83 +138,25 @@ export class Home implements OnInit, OnDestroy {
     });
   }
 
-  obtenerUbicacionTexto(mascota: Mascota | null): string {
-    if (!mascota) return 'Ubicación no disponible';
-    if (!mascota.coordenadas) return 'Ubicación no disponible';
-    return this.ubicacionPorMascota.get(mascota.id)
-      ?? (this.ubicacionCargando.has(mascota.id) ? 'Buscando ubicación...' : 'Ubicación no disponible');
-  }
-
-  obtenerTodasLasFotos(mascota: Mascota): string[] {
-    if (mascota.fotos) {
-      try {
-        const fotosArray = JSON.parse(mascota.fotos);
-        if (fotosArray && fotosArray.length > 0) {
-          return fotosArray.map((url: string) => `http://localhost:8080${url}`);
-        }
-      } catch (e) {
-        console.error('Error parseando fotos:', e);
-      }
-    }
-    return [];
-  }
-
-  tieneMasDe1Foto(mascota: Mascota): boolean {
-    return this.obtenerTodasLasFotos(mascota).length > 1;
-  }
-
-  getCantidadFotos(mascota: Mascota): number {
-    return this.obtenerTodasLasFotos(mascota).length;
-  }
-
-  getFotoActual(mascotaId: number): number {
-    return this.fotoActualPorMascota.get(mascotaId) || 0;
-  }
-
-  cambiarFoto(mascota: Mascota, direccion: 'next' | 'prev', event: Event): void {
-    event.stopPropagation();
-    event.preventDefault();
-
-    const fotos = this.obtenerTodasLasFotos(mascota);
-    if (fotos.length <= 1) return;
-
-    const fotoActual = this.fotoActualPorMascota.get(mascota.id) || 0;
+  // ...existing code...
+  onCambiarFoto(event: { mascota: Mascota; direccion: 'next' | 'prev' }): void {
+    const fotoActual = this.fotoActualPorMascota.get(event.mascota.id) || 0;
     let nuevaFoto: number;
 
-    if (direccion === 'next') {
-      nuevaFoto = (fotoActual + 1) % fotos.length;
+    if (event.direccion === 'next') {
+      nuevaFoto = (fotoActual + 1) % (event.mascota.fotos ? JSON.parse(event.mascota.fotos).length : 1);
     } else {
-      nuevaFoto = fotoActual === 0 ? fotos.length - 1 : fotoActual - 1;
+      const totalFotos = event.mascota.fotos ? JSON.parse(event.mascota.fotos).length : 1;
+      nuevaFoto = fotoActual === 0 ? totalFotos - 1 : fotoActual - 1;
     }
 
-    this.fotoActualPorMascota.set(mascota.id, nuevaFoto);
+    this.fotoActualPorMascota.set(event.mascota.id, nuevaFoto);
   }
 
-  mapearEstado(estado: string): string {
-    if (!estado) return 'Desconocido';
-
-    const estadoMapeado: { [key: string]: string } = {
-      'PERDIDO_PROPIO': 'PERDIDO',
-      'PERDIDO_AJENO': 'PERDIDO',
-      'ADOPTADO': 'ADOPTADO',
-      'RECUPERADO': 'RECUPERADO'
-    };
-
-    return estadoMapeado[estado.toUpperCase()] || estado;
+  onVerUbicacion(mascota: Mascota): void {
+    this.abrirMapaUbicacion(mascota);
   }
 
-  formatearTamanio(tamanio: string): string {
-    if (!tamanio) return '';
-
-    const tamanioMap: { [key: string]: string } = {
-      'PEQUENIO': 'Pequeño',
-      'PEQUEÑO': 'Pequeño',
-      'MEDIANO': 'Mediano',
-      'GRANDE': 'Grande'
-    };
-
-    return tamanioMap[tamanio.toUpperCase()] || tamanio;
-  }
 
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
@@ -227,13 +166,6 @@ export class Home implements OnInit, OnDestroy {
     this.router.navigate(['/login']);
   }
 
-  irAPerfil(): void {
-    this.router.navigate(['/perfil']);
-  }
-
-  cerrarSesion(): void {
-    this.authService.logout();
-  }
 
   async abrirMapaUbicacion(mascota: Mascota): Promise<void> {
     if (!mascota.coordenadas) {
