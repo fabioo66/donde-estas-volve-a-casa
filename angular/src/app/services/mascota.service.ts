@@ -42,13 +42,33 @@ export class MascotaService {
 
   constructor(private http: HttpClient) { }
 
+  private normalizarMascota(mascota: any): Mascota {
+    const tipo = mascota?.tipo_mascota?.nombre
+      ?? mascota?.tipo?.nombre
+      ?? (typeof mascota?.tipo === 'string' ? mascota.tipo : '')
+      ?? '';
+
+    const raza = mascota?.raza?.nombre
+      ?? (typeof mascota?.raza === 'string' ? mascota.raza : '')
+      ?? '';
+
+    return {
+      ...mascota,
+      tamanio: mascota?.tamanio || mascota?.tamano,
+      tipo,
+      raza,
+      activo: mascota?.activo ?? mascota?.activa ?? true
+    };
+  }
+
+  private normalizarListaMascotas(mascotas: any[]): Mascota[] {
+    return (mascotas || []).map(mascota => this.normalizarMascota(mascota));
+  }
+
   obtenerMascotasPerdidas(): Observable<Mascota[]> {
     return this.http.get<any[]>(`${this.apiUrl}/perdidas`).pipe(
       timeout(10000), // 10 segundos timeout
-      map(mascotas => mascotas.map(m => ({
-        ...m,
-        tamanio: m.tamanio || m.tamano // El backend devuelve "tamanio" sin ñ
-      }))),
+      map(mascotas => this.normalizarListaMascotas(mascotas)),
       catchError(error => {
         console.error('Error en servicio de mascotas:', error);
         return throwError(() => error);
@@ -94,10 +114,7 @@ export class MascotaService {
       timeout(5000), // Reducido a 5 segundos
       map(mascota => {
         console.log('✅ Mascota obtenida del backend:', mascota);
-        return {
-          ...mascota,
-          tamanio: mascota.tamanio || mascota.tamano
-        };
+        return this.normalizarMascota(mascota);
       }),
       catchError(error => {
         console.error('❌ Error detallado en obtenerMascota:', error);
@@ -117,10 +134,7 @@ export class MascotaService {
   obtenerMascotasUsuario(usuarioId: number): Observable<Mascota[]> {
     return this.http.get<any[]>(`${this.apiUrl}/usuario/${usuarioId}`).pipe(
       timeout(10000),
-      map(mascotas => mascotas.map(m => ({
-        ...m,
-        tamanio: m.tamanio || m.tamano
-      }))),
+      map(mascotas => this.normalizarListaMascotas(mascotas)),
       catchError(error => {
         console.error('Error en servicio de mascotas:', error);
         return throwError(() => error);
@@ -131,29 +145,20 @@ export class MascotaService {
   // Crear mascota: el payload debe incluir tipo_mascota: {id} y raza: {id? nombre?}
   crearMascota(usuarioId: number, mascotaPayload: any): Observable<Mascota> {
     return this.http.post<any>(`${this.apiUrl}/usuario/${usuarioId}`, mascotaPayload).pipe(
-      map(m => ({
-        ...m,
-        tamanio: m.tamanio || m.tamano
-      }))
+      map(m => this.normalizarMascota(m))
     );
   }
 
   actualizarMascota(id: number, mascota: MascotaRequest): Observable<Mascota> {
     return this.http.put<any>(`${this.apiUrl}/${id}`, mascota).pipe(
-      map(m => ({
-        ...m,
-        tamanio: m.tamanio || m.tamano
-      }))
+      map(m => this.normalizarMascota(m))
     );
   }
 
   eliminarMascota(id: number): Observable<Mascota> {
     return this.http.delete<any>(`${this.apiUrl}/${id}`).pipe(
       timeout(10000),
-      map(mascota => ({
-        ...mascota,
-        tamanio: mascota.tamanio || mascota.tamano
-      })),
+      map(mascota => this.normalizarMascota(mascota)),
       catchError(error => {
         console.error('Error al eliminar mascota:', error);
         return throwError(() => error);

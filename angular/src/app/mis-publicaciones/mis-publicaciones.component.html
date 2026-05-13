@@ -91,7 +91,7 @@
 
       <!-- Image -->
       <div
-        class="h-48 bg-gray-200 flex items-center justify-center cursor-pointer"
+        class="h-48 bg-gray-200 flex items-center justify-center cursor-pointer relative"
         [ngClass]="{ 'filter grayscale': !mascota.activo }"
         (click)="abrirModal(mascota)"
       >
@@ -101,41 +101,27 @@
           class="w-full h-full object-cover hover:opacity-90 transition-opacity"
           (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
         />
+        <!-- Badge de estado -->
+        <div class="absolute top-2 right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full shadow-lg">
+          {{ mapearEstado(mascota.estado) }}
+        </div>
       </div>
 
       <!-- Content -->
       <div class="p-4">
-        <div class="flex items-start justify-between mb-2">
-          <h3
-            class="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors"
-            (click)="abrirModal(mascota)"
-          >
-            {{ mascota.nombre }}
-          </h3>
-          <span
-            class="px-2 py-1 text-xs rounded-full"
-            [ngClass]="{
-              'bg-red-100 text-red-800': mascota.estado === 'PERDIDO_PROPIO',
-              'bg-orange-100 text-orange-800': mascota.estado === 'PERDIDO_AJENO',
-              'bg-green-100 text-green-800': mascota.estado === 'RECUPERADO',
-              'bg-blue-100 text-blue-800': mascota.estado === 'ADOPTADO'
-            }"
-          >
-            {{ getEstadoTexto(mascota.estado) }}
-          </span>
+        <h3
+          class="text-lg font-semibold text-gray-900 cursor-pointer hover:text-primary transition-colors mb-2"
+          (click)="abrirModal(mascota)"
+        >
+          {{ mascota.nombre }}
+        </h3>
+
+        <div class="space-y-2 mb-4">
+          <div class="flex flex-wrap gap-2 text-xs text-gray-600">
+            <span class="rounded-full bg-gray-100 px-2 py-1 font-medium">Color: {{ mascota.color }}</span>
+            <span class="rounded-full bg-gray-100 px-2 py-1 font-medium">Tamaño: {{ mascota.tamanio }}</span>
+          </div>
         </div>
-
-        <p class="text-sm text-gray-600 mb-2">
-          {{ mascota.tipo }} • {{ mascota.raza || 'Mestizo' }}
-        </p>
-
-        <p class="text-xs text-gray-500 mb-3">
-          Publicado: {{ formatearFecha(mascota.fecha) }}
-        </p>
-
-        <p class="text-sm text-gray-700 mb-4 line-clamp-2">
-          {{ mascota.descripcion }}
-        </p>
         <!-- Action buttons -->
         <div class="flex gap-2">
           <button
@@ -196,20 +182,30 @@
     <div class="p-6">
       <!-- Images -->
       <div class="mb-6">
-        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0" class="grid grid-cols-1 gap-4">
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 0">
+          <!-- Primera imagen más grande -->
           <img
-            *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada)"
-            [src]="foto"
+            [src]="obtenerTodasLasFotos(mascotaSeleccionada)[0]"
             [alt]="mascotaSeleccionada.nombre"
-            class="w-full h-64 object-cover rounded-lg"
+            class="w-full h-96 object-cover rounded-lg mb-3"
             (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
           />
+          <!-- Resto de imágenes en galería -->
+          <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length > 1" class="grid grid-cols-3 gap-2">
+            <img
+              *ngFor="let foto of obtenerTodasLasFotos(mascotaSeleccionada) | slice:1"
+              [src]="foto"
+              [alt]="mascotaSeleccionada.nombre"
+              class="w-full h-24 object-cover rounded-lg cursor-pointer hover:opacity-80 transition-opacity"
+              (error)="$any($event.target).src='/assets/images/mascota-default.svg'"
+            />
+          </div>
         </div>
-        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0" class="grid grid-cols-1 gap-4">
+        <div *ngIf="obtenerTodasLasFotos(mascotaSeleccionada).length === 0">
           <img
             [src]="'/assets/images/mascota-default.svg'"
             [alt]="mascotaSeleccionada.nombre"
-            class="w-full h-64 object-contain rounded-lg bg-gray-100"
+            class="w-full h-96 object-contain rounded-lg bg-gray-100"
           />
         </div>
       </div>
@@ -223,7 +219,6 @@
             <div><strong>Raza:</strong> {{ mascotaSeleccionada.raza || 'Mestizo' }}</div>
             <div><strong>Color:</strong> {{ mascotaSeleccionada.color }}</div>
             <div><strong>Tamaño:</strong> {{ mascotaSeleccionada.tamanio }}</div>
-            <div><strong>Estado:</strong> {{ getEstadoTexto(mascotaSeleccionada.estado) }}</div>
           </div>
         </div>
 
@@ -243,8 +238,8 @@
 
       <!-- Location -->
       <div *ngIf="mascotaSeleccionada.coordenadas" class="mb-6">
-        <h3 class="font-semibold text-gray-900 mb-2">Coordenadas</h3>
-        <p class="text-sm text-gray-700">{{ mascotaSeleccionada.coordenadas }}</p>
+        <h3 class="font-semibold text-gray-900 mb-2">Ubicación</h3>
+        <p class="text-sm text-gray-700">{{ obtenerUbicacionTexto(mascotaSeleccionada) }}</p>
       </div>
 
       <!-- Action buttons in modal -->
@@ -321,7 +316,7 @@
           <div>
             <h3 class="font-semibold text-gray-900">{{ mascotaAEliminar.nombre }}</h3>
             <p class="text-sm text-gray-600">
-              {{ mascotaAEliminar.tipo }} • {{ getEstadoTexto(mascotaAEliminar.estado) }}
+              {{ mascotaAEliminar.tipo }}
             </p>
           </div>
         </div>

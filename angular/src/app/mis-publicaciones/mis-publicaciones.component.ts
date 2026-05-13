@@ -2,6 +2,7 @@ import { Component, OnInit, inject, PLATFORM_ID, ChangeDetectorRef } from '@angu
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { GeolocalizacionService } from '../services/geolocalizacion.service';
 import { MascotaService } from '../services/mascota.service';
 import { Mascota } from '../models/mascota.model';
 import { LoginResponse } from '../models/usuario.model';
@@ -28,12 +29,15 @@ export class MisPublicacionesComponent implements OnInit {
   // Propiedades para modal de confirmación de eliminación
   mostrarModalEliminacion = false;
   mascotaAEliminar: Mascota | null = null;
+  ubicacionPorMascota: Map<number, string> = new Map();
+  ubicacionCargando: Set<number> = new Set();
 
   private platformId = inject(PLATFORM_ID);
   private isBrowser: boolean;
 
   constructor(
     private authService: AuthService,
+    private geolocalizacionService: GeolocalizacionService,
     private mascotaService: MascotaService,
     private router: Router,
     private cdr: ChangeDetectorRef
@@ -61,6 +65,33 @@ export class MisPublicacionesComponent implements OnInit {
     }
   }
 
+
+  private cargarUbicacionMascota(mascota: Mascota): void {
+    if (!mascota.coordenadas || this.ubicacionPorMascota.has(mascota.id) || this.ubicacionCargando.has(mascota.id)) {
+      return;
+    }
+
+    this.ubicacionCargando.add(mascota.id);
+    this.geolocalizacionService.obtenerUbicacionDesdeCoordenadas(mascota.coordenadas).subscribe({
+      next: (ubicacion) => {
+        this.ubicacionPorMascota.set(mascota.id, ubicacion);
+        this.ubicacionCargando.delete(mascota.id);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.ubicacionPorMascota.set(mascota.id, 'Ubicación no disponible');
+        this.ubicacionCargando.delete(mascota.id);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  obtenerUbicacionTexto(mascota: Mascota | null): string {
+    if (!mascota) return 'Ubicación no disponible';
+    if (!mascota.coordenadas) return 'Ubicación no disponible';
+    return this.ubicacionPorMascota.get(mascota.id)
+      ?? (this.ubicacionCargando.has(mascota.id) ? 'Buscando ubicación...' : 'Ubicación no disponible');
+  }
   private getCurrentUserOrNull(): LoginResponse | null {
     const currentUser = this.authService.getCurrentUser();
     return currentUser?.id ? currentUser : null;
@@ -123,17 +154,27 @@ export class MisPublicacionesComponent implements OnInit {
     this.isLoading = true;
     this.error = null;
 
-    this.mascotaService.obtenerMascotasUsuario(this.currentUser.id).subscribe({
-      next: (mascotas) => {
-        console.log('✅ Publicaciones recibidas:', mascotas);
-        console.log('📊 Número de publicaciones:', mascotas ? mascotas.length : 0);
-        this.misPublicaciones = mascotas || [];
-        console.log('🔄 Estado actualizado: isLoading =', this.isLoading, ', misPublicaciones =', this.misPublicaciones);
+     this.mascotaService.obtenerMascotasUsuario(this.currentUser.id).subscribe({
+       next: (mascotas) => {
 
-        // Forzar detección de cambios
-        this.finalizarCarga();
-        console.log('🔄 Detectando cambios forzadamente...');
-      },
+         // Logging de cada mascota
+         mascotas?.forEach((m, idx) => {
+           console.log(`📋 Mascota ${idx}:`, {
+             id: m.id,
+             nombre: m.nombre,
+             fotos: m.fotos,
+             estado: m.estado,
+             activo: m.activo
+           });
+         });
+
+         this.misPublicaciones = mascotas || [];
+         this.misPublicaciones.forEach(mascota => this.cargarUbicacionMascota(mascota));
+         console.log('🔄 Estado actualizado: isLoading =', this.isLoading, ', misPublicaciones =', this.misPublicaciones);
+
+         // Forzar detección de cambios
+         this.finalizarCarga();
+       },
       error: (error) => {
         console.error('❌ Error al cargar publicaciones:', error);
         console.error('❌ Error status:', error.status);
@@ -218,6 +259,7 @@ export class MisPublicacionesComponent implements OnInit {
   abrirModal(mascota: Mascota): void {
     this.mascotaSeleccionada = mascota;
     this.mostrarModal = true;
+    this.cargarUbicacionMascota(mascota);
   }
 
   cerrarModal(): void {
@@ -233,48 +275,53 @@ export class MisPublicacionesComponent implements OnInit {
     this.router.navigate(['/mascota/nuevo']);
   }
 
-  obtenerFotoPrincipal(mascota: Mascota): string {
-    try {
-      if (mascota.fotos) {
-        const fotosArray = JSON.parse(mascota.fotos);
-        if (Array.isArray(fotosArray) && fotosArray.length > 0) {
-          return `http://localhost:8080${fotosArray[0]}`;
-        }
-      }
-    } catch (error) {
-      console.error('Error al parsear fotos:', error);
-    }
-    return '/assets/images/mascota-default.svg';
-  }
+   obtenerFotoPrincipal(mascota: Mascota): string {
+     try {
+       if (mascota.fotos) {
+         console.log('📸 Foto principal raw de mascota', mascota.id, ':', mascota.fotos);
+         const fotosArray = JSON.parse(mascota.fotos);
+         if (Array.isArray(fotosArray) && fotosArray.length > 0) {
+           const fotoUrl = `http://localhost:8080${fotosArray[0]}`;
+           console.log('📸 Foto principal procesada de mascota', mascota.id, ':', fotoUrl);
+           return fotoUrl;
+         }
+       }
+     } catch (error) {
+       console.error('Error al parsear fotos:', error);
+     }
+     return '/assets/images/mascota-default.svg';
+   }
 
-  obtenerTodasLasFotos(mascota: Mascota): string[] {
-    try {
-      if (mascota.fotos) {
-        const fotosArray = JSON.parse(mascota.fotos);
-        if (Array.isArray(fotosArray)) {
-          return fotosArray.map(foto => `http://localhost:8080${foto}`);
-        }
-      }
-    } catch (error) {
-      console.error('Error al parsear fotos:', error);
-    }
-    return [];
-  }
+   obtenerTodasLasFotos(mascota: Mascota): string[] {
+     try {
+       if (mascota.fotos) {
+         console.log('📸 Fotos raw de mascota', mascota.id, ':', mascota.fotos);
+         const fotosArray = JSON.parse(mascota.fotos);
+         if (Array.isArray(fotosArray)) {
+           const fotosConUrl = fotosArray.map(foto => `http://localhost:8080${foto}`);
+           console.log('📸 Fotos procesadas de mascota', mascota.id, ':', fotosConUrl);
+           return fotosConUrl;
+         }
+       }
+     } catch (error) {
+       console.error('Error al parsear fotos:', error);
+     }
+     return [];
+   }
 
-  getEstadoTexto(estado: string): string {
-    switch (estado) {
-      case 'PERDIDO_PROPIO':
-        return 'Perdido';
-      case 'PERDIDO_AJENO':
-        return 'Encontrado';
-      case 'RECUPERADO':
-        return 'Recuperado';
-      case 'ADOPTADO':
-        return 'Adoptado';
-      default:
-        return estado;
-    }
-  }
+   mapearEstado(estado: string): string {
+     if (!estado) return 'Desconocido';
+
+     const estadoMapeado: { [key: string]: string } = {
+       'PERDIDO_PROPIO': 'PERDIDO',
+       'PERDIDO_AJENO': 'PERDIDO',
+       'ADOPTADO': 'ADOPTADO',
+       'RECUPERADO': 'RECUPERADO'
+     };
+
+     return estadoMapeado[estado.toUpperCase()] || estado;
+   }
+
 
   formatearFecha(fecha: string): string {
     if (!fecha) return '';

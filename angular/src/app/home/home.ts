@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, ChangeDetectorRef, PLATFORM_ID } 
 import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { RouterModule, Router, RouterLink } from '@angular/router';
 import { MascotaService } from '../services/mascota.service';
+import { GeolocalizacionService } from '../services/geolocalizacion.service';
 import { AuthService } from '../services/auth.service';
 import { Mascota } from '../models/mascota.model';
 import { LoginResponse } from '../models/usuario.model';
@@ -17,6 +18,7 @@ import { HomeService, HomeStats } from '../services/home.service';
 })
 export class Home implements OnInit, OnDestroy {
   private mascotaService = inject(MascotaService);
+  private geolocalizacionService = inject(GeolocalizacionService);
   private authService = inject(AuthService);
   private homeService = inject(HomeService);
   private router = inject(Router);
@@ -31,6 +33,8 @@ export class Home implements OnInit, OnDestroy {
   public isLoadingStats = false;
   public error: string | null = null;
   public fotoActualPorMascota: Map<number, number> = new Map();
+  public ubicacionPorMascota: Map<number, string> = new Map();
+  public ubicacionCargando: Set<number> = new Set();
   public currentUser: LoginResponse | null = null;
   public stats: HomeStats | null = null;
 
@@ -85,6 +89,7 @@ export class Home implements OnInit, OnDestroy {
         // Inicializar el índice de foto actual para cada mascota
         mascotas.forEach(mascota => {
           this.fotoActualPorMascota.set(mascota.id, 0);
+          this.cargarUbicacionMascota(mascota);
         });
         this.isLoading = false;
         console.log('✅ isLoading:', this.isLoading);
@@ -114,6 +119,33 @@ export class Home implements OnInit, OnDestroy {
       }
     }
     return '/assets/images/mascota-default.svg';
+  }
+
+  private cargarUbicacionMascota(mascota: Mascota): void {
+    if (!mascota.coordenadas || this.ubicacionPorMascota.has(mascota.id) || this.ubicacionCargando.has(mascota.id)) {
+      return;
+    }
+
+    this.ubicacionCargando.add(mascota.id);
+    this.geolocalizacionService.obtenerUbicacionDesdeCoordenadas(mascota.coordenadas).subscribe({
+      next: (ubicacion) => {
+        this.ubicacionPorMascota.set(mascota.id, ubicacion);
+        this.ubicacionCargando.delete(mascota.id);
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.ubicacionPorMascota.set(mascota.id, 'Ubicación no disponible');
+        this.ubicacionCargando.delete(mascota.id);
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  obtenerUbicacionTexto(mascota: Mascota | null): string {
+    if (!mascota) return 'Ubicación no disponible';
+    if (!mascota.coordenadas) return 'Ubicación no disponible';
+    return this.ubicacionPorMascota.get(mascota.id)
+      ?? (this.ubicacionCargando.has(mascota.id) ? 'Buscando ubicación...' : 'Ubicación no disponible');
   }
 
   obtenerTodasLasFotos(mascota: Mascota): string[] {
@@ -161,23 +193,17 @@ export class Home implements OnInit, OnDestroy {
     this.fotoActualPorMascota.set(mascota.id, nuevaFoto);
   }
 
-  obtenerNombreZona(coordenadas: string): string {
-    if (!coordenadas) return 'Ubicación desconocida';
-    return coordenadas;
-  }
+  mapearEstado(estado: string): string {
+    if (!estado) return 'Desconocido';
 
-  obtenerFechaFormateada(fecha: string | Date): string {
-    if (!fecha) return '';
-    const fechaObj = new Date(fecha);
-    const hoy = new Date();
-    const diffTime = Math.abs(hoy.getTime() - fechaObj.getTime());
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const estadoMapeado: { [key: string]: string } = {
+      'PERDIDO_PROPIO': 'PERDIDO',
+      'PERDIDO_AJENO': 'PERDIDO',
+      'ADOPTADO': 'ADOPTADO',
+      'RECUPERADO': 'RECUPERADO'
+    };
 
-    if (diffDays === 0) return 'Hoy';
-    if (diffDays === 1) return 'Ayer';
-    if (diffDays < 7) return `Hace ${diffDays} días`;
-    if (diffDays < 30) return `Hace ${Math.floor(diffDays / 7)} semanas`;
-    return fechaObj.toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
+    return estadoMapeado[estado.toUpperCase()] || estado;
   }
 
   formatearTamanio(tamanio: string): string {
@@ -216,6 +242,7 @@ export class Home implements OnInit, OnDestroy {
 
     this.mascotaSeleccionada = mascota;
     this.mostrarMapaModal = true;
+    this.cargarUbicacionMascota(mascota);
 
     // Importar Leaflet dinámicamente solo en el navegador
     if (!this.L && this.isBrowser) {
